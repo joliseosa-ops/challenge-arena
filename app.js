@@ -26,7 +26,7 @@ const PRESET=[
 const PAID_OUT_IDX=[0,2,6,11,12,18];
 
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,accumulated:OPENING[i],paidOut:0,gwWins:0}));
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:'',accumulated:OPENING[i],paidOut:0,gwWins:0}));
   const gameweeks=[];
   PRESET.forEach(g=>{
     Object.entries(g.awards).forEach(([idx,prize])=>{
@@ -139,6 +139,7 @@ function renderStandings(){
     return `<tr>
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
+      <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
       <td><span class="mono">${p.gwWins}</span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
@@ -226,16 +227,22 @@ function renderAdminPlayers(){
     <div class="player-row">
       <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="flex:1;font-size:.9rem;font-weight:500">${p.name}</span>
+      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.75rem;padding:3px 6px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:130px;margin-right:8px">
       <span class="mono" style="font-size:.75rem;color:var(--muted);margin-right:8px">₦${(p.accumulated-p.paidOut).toLocaleString()}</span>
       <button class="btn btn-ghost" style="padding:3px 10px;font-size:.7rem;color:var(--red);border-color:#fca5a5" onclick="removePlayer(${i})">Remove</button>
     </div>`).join('');
+}
+
+function setTeamName(idx,val){
+  state.players[idx].teamName=val.trim();
+  save(); renderStandings();
 }
 
 function addPlayer(){
   const name=document.getElementById('new-player-name').value.trim();
   if(!name){ alert('Enter a player name'); return; }
   if(state.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Player already exists'); return; }
-  state.players.push({name,accumulated:0,paidOut:0,gwWins:0});
+  state.players.push({name,teamName:'',accumulated:0,paidOut:0,gwWins:0});
   save(); document.getElementById('new-player-name').value='';
   renderAdminPlayers(); populateSelects(); renderStandings();
 }
@@ -248,7 +255,7 @@ function removePlayer(idx){
 
 function confirmReset(){
   if(!confirm('Reset all data for a new season? Player names are kept but all results, prizes and payments will be cleared.')) return;
-  state.players=state.players.map(p=>({name:p.name,accumulated:0,paidOut:0,gwWins:0}));
+  state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,gwWins:0}));
   state.gameweeks=[]; state.payouts=[]; state.cyclePayments={};
   save(); renderStandings(); renderAdminPlayers(); renderHistory();
   alert('Season reset. Ready for a new season!');
