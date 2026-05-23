@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v1';
+const KEY='challenge_arena_v2';
 
 const INIT_PLAYERS=[
   'Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf',
@@ -13,26 +13,26 @@ const INIT_PLAYERS=[
 const OPENING=[0,32666,42500,44666,8000,14000,7666,6000,1666,6000,12666,0,0,0,0,0,0,0,0];
 
 const PRESET=[
-  {gw:31,awards:{10:22000,6:8000,8:8000},note:'Dafe 1st · AWB & Eluigwe Frank joint 2nd (₦8k each)'},
-  {gw:32,awards:{17:22000,2:11000,7:5000},note:'Ifeanyi 1st · Emmanuel 2nd · Yusuf 3rd'},
-  {gw:33,awards:{16:22000,5:11000,10:5000},note:'Koded City 1st · Kingz 2nd · Dafe 3rd'},
-  {gw:34,awards:{14:22000,2:11000,1:5000},note:'Gege 1st · Emmanuel 2nd · Syb 3rd'},
-  {gw:35,awards:{14:22000,13:11000,15:2500,18:2500},note:'Gege 1st · Ose 2nd · Emeka & Kel Lee joint 3rd (₦2,500 each)'},
-  {gw:36,awards:{2:22000,12:11000,9:5000},note:'Emmanuel 1st · Joseph 2nd · Hadassah 3rd'},
-  {gw:37,awards:{18:22000,14:11000,15:2500,10:2500},note:'Kel Lee 1st · Gege 2nd · Emeka & Dafe joint 3rd (₦2,500 each)'},
+  {gw:31,awards:{10:22000,6:8000,8:8000},pos:{1:[10],2:[6,8],3:[]},note:'Dafe 1st · AWB & Eluigwe Frank joint 2nd (₦8k each)'},
+  {gw:32,awards:{17:22000,2:11000,7:5000},pos:{1:[17],2:[2],3:[7]},note:'Ifeanyi 1st · Emmanuel 2nd · Yusuf 3rd'},
+  {gw:33,awards:{16:22000,5:11000,10:5000},pos:{1:[16],2:[5],3:[10]},note:'Koded City 1st · Kingz 2nd · Dafe 3rd'},
+  {gw:34,awards:{14:22000,2:11000,1:5000},pos:{1:[14],2:[2],3:[1]},note:'Gege 1st · Emmanuel 2nd · Syb 3rd'},
+  {gw:35,awards:{14:22000,13:11000,15:2500,18:2500},pos:{1:[14],2:[13],3:[15,18]},note:'Gege 1st · Ose 2nd · Emeka & Kel Lee joint 3rd (₦2,500 each)'},
+  {gw:36,awards:{2:22000,12:11000,9:5000},pos:{1:[2],2:[12],3:[9]},note:'Emmanuel 1st · Joseph 2nd · Hadassah 3rd'},
+  {gw:37,awards:{18:22000,14:11000,15:2500,10:2500},pos:{1:[18],2:[14],3:[15,10]},note:'Kel Lee 1st · Gege 2nd · Emeka & Dafe joint 3rd (₦2,500 each)'},
 ];
 
 // Fully paid out: 0=Osahon,2=Emmanuel,6=AWB,11=Dickson,12=Joseph,18=KelLee
 const PAID_OUT_IDX=[0,2,6,11,12,18];
 
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:'',accumulated:OPENING[i],paidOut:0,gwWins:0}));
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
   const gameweeks=[];
   PRESET.forEach(g=>{
-    Object.entries(g.awards).forEach(([idx,prize])=>{
-      players[parseInt(idx)].accumulated+=prize;
-      players[parseInt(idx)].gwWins+=1;
-    });
+    Object.entries(g.awards).forEach(([idx,prize])=>{ players[parseInt(idx)].accumulated+=prize; });
+    (g.pos[1]||[]).forEach(i=>players[i].w1++);
+    (g.pos[2]||[]).forEach(i=>players[i].w2++);
+    (g.pos[3]||[]).forEach(i=>players[i].w3++);
     gameweeks.push({...g});
   });
   PAID_OUT_IDX.forEach(i=>{ players[i].paidOut=players[i].accumulated; });
@@ -65,7 +65,7 @@ function getSlots(pre){ return ['a','b','c'].map(s=>document.getElementById(pre+
 
 function calcPrizes(){
   const s1=getSlots('p1'),s2=getSlots('p2'),s3=getSlots('p3');
-  if(!s1.length) return {awards:{},lines:[],note:''};
+  if(!s1.length) return {awards:{},lines:[],note:'',positions:{1:[],2:[],3:[]}};
   const awards={};
   const lines=[];
   const notes=[];
@@ -93,7 +93,8 @@ function calcPrizes(){
       if(s3.length){ const sh=add(s3,PRIZE3); lines.push(`${s3.length>1?'Joint ':''}3rd: ${s3.map(nm).join(' & ')} → ₦${sh.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} ${s3.length>1?'joint ':''}3rd`); }
     }
   }
-  return {awards,lines,note:notes.join(' · ')};
+  const positions={1:s1.map(Number),2:s2.map(Number),3:s3.map(Number)};
+  return {awards,lines,note:notes.join(' · '),positions};
 }
 
 function updatePreview(){
@@ -107,10 +108,13 @@ function updatePreview(){
 
 function recordGW(){
   if(!getSlots('p1').length){ alert('Select at least 1st place'); return; }
-  const {awards,note}=calcPrizes();
+  const {awards,note,positions}=calcPrizes();
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:30;
-  Object.entries(awards).forEach(([idx,prize])=>{ state.players[parseInt(idx)].accumulated+=prize; state.players[parseInt(idx)].gwWins+=1; });
-  state.gameweeks.push({gw:lastGW+1,awards,note});
+  Object.entries(awards).forEach(([idx,prize])=>{ state.players[parseInt(idx)].accumulated+=prize; });
+  positions[1].forEach(i=>state.players[i].w1++);
+  positions[2].forEach(i=>state.players[i].w2++);
+  positions[3].forEach(i=>state.players[i].w3++);
+  state.gameweeks.push({gw:lastGW+1,awards,pos:positions,note});
   save();
   ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('prize-preview').classList.add('hidden');
@@ -140,7 +144,7 @@ function renderStandings(){
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
       <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
-      <td><span class="mono">${p.gwWins}</span></td>
+      <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
     </tr>`;
@@ -242,7 +246,7 @@ function addPlayer(){
   const name=document.getElementById('new-player-name').value.trim();
   if(!name){ alert('Enter a player name'); return; }
   if(state.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Player already exists'); return; }
-  state.players.push({name,teamName:'',accumulated:0,paidOut:0,gwWins:0});
+  state.players.push({name,teamName:'',accumulated:0,paidOut:0,w1:0,w2:0,w3:0});
   save(); document.getElementById('new-player-name').value='';
   renderAdminPlayers(); populateSelects(); renderStandings();
 }
@@ -255,7 +259,7 @@ function removePlayer(idx){
 
 function confirmReset(){
   if(!confirm('Reset all data for a new season? Player names are kept but all results, prizes and payments will be cleared.')) return;
-  state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,gwWins:0}));
+  state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,w1:0,w2:0,w3:0}));
   state.gameweeks=[]; state.payouts=[]; state.cyclePayments={};
   save(); renderStandings(); renderAdminPlayers(); renderHistory();
   alert('Season reset. Ready for a new season!');

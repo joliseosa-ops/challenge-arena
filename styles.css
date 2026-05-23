@@ -98,6 +98,13 @@ select option{background:#fff}
 .gw-num{font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap;margin-top:2px;min-width:42px}
 .gw-detail{color:var(--muted);font-size:13px;line-height:1.6}
 
+/* Podium breakdown */
+.wins{display:inline-flex;align-items:center;gap:4px}
+.w1,.w2,.w3{font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px;font-weight:600;min-width:20px;text-align:center;padding:2px 5px;border-radius:4px}
+.w1{background:#fef9c3;color:#854d0e}
+.w2{background:#f1f5f9;color:#475569}
+.w3{background:#fff7ed;color:#7c4f1a}
+
 /* Balance / payout states */
 .neg{font-family:'JetBrains Mono','Fira Code',monospace;color:var(--red)}
 .bal-pos{font-family:'JetBrains Mono','Fira Code',monospace;color:var(--green);font-weight:600}
