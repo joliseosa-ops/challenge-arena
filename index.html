@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPL Table</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="13" stroke="white" stroke-width="1.8"/>
+          <path d="M16 5 L18.5 11.5 L25.5 11.5 L19.8 15.8 L22 22.5 L16 18.5 L10 22.5 L12.2 15.8 L6.5 11.5 L13.5 11.5 Z" fill="white"/>
+          <circle cx="16" cy="16" r="13" stroke="white" stroke-width="1.8" stroke-dasharray="4 3" fill="none" opacity="0.3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">Challenge Arena</div>
+        <div class="logo-sub">Mini FPL &mdash; Prize Tracker</div>
+      </div>
+    </div>
+    <div class="gw-badge" id="hdr-gw">GW 37</div>
+  </header>
+
+  <h1 class="page-title">FPL Table</h1>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('standings')">Standings</button>
+    <button class="tab" onclick="showTab('gameweek')">Record GW</button>
+    <button class="tab" onclick="showTab('payout')">Payout</button>
+    <button class="tab" onclick="showTab('payments')">Payments</button>
+    <button class="tab" onclick="showTab('admin')">Admin</button>
+  </div>
+
+  <!-- STANDINGS -->
+  <div id="sec-standings" class="section active">
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Last GW</div><div class="metric-val accent" id="m-gw">37</div></div>
+      <div class="metric"><div class="metric-label">Weekly pot</div><div class="metric-val">₦38,000</div></div>
+      <div class="metric"><div class="metric-label">Balance</div><div class="metric-val" id="m-acc">—</div></div>
+      <div class="metric"><div class="metric-label">Total paid out</div><div class="metric-val" id="m-paid">—</div></div>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Player</th><th>GW wins</th><th>Accumulated</th><th>Paid out</th></tr></thead>
+          <tbody id="standings-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECORD GW -->
+  <div id="sec-gameweek" class="section">
+    <div class="card">
+      <div class="card-title">Enter GW result</div>
+      <div class="pos-group">
+        <div class="pos-label gold">1st place &mdash; ₦22,000</div>
+        <div class="slots">
+          <div class="field"><label>Player A</label><select id="p1a"><option value="">—</option></select></div>
+          <div class="field"><label>Player B (tie)</label><select id="p1b"><option value="">—</option></select></div>
+          <div class="field"><label>Player C (tie)</label><select id="p1c"><option value="">—</option></select></div>
+        </div>
+      </div>
+      <div class="pos-group">
+        <div class="pos-label silver">2nd place &mdash; ₦11,000</div>
+        <div class="slots">
+          <div class="field"><label>Player A</label><select id="p2a"><option value="">—</option></select></div>
+          <div class="field"><label>Player B (tie)</label><select id="p2b"><option value="">—</option></select></div>
+          <div class="field"><label>Player C (tie)</label><select id="p2c"><option value="">—</option></select></div>
+        </div>
+      </div>
+      <div class="pos-group">
+        <div class="pos-label bronze">3rd place &mdash; ₦5,000</div>
+        <div class="slots">
+          <div class="field"><label>Player A</label><select id="p3a"><option value="">—</option></select></div>
+          <div class="field"><label>Player B (tie)</label><select id="p3b"><option value="">—</option></select></div>
+          <div class="field"><label>Player C (tie)</label><select id="p3c"><option value="">—</option></select></div>
+        </div>
+      </div>
+      <div id="prize-preview" class="info-box hidden"></div>
+      <button class="btn" onclick="recordGW()">Record gameweek</button>
+    </div>
+    <div class="card">
+      <div class="card-title">GW History</div>
+      <div id="gw-history"><div class="empty">no gameweeks recorded</div></div>
+    </div>
+  </div>
+
+  <!-- PAYOUT -->
+  <div id="sec-payout" class="section">
+    <div class="card">
+      <div class="card-title">Process payout</div>
+      <div class="field"><label>Select player</label><select id="po-player" onchange="updatePayoutInfo()"><option value="">— select player —</option></select></div>
+      <div id="po-info" class="info-box hidden"></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+        <div class="field" style="margin:0"><label>Amount to pay out (₦)</label><input type="number" id="po-amt" placeholder="Enter amount"></div>
+        <button class="btn" onclick="processPayout()">Pay out</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Payout log</div>
+      <div id="payout-log"><div class="empty">no payouts recorded</div></div>
+    </div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div id="sec-payments" class="section">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">How payment cycles work</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7">The 38-week season is split into <strong style="color:var(--text)">8 cycles of 5 gameweeks</strong>. Players pay <strong style="color:var(--accent)">₦10,000</strong> per cycle upfront to cover their ₦2,000/week stake. Tap <strong style="color:var(--text)">Manage</strong> on any cycle to mark who has paid.</p>
+    </div>
+    <div class="metrics" style="margin-bottom:1.5rem">
+      <div class="metric"><div class="metric-label">Current cycle</div><div class="metric-val accent" id="m-cycle">—</div></div>
+      <div class="metric"><div class="metric-label">Cycle fee</div><div class="metric-val">₦10,000</div></div>
+      <div class="metric"><div class="metric-label">Paid this cycle</div><div class="metric-val" id="m-cycle-paid">—</div></div>
+    </div>
+    <div class="cycle-grid" id="cycle-grid"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="sec-admin" class="section">
+    <div class="card">
+      <div class="card-title">Add player</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+        <div class="field" style="margin:0"><label>Player name</label><input type="text" id="new-player-name" placeholder="Enter full name"></div>
+        <button class="btn" onclick="addPlayer()">Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Player list</div>
+      <div id="admin-player-list"></div>
+    </div>
+    <div class="card card-danger">
+      <div class="card-title" style="color:var(--red)">New season reset</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Clears all results, prizes, payouts, and payment records. Player names are kept. Use this at the start of a new season.</p>
+      <button class="btn btn-danger" onclick="confirmReset()">Reset for new season</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Cycle modal -->
+<div class="overlay" id="cycle-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Cycle payments</div>
+    <div class="checklist" id="modal-checklist"></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn" onclick="saveCycle()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
