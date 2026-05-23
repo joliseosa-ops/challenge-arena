@@ -39,7 +39,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .metric-val.accent{color:var(--accent)}
 
 /* Table */
-.tbl-wrap{overflow-x:auto}
+.tbl-wrap{overflow-x:auto;overscroll-behavior-x:contain}
 table{width:100%;border-collapse:collapse;font-size:.875rem}
 th{font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:.6rem .75rem;border-bottom:2px solid var(--border);white-space:nowrap}
 td{padding:.75rem;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
@@ -126,8 +126,8 @@ select option{background:#fff}
   .shell{padding:1.25rem 1rem}
   header{flex-direction:column;align-items:flex-start;gap:10px}
   .page-title{font-size:1.35rem;margin-bottom:1rem}
-  .tabs{margin-bottom:1.25rem}
-  .tab{padding:.55rem .9rem;font-size:.72rem}
+  .tabs{margin-bottom:1.25rem;overflow-x:visible;flex-wrap:wrap}
+  .tab{padding:.55rem .75rem;font-size:.7rem;flex:1 1 auto;text-align:center}
   .metrics{grid-template-columns:repeat(2,1fr)}
   .metric{padding:.75rem}
   .metric-val{font-size:1rem}
