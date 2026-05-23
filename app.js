@@ -189,9 +189,9 @@ function renderPayments(){
     const pct=Math.round((paid/state.players.length)*100);
     const isCur=i===curCycle;
     return `<div class="cycle-card" style="${isCur?'border-color:var(--accent);border-width:2px':''}">
-      <div style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
-      <div style="font-size:.68rem;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:6px">GW${start}–${end}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--text)">${paid}<span style="color:var(--dim);font-size:.85rem">/${state.players.length}</span></div>
+      <div style="font-size:11px;font-weight:600;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
+      <div style="font-size:11px;color:var(--dim);font-family:'JetBrains Mono','Fira Code',monospace;margin-bottom:6px">GW${start}–${end}</div>
+      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${state.players.length}</span></div>
       <div class="cycle-bar"><div class="cycle-bar-fill" style="width:${pct}%"></div></div>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:.7rem;width:100%;margin-top:4px" onclick="openCycleModal(${i})">Manage</button>
     </div>`;
