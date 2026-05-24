@@ -300,7 +300,7 @@ function renderGWDetail(){
     const rows=arr.map(i=>`<div style="display:flex;align-items:center;gap:10px"><div class="init">${nm(i).slice(0,2).toUpperCase()}</div><span style="font-weight:500">${nm(i)}</span></div>`).join('');
     return `<div class="pos-group"><div class="pos-label ${cls}">${label} &mdash; ₦${amt.toLocaleString()}${perEach}</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">${rows}</div></div>`;
   }
-  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:500;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
+  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
 }
 
 function renderStandings(){
@@ -378,7 +378,7 @@ function renderPayments(){
     const pct=Math.round((paid/c.players.length)*100);
     const isCur=i===curCycle;
     return `<div class="cycle-card" style="${isCur?'border-color:var(--accent);border-width:2px':''}">
-      <div style="font-size:11px;font-weight:600;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
+      <div style="font-size:11px;font-weight:700;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
       <div style="font-size:11px;color:var(--dim);font-family:'JetBrains Mono','Fira Code',monospace;margin-bottom:3px">GW${c.gw[0]}–${c.gw[1]}</div>
       <div style="font-size:10px;color:var(--dim);margin-bottom:6px">₦${c.fee.toLocaleString()}</div>
       <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${c.players.length}</span></div>
@@ -547,9 +547,9 @@ function renderSeasonSummary(){
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
       <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#6b21a8">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:#a78bfa">across ${state.gameweeks.length} gameweeks</div></div>
-      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Biggest single win</div><div style="font-weight:600;font-size:14px;color:#3b0764">${bigWin.player}</div><div style="font-size:11px;color:#a78bfa">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
-      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Most podiums</div><div style="font-weight:600;font-size:14px;color:#3b0764">${topPlayer.name}</div><div style="font-size:11px;color:#a78bfa">${topPlayer.w1+topPlayer.w2+topPlayer.w3} finishes</div></div>
-      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Top earner</div><div style="font-weight:600;font-size:14px;color:#3b0764">${topEarner.name}</div><div style="font-size:11px;color:#a78bfa">₦${topEarner.accumulated.toLocaleString()} total</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Biggest single win</div><div style="font-weight:700;font-size:14px;color:#3b0764">${bigWin.player}</div><div style="font-size:11px;color:#a78bfa">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Most podiums</div><div style="font-weight:700;font-size:14px;color:#3b0764">${topPlayer.name}</div><div style="font-size:11px;color:#a78bfa">${topPlayer.w1+topPlayer.w2+topPlayer.w3} finishes</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Top earner</div><div style="font-weight:700;font-size:14px;color:#3b0764">${topEarner.name}</div><div style="font-size:11px;color:#a78bfa">₦${topEarner.accumulated.toLocaleString()} total</div></div>
     </div>`;
 }
 
@@ -638,7 +638,7 @@ function renderH2H(){
     return `<tr><td style="font-size:12px;color:var(--muted);padding:8px 4px;border-bottom:1px solid var(--border)">${label}</td>${rv.map(v=>`<td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(rv,v)}">${fmt(v)}</td>`).join('')}</tr>`;
   };
   el.innerHTML=`<table style="width:100%;border-collapse:collapse">
-    <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500"></th>${ps.map(p=>`<th style="font-size:13px;font-weight:600;text-align:center;padding:6px 4px">${p.name}</th>`).join('')}</tr></thead>
+    <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500"></th>${ps.map(p=>`<th style="font-size:13px;font-weight:700;text-align:center;padding:6px 4px">${p.name}</th>`).join('')}</tr></thead>
     <tbody>
       ${row('Accumulated',i=>ps[i].accumulated,v=>'₦'+v.toLocaleString())}
       ${row('Balance',i=>ps[i].accumulated-ps[i].paidOut,v=>'₦'+v.toLocaleString())}
@@ -664,7 +664,7 @@ function openProfile(idx){
       <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">${p.w1} 1st</span><span class="w2">${p.w2} 2nd</span><span class="w3">${p.w3} 3rd</span></div>
-    <div style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
     ${history.length?history.map(g=>`<div class="gw-item"><span class="gw-num">GW${g.gw}</span><span class="gw-detail"><strong style="color:var(--accent)">₦${g.amount.toLocaleString()}</strong></span></div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
   document.getElementById('profile-overlay').classList.add('open');
 }
@@ -694,7 +694,7 @@ function renderDebtTracker(){
     return unpaid.length?{cycle:ci+1,gw:`GW${c.gw[0]}–${c.gw[1]}`,fee:c.fee,unpaid}:null;
   }).filter(Boolean);
   if(!debtors.length){ el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div><div style="font-size:13px;color:var(--green);font-weight:500">All cycle fees accounted for.</div></div>`; return; }
-  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
+  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
 }
 
 // ── Sync names from FPL ───────────────────────────────────────────────────────
