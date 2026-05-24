@@ -70,7 +70,7 @@ tr.podium-3:hover td{background:rgba(146,64,14,.1)!important}
 /* Table */
 .tbl-wrap{overflow-x:auto;overscroll-behavior-x:contain}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-size:12px;font-weight:500;color:var(--muted);text-align:left;padding:10px 12px;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+th{font-size:12px;font-weight:500;color:#6b21a8;text-align:left;padding:10px 12px;background:#ede9fe;border-bottom:1px solid #ddd6fe;white-space:nowrap}
 th:first-child{border-radius:6px 0 0 0}
 th:last-child{border-radius:0 6px 0 0}
 td{padding:12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}

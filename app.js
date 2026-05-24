@@ -566,9 +566,9 @@ function renderEarningsChart(){
   const max=players[0].accumulated;
   el.innerHTML=players.map(p=>`
     <div style="display:grid;grid-template-columns:100px 1fr 64px;gap:8px;align-items:center;margin-bottom:9px">
-      <span style="font-size:12px;font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#c4b5fd" onclick="openProfile(${p.i})">${p.name}</span>
-      <div style="background:rgba(255,255,255,.07);border-radius:4px;height:10px;overflow:hidden"><div style="background:linear-gradient(90deg,#7c3aed 0%,#00c875 100%);height:100%;width:${Math.round((p.accumulated/max)*100)}%;border-radius:4px"></div></div>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">₦${Math.round(p.accumulated/1000)}k</span>
+      <span style="font-size:12px;font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#6b21a8" onclick="openProfile(${p.i})">${p.name}</span>
+      <div style="background:rgba(0,0,0,.07);border-radius:4px;height:10px;overflow:hidden"><div style="background:linear-gradient(90deg,#7c3aed 0%,#00c875 100%);height:100%;width:${Math.round((p.accumulated/max)*100)}%;border-radius:4px"></div></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#374151">₦${Math.round(p.accumulated/1000)}k</span>
     </div>`).join('');
 }
 
