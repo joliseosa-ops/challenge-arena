@@ -554,45 +554,32 @@ function populateWeeklySelect(){
   if(sel.value) loadWeeklyGW();
 }
 
-async function loadWeeklyGW(){
+function loadWeeklyGW(){
   const gwNum=parseInt(document.getElementById('weekly-gw-sel').value);
   const el=document.getElementById('weekly-content');
   if(!gwNum){ el.innerHTML='<div class="empty">select a gameweek above</div>'; return; }
-  if(weeklyCache[gwNum]){ renderWeeklyTable(gwNum,weeklyCache[gwNum]); return; }
-  el.innerHTML='<div class="empty">Fetching GW'+gwNum+' scores…</div>';
-  try{
-    const results=await Promise.all(
-      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`${FPL_BASE}/entry/${entryId}/history/`)
-          .then(r=>r.json())
-          .then(d=>{ const row=d.current?.find(r=>r.event===gwNum); return row?{playerIdx,pts:row.points}:null; })
-          .catch(()=>null)
-      )
-    );
-    const data=results.filter(Boolean);
-    if(!data.length){ el.innerHTML='<div class="empty">No data for GW'+gwNum+'</div>'; return; }
-    weeklyCache[gwNum]=data;
-    renderWeeklyTable(gwNum,data);
-  } catch(err){ el.innerHTML=`<div class="empty">Failed: ${err.message}</div>`; }
+  const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
+  if(!gwRecord){ el.innerHTML=`<div class="empty">GW${gwNum} not recorded yet</div>`; return; }
+  renderWeeklyTable(gwNum,gwRecord);
 }
 
-function renderWeeklyTable(gwNum,data){
-  const sorted=[...data].sort((a,b)=>b.pts-a.pts);
-  const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
-  const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
-  const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
-  document.getElementById('weekly-content').innerHTML=`<div class="card"><div class="card-title">GW ${gwNum} — full leaderboard</div><div class="tbl-wrap"><table>
-    <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Points</th><th>Prize</th></tr></thead>
-    <tbody>${sorted.map((d,rank)=>{
-      const p=state.players[d.playerIdx];
-      const prize=gwRecord?(gwRecord.awards[d.playerIdx]||0):0;
-      const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
-      return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${d.playerIdx})" style="cursor:pointer">
-        <td><span class="${rC(rank)}">${rL(rank)}</span></td>
-        <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${(p?.name||'?').slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p?.name||'?'}</span></div></td>
-        <td><span style="font-size:.85rem;color:var(--muted)">${p?.teamName||'—'}</span></td>
-        <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600">${d.pts}</span></td>
-        <td>${prize>0?`<span class="bal-pos">₦${prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
+function renderWeeklyTable(gwNum,gwRecord){
+  const entries=state.players.map((p,i)=>({
+    idx:i, name:p.name, teamName:p.teamName,
+    prize:gwRecord.awards[i]||0,
+    pos:gwRecord.pos[1]?.includes(i)?1:gwRecord.pos[2]?.includes(i)?2:gwRecord.pos[3]?.includes(i)?3:null
+  })).sort((a,b)=>b.prize-a.prize);
+  const rC=r=>r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-n';
+  const rL=r=>r===1?'1st':r===2?'2nd':r===3?'3rd':'—';
+  document.getElementById('weekly-content').innerHTML=`<div class="card"><div class="card-title">GW ${gwNum} — prize results</div><div class="tbl-wrap"><table>
+    <thead><tr><th>Pos</th><th>Player</th><th>Team</th><th>Prize</th></tr></thead>
+    <tbody>${entries.map(e=>{
+      const podiumCls=e.pos===1?'podium-1':e.pos===2?'podium-2':e.pos===3?'podium-3':'';
+      return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${e.idx})" style="cursor:pointer">
+        <td><span class="${rC(e.pos)}">${rL(e.pos)}</span></td>
+        <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${e.name}</span></div></td>
+        <td><span style="font-size:.85rem;color:var(--muted)">${e.teamName||'—'}</span></td>
+        <td>${e.prize>0?`<span class="bal-pos">₦${e.prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
       </tr>`;
     }).join('')}</tbody>
   </table></div></div>`;
