@@ -492,6 +492,32 @@ function removePlayer(idx){
   save(); renderAdminPlayers(); populateSelects(); renderStandings();
 }
 
+function renderDeleteGWInfo(){
+  const el=document.getElementById('delete-gw-info');
+  if(!el) return;
+  if(!state.gameweeks.length){ el.textContent='No manually entered GWs to delete.'; return; }
+  const last=state.gameweeks[state.gameweeks.length-1];
+  const winners=Object.entries(last.awards).map(([i,a])=>`${state.players[parseInt(i)]?.name} ₦${a.toLocaleString()}`).join(' · ');
+  el.textContent=`GW${last.gw}: ${winners}`;
+}
+function confirmDeleteLastGW(){
+  if(!state.gameweeks.length){ alert('No manually entered GWs to delete.'); return; }
+  const last=state.gameweeks[state.gameweeks.length-1];
+  if(!confirm(`Delete GW${last.gw} entry? This will reverse all prize and podium changes.`)) return;
+  // Reverse accumulated prizes
+  Object.entries(last.awards).forEach(([idx,prize])=>{
+    const p=state.players[parseInt(idx)];
+    if(p) p.accumulated-=prize;
+  });
+  // Reverse podium counts
+  (last.pos[1]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w1=Math.max(0,state.players[i].w1-1); });
+  (last.pos[2]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w2=Math.max(0,state.players[i].w2-1); });
+  (last.pos[3]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w3=Math.max(0,state.players[i].w3-1); });
+  state.gameweeks.pop();
+  save(); renderStandings(); renderAdminPlayers(); renderHistory(); renderDeleteGWInfo();
+  alert(`GW${last.gw} deleted. You can now re-enter it with the correct data.`);
+}
+
 function confirmReset(){
   if(!confirm('Reset all data for a new season? Player names are kept but all results, prizes and payments will be cleared.')) return;
   state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,w1:0,w2:0,w3:0}));
@@ -512,7 +538,7 @@ function showTab(t){
   if(t==='payments') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin') renderAdminPlayers();
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); }
 }
 
 function requireAdmin(tab){

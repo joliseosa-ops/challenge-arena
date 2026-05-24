@@ -209,6 +209,12 @@
       <div id="admin-player-list"></div>
     </div>
     <div class="card card-danger">
+      <div class="card-title" style="color:var(--red)">Delete last GW entry</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Removes the most recently entered gameweek and reverses all prize and podium changes. Use this to correct a wrong entry — then re-enter the GW with the right data.</p>
+      <div id="delete-gw-info" style="font-size:13px;color:var(--text);margin-bottom:1rem;font-family:'JetBrains Mono','Fira Code',monospace"></div>
+      <button class="btn btn-danger" onclick="confirmDeleteLastGW()">Delete last GW</button>
+    </div>
+    <div class="card card-danger">
       <div class="card-title" style="color:var(--red)">New season reset</div>
       <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Clears all results, prizes, payouts, and payment records. Player names are kept. Use this at the start of a new season.</p>
       <button class="btn btn-danger" onclick="confirmReset()">Reset for new season</button>
