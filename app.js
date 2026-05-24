@@ -99,22 +99,22 @@ const PRESET=[
 const PAID_OUT=[
    29500, // 0  Osahon
    52334, // 1  Syb
-  134167, // 2  Emmanuel
-   56001, // 3  William
+  134166, // 2  Emmanuel  (-1 GW7 tie correction)
+   56000, // 3  William   (-1 GW11 tie correction)
    16000, // 4  Hensalos
    53000, // 5  Kingz
-   34167, // 6  AWB
+   34166, // 6  AWB       (-1 GW30 tie correction)
    60000, // 7  Yusuf
-   61501, // 8  Eluigwe Frank
+   61500, // 8  Eluigwe Frank (-1 GW30 tie correction)
    64000, // 9  Hadassah
-   83001, // 10 Dafe
+   83000, // 10 Dafe      (-1 GW30 tie correction)
        0, // 11 Dickson
-   37167, // 12 Joseph
-   52167, // 13 Ose
+   37166, // 12 Joseph    (-1 GW7 tie correction)
+   52166, // 13 Ose       (-1 GW11 tie correction)
    52000, // 14 Gege
-   94667, // 15 Emeka
+   94666, // 15 Emeka     (-1 GW7 tie correction)
    82000, // 16 Koded City
-   25667, // 17 Ifeanyi
+   25666, // 17 Ifeanyi   (-1 GW11 tie correction)
   102500, // 18 Kel Lee
    14000, // 19 Paschal
 ];
