@@ -69,10 +69,10 @@ tr.podium-3:hover td{background:rgba(146,64,14,.1)!important}
 /* Table */
 .tbl-wrap{overflow-x:auto;overscroll-behavior-x:contain}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-size:12px;font-weight:700;color:#6b21a8;text-align:left;padding:10px 12px;background:#ede9fe;border-bottom:1px solid #ddd6fe;white-space:nowrap}
-th:first-child{border-radius:6px 0 0 0}
-th:last-child{border-radius:0 6px 0 0}
-td{padding:12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+th{font-size:12px;font-weight:700;color:#6b21a8;text-align:left;padding:10px 12px;background:#ede9fe;border-bottom:1px solid #ddd6fe;border-right:1px solid #ddd6fe;white-space:nowrap}
+th:last-child{border-right:none}
+td{padding:12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);color:var(--text);vertical-align:middle}
+td:last-child{border-right:none}
 tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--surface2)}
 
