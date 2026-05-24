@@ -319,7 +319,7 @@ function renderStandings(){
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
-      <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
+      <td class="col-team"><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
@@ -613,7 +613,7 @@ function renderWeeklyTable(gwNum,gwRecord){
       return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${e.idx})" style="cursor:pointer">
         <td><span class="${rC(e.pos)}">${rL(e.pos)}</span></td>
         <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${e.name}</span></div></td>
-        <td><span style="font-size:.85rem;color:var(--muted)">${e.teamName||'—'}</span></td>
+        <td class="col-team"><span style="font-size:.85rem;color:var(--muted)">${e.teamName||'—'}</span></td>
         <td>${e.prize>0?`<span class="bal-pos">₦${e.prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
       </tr>`;
     }).join('')}</tbody>

@@ -177,6 +177,8 @@ select option{background:#fff}
   .player-row{flex-wrap:wrap;gap:8px}
   .player-row input[type=text]{width:100%;margin-right:0}
   .cycle-grid{grid-template-columns:repeat(2,1fr)}
+  .col-team{display:none}
+  .h2h-selects{grid-template-columns:1fr!important}
 }
 
 @media print{
