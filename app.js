@@ -357,7 +357,10 @@ function processPayout(){
 function renderPayoutLog(){
   const el=document.getElementById('payout-log');
   if(!state.payouts.length){ el.innerHTML='<div class="empty">no payouts recorded</div>'; return; }
-  el.innerHTML=[...state.payouts].reverse().map(p=>`<div class="gw-item"><span class="gw-num">GW${p.gw}</span><span class="gw-detail">${p.player} — <strong style="color:var(--accent)">₦${p.amount.toLocaleString()}</strong> paid out</span></div>`).join('');
+  el.innerHTML=[...state.payouts].reverse().map(p=>{
+    const gwLabel=typeof p.gw==='number'?`GW${p.gw}`:p.gw;
+    return `<div class="gw-item"><span class="gw-num">${gwLabel}</span><span class="gw-detail">${p.player} — <strong style="color:var(--accent)">₦${p.amount.toLocaleString()}</strong> paid out</span></div>`;
+  }).join('');
 }
 
 function renderPayments(){
@@ -392,20 +395,53 @@ function openCycleModal(idx){
   const cp=state.cyclePayments[idx]||{};
   document.getElementById('modal-checklist').innerHTML=c.players.map(i=>{
     const p=state.players[i];
-    return `<div class="check-item">
-      <input type="checkbox" id="cp${i}" ${cp[i]?'checked':''}>
-      <label for="cp${i}">${p.name}</label>
-      <span class="${cp[i]?'paid-tag':'unpaid-tag'}">${cp[i]?'✓ paid':'—'}</span>
+    const bal=p.accumulated-p.paidOut;
+    const type=cp[i]; // true/'cash'/'winnings'/undefined
+    const isCash=type===true||type==='cash';
+    const isWin=type==='winnings';
+    const canWin=!isCash&&!isWin&&bal>=c.fee;
+    return `<div class="check-item" style="flex-wrap:wrap">
+      <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){var w=document.getElementById('cpw${i}');if(w)w.checked=false;}">
+      <label for="cp${i}" style="flex:1">${p.name}</label>
+      <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--dim);margin-right:4px">₦${bal.toLocaleString()}</span>
+      <span class="${isCash||isWin?'paid-tag':'unpaid-tag'}">${isWin?'✓ winnings':isCash?'✓ cash':'—'}</span>
+      ${canWin||isWin?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:6px">
+        <input type="checkbox" id="cpw${i}" ${isWin?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
+        <label for="cpw${i}" style="font-size:12px;color:var(--accent);cursor:pointer">pay ₦${c.fee.toLocaleString()} from winnings</label>
+      </div>`:''}
     </div>`;
   }).join('');
   document.getElementById('cycle-overlay').classList.add('open');
 }
 
 function saveCycle(){
-  const cp={};
-  state.players.forEach((_,i)=>{ if(document.getElementById('cp'+i)?.checked) cp[i]=true; });
-  state.cyclePayments[activeCycleIdx]=cp;
-  save(); closeModal(); renderPayments();
+  const c=CYCLES[activeCycleIdx];
+  const prevCP=state.cyclePayments[activeCycleIdx]||{};
+  const newCP={};
+  c.players.forEach(i=>{
+    const winEl=document.getElementById('cpw'+i);
+    const cashEl=document.getElementById('cp'+i);
+    if(winEl?.checked) newCP[i]='winnings';
+    else if(cashEl?.checked) newCP[i]='cash';
+  });
+  c.players.forEach(i=>{
+    const prev=prevCP[i];
+    const next=newCP[i];
+    if(next==='winnings'&&prev!=='winnings'){
+      state.players[i].paidOut+=c.fee;
+      state.payouts.push({player:state.players[i].name,amount:c.fee,gw:`Cycle ${activeCycleIdx+1} fee`});
+    } else if(prev==='winnings'&&next!=='winnings'){
+      state.players[i].paidOut-=c.fee;
+      const label=`Cycle ${activeCycleIdx+1} fee`;
+      let pIdx=-1;
+      for(let j=state.payouts.length-1;j>=0;j--){
+        if(state.payouts[j].player===state.players[i].name&&state.payouts[j].gw===label&&state.payouts[j].amount===c.fee){pIdx=j;break;}
+      }
+      if(pIdx!==-1) state.payouts.splice(pIdx,1);
+    }
+  });
+  state.cyclePayments[activeCycleIdx]=newCP;
+  save(); closeModal(); renderPayments(); renderStandings();
 }
 function closeModal(){ document.getElementById('cycle-overlay').classList.remove('open'); }
 document.getElementById('cycle-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
