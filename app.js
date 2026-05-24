@@ -546,7 +546,9 @@ function renderSeasonSummary(){
   });
   const topPlayer=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
   const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
-  el.innerHTML=`<div class="card-title">Season overview</div>
+  el.innerHTML=`<div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#37003c 0%,#00c875 100%);border-radius:7px 7px 0 0">
+      <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:.06em">SEASON OVERVIEW</span>
+    </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
       <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent)">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:var(--dim)">across ${state.gameweeks.length} gameweeks</div></div>
       <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Biggest single win</div><div style="font-weight:600;font-size:14px">${bigWin.player}</div><div style="font-size:11px;color:var(--dim)">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
