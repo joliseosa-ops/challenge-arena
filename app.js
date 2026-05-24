@@ -1,5 +1,16 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v7';
+const KEY='challenge_arena_v8';
+
+// 7 payment cycles reflecting actual manager counts and GW ranges
+const CYCLES=[
+  {gw:[1,5],   players:[0,1,2,4,5,8,9,10,12,13,14,15,16,17,18,19],                      fee:10000}, // 16 players
+  {gw:[6,10],  players:[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19],               fee:10000}, // 19 players (+ William, Yusuf, Dickson)
+  {gw:[11,15], players:[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19],               fee:10000}, // 19 players
+  {gw:[16,20], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19],             fee:10000}, // 20 players (+ AWB)
+  {gw:[21,25], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players (Paschal left)
+  {gw:[26,30], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players
+  {gw:[31,38], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:16000}, // 19 players, 8 GWs
+];
 
 const INIT_PLAYERS=[
   'Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf',
@@ -119,7 +130,8 @@ function buildDefault(){
   });
   const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
   const cp={};
-  [6,7].forEach(c=>{ cp[c]=Object.fromEntries([...Array(20).keys()].map(i=>[i,true])); });
+  // Pre-mark cycle 7 (GW31-38) as all 19 active players paid
+  cp[6]=Object.fromEntries(CYCLES[6].players.map(i=>[i,true]));
   return {players,gameweeks,payouts,cyclePayments:cp};
 }
 
@@ -128,6 +140,10 @@ function load(){
   return buildDefault();
 }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+
+const ADMIN_PIN='0697'; // change this to your preferred PIN
+let isAdmin=!!sessionStorage.getItem('ca_admin');
+let pendingTab=null;
 
 let state=load();
 let activeCycleIdx=null;
@@ -342,19 +358,22 @@ function renderPayoutLog(){
 
 function renderPayments(){
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
-  const curCycle=Math.min(Math.ceil(lastGW/5)-1,7);
+  const curCycle=Math.min(Math.floor((lastGW-1)/5),CYCLES.length-1);
+  const curData=CYCLES[curCycle];
+  const curCP=state.cyclePayments[curCycle]||{};
+  const curPaid=curData.players.filter(i=>curCP[i]).length;
   document.getElementById('m-cycle').textContent=curCycle+1;
-  const cp=state.cyclePayments[curCycle]||{};
-  document.getElementById('m-cycle-paid').textContent=Object.keys(cp).length+'/'+state.players.length;
-  document.getElementById('cycle-grid').innerHTML=Array.from({length:8},(_,i)=>{
-    const start=i*5+1,end=Math.min((i+1)*5,38);
-    const paid=Object.keys(state.cyclePayments[i]||{}).length;
-    const pct=Math.round((paid/state.players.length)*100);
+  document.getElementById('m-cycle-paid').textContent=curPaid+'/'+curData.players.length;
+  document.getElementById('cycle-grid').innerHTML=CYCLES.map((c,i)=>{
+    const cp=state.cyclePayments[i]||{};
+    const paid=c.players.filter(j=>cp[j]).length;
+    const pct=Math.round((paid/c.players.length)*100);
     const isCur=i===curCycle;
     return `<div class="cycle-card" style="${isCur?'border-color:var(--accent);border-width:2px':''}">
       <div style="font-size:11px;font-weight:600;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
-      <div style="font-size:11px;color:var(--dim);font-family:'JetBrains Mono','Fira Code',monospace;margin-bottom:6px">GW${start}–${end}</div>
-      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${state.players.length}</span></div>
+      <div style="font-size:11px;color:var(--dim);font-family:'JetBrains Mono','Fira Code',monospace;margin-bottom:3px">GW${c.gw[0]}–${c.gw[1]}</div>
+      <div style="font-size:10px;color:var(--dim);margin-bottom:6px">₦${c.fee.toLocaleString()}</div>
+      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${c.players.length}</span></div>
       <div class="cycle-bar"><div class="cycle-bar-fill" style="width:${pct}%"></div></div>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:.7rem;width:100%;margin-top:4px" onclick="openCycleModal(${i})">Manage</button>
     </div>`;
@@ -363,15 +382,17 @@ function renderPayments(){
 
 function openCycleModal(idx){
   activeCycleIdx=idx;
-  const start=idx*5+1,end=Math.min((idx+1)*5,38);
-  document.getElementById('modal-title').textContent=`Cycle ${idx+1} — GW${start}–${end} — ₦10,000`;
+  const c=CYCLES[idx];
+  document.getElementById('modal-title').textContent=`Cycle ${idx+1} — GW${c.gw[0]}–${c.gw[1]} — ₦${c.fee.toLocaleString()}`;
   const cp=state.cyclePayments[idx]||{};
-  document.getElementById('modal-checklist').innerHTML=state.players.map((p,i)=>`
-    <div class="check-item">
+  document.getElementById('modal-checklist').innerHTML=c.players.map(i=>{
+    const p=state.players[i];
+    return `<div class="check-item">
       <input type="checkbox" id="cp${i}" ${cp[i]?'checked':''}>
       <label for="cp${i}">${p.name}</label>
       <span class="${cp[i]?'paid-tag':'unpaid-tag'}">${cp[i]?'✓ paid':'—'}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   document.getElementById('cycle-overlay').classList.add('open');
 }
 
@@ -425,6 +446,7 @@ function confirmReset(){
 }
 
 function showTab(t){
+  if((t==='admin'||t==='payout'||t==='payments'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
@@ -434,7 +456,32 @@ function showTab(t){
   if(t==='payments') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); }
+  if(t==='admin') renderAdminPlayers();
+}
+
+function requireAdmin(tab){
+  pendingTab=tab;
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-error').style.display='none';
+  document.getElementById('pin-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('pin-input').focus(),50);
+}
+
+function submitPin(){
+  if(document.getElementById('pin-input').value===ADMIN_PIN){
+    isAdmin=true;
+    sessionStorage.setItem('ca_admin','1');
+    closePinModal();
+    if(pendingTab){ showTab(pendingTab); pendingTab=null; }
+  } else {
+    document.getElementById('pin-error').style.display='block';
+    document.getElementById('pin-input').select();
+  }
+}
+
+function closePinModal(){
+  document.getElementById('pin-overlay').classList.remove('open');
+  pendingTab=null;
 }
 
 populateSelects();
