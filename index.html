@@ -61,6 +61,12 @@
             <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px;border-color:rgba(255,255,255,.35);color:#fff;background:rgba(255,255,255,.12)" onclick="window.print()">↓ PDF</button>
           </div>
         </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem">
+          <button id="sort-earnings" class="btn" style="font-size:11px;padding:4px 10px;height:28px" onclick="setSort('earnings')">Total earnings</button>
+          <button id="sort-bank" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="setSort('bank')">Money in bank</button>
+          <button id="sort-gold" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="setSort('gold')">🥇 Firsts</button>
+          <button id="sort-podiums" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="setSort('podiums')">Podiums</button>
+        </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr><th>#</th><th>Player</th><th class="col-team">Team name</th><th><div>Podiums</div><div class="wins" style="margin-top:3px"><span class="w1">🥇</span><span class="w2">🥈</span><span class="w3">🥉</span></div></th><th>Money in bank</th><th>Total earnings</th><th>Paid out</th></tr></thead>

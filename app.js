@@ -148,6 +148,7 @@ let pendingTab=null;
 
 let state=load();
 let activeCycleIdx=null;
+let currentSort='earnings';
 
 function populateSelects(){
   ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
@@ -303,8 +304,23 @@ function renderGWDetail(){
   el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
 }
 
+function setSort(s){
+  currentSort=s;
+  ['earnings','bank','gold','podiums'].forEach(k=>{
+    const btn=document.getElementById('sort-'+k); if(!btn) return;
+    btn.className=k===s?'btn':'btn btn-ghost';
+    btn.style.cssText='font-size:11px;padding:4px 10px;height:28px';
+  });
+  renderStandings();
+}
+
 function renderStandings(){
-  const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>(b.accumulated-b.paidOut)-(a.accumulated-a.paidOut));
+  const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
+    if(currentSort==='bank') return (b.accumulated-b.paidOut)-(a.accumulated-a.paidOut);
+    if(currentSort==='gold') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
+    if(currentSort==='podiums') return (b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3);
+    return b.accumulated-a.accumulated; // earnings
+  });
   const totalAcc=state.players.reduce((s,p)=>s+p.accumulated,0);
   const totalPaid=state.players.reduce((s,p)=>s+p.paidOut,0);
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
