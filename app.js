@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v5';
+const KEY='challenge_arena_v6';
 
 const INIT_PLAYERS=[
   'Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf',
@@ -75,10 +75,32 @@ const PRESET=[
   {gw:37,awards:{10:2500,14:11000,15:2500,18:22000},pos:{1:[18],2:[14],3:[10,15]},note:'Kel Lee 1st · Gege 2nd · Dafe & Emeka joint 3rd (₦2,500 each)'},
 ];
 
-const PAID_OUT_IDX=[...Array(20).keys()];
+// Amount already paid to each player; accumulated - this = current outstanding balance
+const PAID_OUT=[
+   24500, // 0  Osahon
+   51334, // 1  Syb
+  133167, // 2  Emmanuel
+   54334, // 3  William
+   14000, // 4  Hensalos
+   54000, // 5  Kingz
+  103167, // 6  AWB
+   60000, // 7  Yusuf
+   56501, // 8  Eluigwe Frank
+   59000, // 9  Hadassah
+   70001, // 10 Dafe
+       0, // 11 Dickson
+   37167, // 12 Joseph
+   46000, // 13 Ose
+   60000, // 14 Gege
+   89167, // 15 Emeka
+   71000, // 16 Koded City
+   24000, // 17 Ifeanyi
+  100500, // 18 Kel Lee
+   16000, // 19 Paschal
+];
 
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:PAID_OUT[i]||0,w1:0,w2:0,w3:0}));
   const gameweeks=[];
   PRESET.forEach(g=>{
     Object.entries(g.awards).forEach(([idx,prize])=>{ players[parseInt(idx)].accumulated+=prize; });
@@ -87,8 +109,7 @@ function buildDefault(){
     (g.pos[3]||[]).forEach(i=>players[i].w3++);
     gameweeks.push({...g});
   });
-  PAID_OUT_IDX.forEach(i=>{ players[i].paidOut=players[i].accumulated; });
-  const payouts=PAID_OUT_IDX.filter(i=>players[i].paidOut>0).map(i=>({player:players[i].name,amount:players[i].paidOut,gw:37}));
+  const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
   const cp={};
   [6,7].forEach(c=>{ cp[c]=Object.fromEntries([...Array(20).keys()].map(i=>[i,true])); });
   return {players,gameweeks,payouts,cyclePayments:cp};
