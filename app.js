@@ -550,10 +550,10 @@ function renderSeasonSummary(){
       <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:.06em">SEASON OVERVIEW</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
-      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent)">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:var(--dim)">across ${state.gameweeks.length} gameweeks</div></div>
-      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Biggest single win</div><div style="font-weight:600;font-size:14px">${bigWin.player}</div><div style="font-size:11px;color:var(--dim)">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
-      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Most podiums</div><div style="font-weight:600;font-size:14px">${topPlayer.name}</div><div style="font-size:11px;color:var(--dim)">${topPlayer.w1+topPlayer.w2+topPlayer.w3} finishes</div></div>
-      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Top earner</div><div style="font-weight:600;font-size:14px">${topEarner.name}</div><div style="font-size:11px;color:var(--dim)">₦${topEarner.accumulated.toLocaleString()} total</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#6b21a8">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:#a78bfa">across ${state.gameweeks.length} gameweeks</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Biggest single win</div><div style="font-weight:600;font-size:14px;color:#3b0764">${bigWin.player}</div><div style="font-size:11px;color:#a78bfa">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Most podiums</div><div style="font-weight:600;font-size:14px;color:#3b0764">${topPlayer.name}</div><div style="font-size:11px;color:#a78bfa">${topPlayer.w1+topPlayer.w2+topPlayer.w3} finishes</div></div>
+      <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Top earner</div><div style="font-weight:600;font-size:14px;color:#3b0764">${topEarner.name}</div><div style="font-size:11px;color:#a78bfa">₦${topEarner.accumulated.toLocaleString()} total</div></div>
     </div>`;
 }
 
