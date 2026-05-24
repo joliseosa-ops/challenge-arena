@@ -543,7 +543,7 @@ function renderSeasonSummary(){
   const topPlayer=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
   const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
   el.innerHTML=`<div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
-      <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:.06em">SEASON OVERVIEW</span>
+      <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON OVERVIEW</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
       <div style="background:#f0e6ff;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:#7c3aed;margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#6b21a8">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:#a78bfa">across ${state.gameweeks.length} gameweeks</div></div>
