@@ -147,13 +147,34 @@ function recordGW(){
   save();
   ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('prize-preview').classList.add('hidden');
-  renderHistory(); renderStandings();
+  renderStandings();
 }
 
-function renderHistory(){
-  const el=document.getElementById('gw-history');
-  if(!state.gameweeks.length){ el.innerHTML='<div class="empty">no gameweeks recorded</div>'; return; }
-  el.innerHTML=[...state.gameweeks].reverse().map(g=>`<div class="gw-item"><span class="gw-num">GW${g.gw}</span><span class="gw-detail">${g.note}</span></div>`).join('');
+function populateHistorySelect(){
+  const sel=document.getElementById('hist-gw-sel');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— select a gameweek —</option>';
+  [...state.gameweeks].reverse().forEach(g=>{ sel.innerHTML+=`<option value="${g.gw}">GW ${g.gw}</option>`; });
+  sel.value=cur||( state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:'' );
+  renderGWDetail();
+}
+
+function renderGWDetail(){
+  const sel=document.getElementById('hist-gw-sel');
+  const el=document.getElementById('hist-detail');
+  const gwNum=parseInt(sel.value);
+  if(!gwNum){ el.innerHTML='<div class="empty">select a gameweek above</div>'; return; }
+  const g=state.gameweeks.find(x=>x.gw===gwNum);
+  if(!g){ el.innerHTML='<div class="empty">no data for GW '+gwNum+'</div>'; return; }
+  const nm=i=>state.players[i]?.name||'?';
+  function posBlock(arr,label,cls){
+    if(!arr||!arr.length) return '';
+    const amt=g.awards[arr[0]]||0;
+    const perEach=arr.length>1?' each':'';
+    const rows=arr.map(i=>`<div style="display:flex;align-items:center;gap:10px"><div class="init">${nm(i).slice(0,2).toUpperCase()}</div><span style="font-weight:500">${nm(i)}</span></div>`).join('');
+    return `<div class="pos-group"><div class="pos-label ${cls}">${label} &mdash; ₦${amt.toLocaleString()}${perEach}</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">${rows}</div></div>`;
+  }
+  el.innerHTML=`<div class="card"><div class="card-title">GW ${g.gw} results</div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
 }
 
 function renderStandings(){
@@ -302,7 +323,8 @@ function showTab(t){
   if(t==='standings') renderStandings();
   if(t==='payout'){ populateSelects(); renderPayoutLog(); }
   if(t==='payments') renderPayments();
-  if(t==='gameweek'){ populateSelects(); renderHistory(); }
+  if(t==='history') populateHistorySelect();
+  if(t==='gameweek') populateSelects();
   if(t==='admin'){ renderAdminPlayers(); }
 }
 

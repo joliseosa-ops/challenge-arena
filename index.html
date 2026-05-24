@@ -31,6 +31,7 @@
 
   <div class="tabs">
     <button class="tab active" onclick="showTab('standings')">Standings</button>
+    <button class="tab" onclick="showTab('history')">History</button>
     <button class="tab" onclick="showTab('gameweek')">Record GW</button>
     <button class="tab" onclick="showTab('payout')">Payout</button>
     <button class="tab" onclick="showTab('payments')">Payments</button>
@@ -53,6 +54,14 @@
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="sec-history" class="section">
+    <div class="card">
+      <div class="field" style="margin:0"><label>Gameweek</label><select id="hist-gw-sel" onchange="renderGWDetail()"><option value="">— select a gameweek —</option></select></div>
+    </div>
+    <div id="hist-detail"><div class="empty">select a gameweek above</div></div>
   </div>
 
   <!-- RECORD GW -->
@@ -85,10 +94,6 @@
       </div>
       <div id="prize-preview" class="info-box hidden"></div>
       <button class="btn" onclick="recordGW()">Record gameweek</button>
-    </div>
-    <div class="card">
-      <div class="card-title">GW History</div>
-      <div id="gw-history"><div class="empty">no gameweeks recorded</div></div>
     </div>
   </div>
 
