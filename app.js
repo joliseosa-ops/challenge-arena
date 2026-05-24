@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v8';
+const KEY='challenge_arena_v9';
 
 // 7 payment cycles reflecting actual manager counts and GW ranges
 const CYCLES=[
@@ -62,11 +62,11 @@ const PRESET=[
   {gw:4,awards:{14:18000,18:4000,19:10000},pos:{1:[14],2:[19],3:[18]},note:'Gege 1st · Paschal 2nd · Kel Lee 3rd (₦4,000)'},
   {gw:5,awards:{13:14000,15:14000,19:4000},pos:{1:[13,15],2:[],3:[19]},note:'Ose & Emeka joint 1st (₦14,000 each) · Paschal 3rd (₦4,000)'},
   {gw:6,awards:{1:5000,7:11000,15:22000},pos:{1:[15],2:[7],3:[1]},note:'Emeka 1st · Yusuf 2nd · Syb 3rd (₦5,000)'},
-  {gw:7,awards:{2:1667,3:11000,9:22000,12:1667,15:1667},pos:{1:[9],2:[3],3:[2,12,15]},note:'Hadassah 1st · William 2nd · Emmanuel & Joseph & Emeka joint 3rd (₦1,667 each)'},
+  {gw:7,awards:{2:1666,3:11000,9:22000,12:1666,15:1666},pos:{1:[9],2:[3],3:[2,12,15]},note:'Hadassah 1st · William 2nd · Emmanuel & Joseph & Emeka joint 3rd (₦1,666 each)'},
   {gw:8,awards:{10:22000,15:11000,18:5000},pos:{1:[10],2:[15],3:[18]},note:'Dafe 1st · Emeka 2nd · Kel Lee 3rd (₦5,000)'},
   {gw:9,awards:{7:22000,15:11000,17:5000},pos:{1:[7],2:[15],3:[17]},note:'Yusuf 1st · Emeka 2nd · Ifeanyi 3rd (₦5,000)'},
   {gw:10,awards:{3:22000,9:5000,10:11000},pos:{1:[3],2:[10],3:[9]},note:'William 1st · Dafe 2nd · Hadassah 3rd (₦5,000)'},
-  {gw:11,awards:{3:1667,10:11000,12:22000,13:1667,17:1667},pos:{1:[12],2:[10],3:[3,13,17]},note:'Joseph 1st · Dafe 2nd · William & Ose & Ifeanyi joint 3rd (₦1,667 each)'},
+  {gw:11,awards:{3:1666,10:11000,12:22000,13:1666,17:1666},pos:{1:[12],2:[10],3:[3,13,17]},note:'Joseph 1st · Dafe 2nd · William & Ose & Ifeanyi joint 3rd (₦1,666 each)'},
   {gw:12,awards:{3:22000,5:11000,10:5000},pos:{1:[3],2:[5],3:[10]},note:'William 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
   {gw:13,awards:{0:5000,15:22000,16:11000},pos:{1:[15],2:[16],3:[0]},note:'Emeka 1st · Koded City 2nd · Osahon 3rd (₦5,000)'},
   {gw:14,awards:{2:22000,8:8000,16:8000},pos:{1:[2],2:[8,16],3:[]},note:'Emmanuel 1st · Eluigwe Frank & Koded City joint 2nd (₦8,000 each)'},
@@ -85,7 +85,7 @@ const PRESET=[
   {gw:27,awards:{2:11000,3:22000,10:2500,12:2500},pos:{1:[3],2:[2],3:[10,12]},note:'William 1st · Emmanuel 2nd · Dafe & Joseph joint 3rd (₦2,500 each)'},
   {gw:28,awards:{1:22000,2:11000,8:5000},pos:{1:[1],2:[2],3:[8]},note:'Syb 1st · Emmanuel 2nd · Eluigwe Frank 3rd (₦5,000)'},
   {gw:29,awards:{9:22000,16:8000,17:8000},pos:{1:[9],2:[16,17],3:[]},note:'Hadassah 1st · Koded City & Ifeanyi joint 2nd (₦8,000 each)'},
-  {gw:30,awards:{6:12667,8:12667,10:12667},pos:{1:[6,8,10],2:[],3:[]},note:'AWB & Eluigwe Frank & Dafe 3-way 1st (₦12,667 each)'},
+  {gw:30,awards:{6:12666,8:12666,10:12666},pos:{1:[6,8,10],2:[],3:[]},note:'AWB & Eluigwe Frank & Dafe 3-way 1st (₦12,666 each)'},
   {gw:31,awards:{6:8000,8:8000,10:22000},pos:{1:[10],2:[6,8],3:[]},note:'Dafe 1st · AWB & Eluigwe Frank joint 2nd (₦8,000 each)'},
   {gw:32,awards:{2:11000,7:5000,17:22000},pos:{1:[17],2:[2],3:[7]},note:'Ifeanyi 1st · Emmanuel 2nd · Yusuf 3rd (₦5,000)'},
   {gw:33,awards:{5:11000,10:5000,16:22000},pos:{1:[16],2:[5],3:[10]},note:'Koded City 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
@@ -169,7 +169,7 @@ function calcPrizes(){
   const lines=[];
   const notes=[];
   const nm=i=>state.players[parseInt(i)].name;
-  const add=(idxs,pool)=>{ const sh=Math.round(pool/idxs.length); idxs.forEach(i=>awards[i]=(awards[i]||0)+sh); return sh; };
+  const add=(idxs,pool)=>{ const sh=Math.floor(pool/idxs.length); idxs.forEach(i=>awards[i]=(awards[i]||0)+sh); return sh; };
 
   if(s1.length===3){
     const sh=add(s1,PRIZE1+PRIZE2+PRIZE3);
