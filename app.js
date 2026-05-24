@@ -742,6 +742,35 @@ async function syncFromFPL(){
   btn.disabled=false;
 }
 
+// ── Export / Import state ─────────────────────────────────────────────────────
+function exportState(){
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state,null,2));
+  a.download=`challenge-arena-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importState(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(!imported.players||!imported.gameweeks) throw new Error('Invalid file — not a Challenge Arena backup');
+      if(!confirm(`Import ${file.name}?\n\nThis will overwrite all current data on this device.`)){input.value='';return;}
+      state=imported;
+      save();
+      populateSelects(); renderStandings(); renderAdminPlayers();
+      populateHistorySelect(); renderPayments(); renderPayoutLog();
+      const st=document.getElementById('import-status');
+      st.textContent='✓ Imported successfully'; st.style.color='var(--green)';
+      setTimeout(()=>{st.textContent='';},3000);
+    }catch(err){ alert('Import failed: '+err.message); }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV(){
   const sorted=[...state.players].map((p,i)=>({...p,i})).sort((a,b)=>(b.accumulated-b.paidOut)-(a.accumulated-a.paidOut));

@@ -179,6 +179,16 @@
   <!-- ADMIN -->
   <div id="sec-admin" class="section">
     <div class="card">
+      <div class="card-title">Export / Import data</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Export saves everything — results, prizes, payouts and payments — to a JSON file. Send it to the other admin to import and stay in sync.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-ghost" onclick="exportState()">↓ Export data</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">↑ Import data</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importState(this)">
+        <span id="import-status" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">Add player</div>
       <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
         <div class="field" style="margin:0"><label>Player name</label><input type="text" id="new-player-name" placeholder="Enter full name"></div>
