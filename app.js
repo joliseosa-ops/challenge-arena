@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v9';
+const KEY='challenge_arena_v10';
 
 // 7 payment cycles reflecting actual manager counts and GW ranges
 const CYCLES=[
@@ -93,6 +93,7 @@ const PRESET=[
   {gw:35,awards:{13:11000,14:22000,15:2500,18:2500},pos:{1:[14],2:[13],3:[15,18]},note:'Gege 1st · Ose 2nd · Emeka & Kel Lee joint 3rd (₦2,500 each)'},
   {gw:36,awards:{2:22000,9:5000,12:11000},pos:{1:[2],2:[12],3:[9]},note:'Emmanuel 1st · Joseph 2nd · Hadassah 3rd (₦5,000)'},
   {gw:37,awards:{10:2500,14:11000,15:2500,18:22000},pos:{1:[18],2:[14],3:[10,15]},note:'Kel Lee 1st · Gege 2nd · Dafe & Emeka joint 3rd (₦2,500 each)'},
+  {gw:38,awards:{10:5000,12:11000,18:22000},pos:{1:[18],2:[12],3:[10]},note:'Kel Lee 1st · Joseph 2nd · Dafe 3rd (₦5,000)'},
 ];
 
 // Amount already paid to each player; accumulated - this = current outstanding balance
