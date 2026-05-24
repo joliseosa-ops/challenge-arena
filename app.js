@@ -201,6 +201,19 @@ function renderStandings(){
   }).join('');
 }
 
+function payoutAll(){
+  const gw=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
+  const eligible=state.players.filter(p=>(p.accumulated-p.paidOut)>0);
+  if(!eligible.length){ alert('No outstanding balances'); return; }
+  const total=eligible.reduce((s,p)=>s+(p.accumulated-p.paidOut),0);
+  if(!confirm(`Pay out ₦${total.toLocaleString()} across ${eligible.length} player${eligible.length>1?'s':''}?`)) return;
+  state.players.forEach(p=>{
+    const bal=p.accumulated-p.paidOut;
+    if(bal>0){ state.payouts.push({player:p.name,amount:bal,gw}); p.paidOut+=bal; }
+  });
+  save(); renderPayoutLog(); renderStandings(); updatePayoutInfo();
+}
+
 function updatePayoutInfo(){
   const idx=document.getElementById('po-player').value;
   const box=document.getElementById('po-info');
