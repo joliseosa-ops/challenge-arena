@@ -562,7 +562,6 @@ function renderH2H(){
       ${row('1st places',a.w1,b.w1)}
       ${row('2nd places',a.w2,b.w2)}
       ${row('3rd places',a.w3,b.w3)}
-      ${row('Solo GW wins',aGWs,bGWs)}
     </tbody>
   </table>
   <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">Both on podium same GW: <strong style="color:var(--text)">${bothGWs}</strong></div>`;
