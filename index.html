@@ -67,9 +67,10 @@
     </div>
     <div class="card" id="h2h-card">
       <div class="card-title">Head-to-head</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
         <div class="field" style="margin:0"><label>Player A</label><select id="h2h-a" onchange="renderH2H()"><option value="">— select —</option></select></div>
         <div class="field" style="margin:0"><label>Player B</label><select id="h2h-b" onchange="renderH2H()"><option value="">— select —</option></select></div>
+        <div class="field" style="margin:0"><label>Player C (optional)</label><select id="h2h-c" onchange="renderH2H()"><option value="">— optional —</option></select></div>
       </div>
       <div id="h2h-result"><div class="empty" style="padding:1rem">select two players to compare</div></div>
     </div>

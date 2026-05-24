@@ -149,7 +149,7 @@ let state=load();
 let activeCycleIdx=null;
 
 function populateSelects(){
-  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','po-player','h2h-a','h2h-b'].forEach(id=>{
+  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur=el.value;
     el.innerHTML='<option value="">—</option>';
@@ -539,32 +539,33 @@ function checkGWReminder(){
 
 // ── Head-to-head ──────────────────────────────────────────────────────────────
 function renderH2H(){
-  const ai=document.getElementById('h2h-a').value, bi=document.getElementById('h2h-b').value;
+  const vals=['h2h-a','h2h-b','h2h-c'].map(id=>document.getElementById(id).value).filter(v=>v!=='');
   const el=document.getElementById('h2h-result');
-  if(!ai||!bi||ai===bi){ el.innerHTML='<div class="empty" style="padding:1rem">select two different players to compare</div>'; return; }
-  const ia=parseInt(ai), ib=parseInt(bi);
-  const a=state.players[ia], b=state.players[ib];
-  let aGWs=0,bGWs=0,bothGWs=0;
-  state.gameweeks.forEach(g=>{
-    const aIn=(g.awards[ia]||0)>0, bIn=(g.awards[ib]||0)>0;
-    if(aIn&&bIn) bothGWs++; else if(aIn) aGWs++; else if(bIn) bGWs++;
-  });
-  const aPod=a.w1+a.w2+a.w3, bPod=b.w1+b.w2+b.w3;
-  const hi=(x,y)=>x>y?'color:var(--accent);font-weight:700':x<y?'color:var(--dim)':'';
-  const row=(label,av,bv,fmt=v=>v)=>`<tr><td style="font-size:12px;color:var(--muted);padding:8px 4px;border-bottom:1px solid var(--border)">${label}</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(av,bv)}">${fmt(av)}</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(bv,av)}">${fmt(bv)}</td></tr>`;
-  const fmt=v=>'₦'+v.toLocaleString();
+  if(vals.length<2||new Set(vals).size<vals.length){
+    el.innerHTML='<div class="empty" style="padding:1rem">select two or three different players to compare</div>';
+    return;
+  }
+  const idxs=vals.map(Number);
+  const ps=idxs.map(i=>state.players[i]);
+  let allSameGW=0;
+  state.gameweeks.forEach(g=>{ if(idxs.every(i=>(g.awards[i]||0)>0)) allSameGW++; });
+  const hi=(arr,v)=>{ const max=Math.max(...arr),min=Math.min(...arr); return v===max&&arr.filter(x=>x===max).length===1?'color:var(--accent);font-weight:700':v===min&&arr.filter(x=>x===min).length===1?'color:var(--dim)':''; };
+  const row=(label,getVal,fmt=v=>v)=>{
+    const rv=ps.map((_,i)=>getVal(i));
+    return `<tr><td style="font-size:12px;color:var(--muted);padding:8px 4px;border-bottom:1px solid var(--border)">${label}</td>${rv.map(v=>`<td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(rv,v)}">${fmt(v)}</td>`).join('')}</tr>`;
+  };
   el.innerHTML=`<table style="width:100%;border-collapse:collapse">
-    <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500;width:40%"></th><th style="font-size:13px;font-weight:600;text-align:center;padding:6px 4px;width:30%">${a.name}</th><th style="font-size:13px;font-weight:600;text-align:center;padding:6px 4px;width:30%">${b.name}</th></tr></thead>
+    <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500"></th>${ps.map(p=>`<th style="font-size:13px;font-weight:600;text-align:center;padding:6px 4px">${p.name}</th>`).join('')}</tr></thead>
     <tbody>
-      ${row('Accumulated',a.accumulated,b.accumulated,fmt)}
-      ${row('Balance',a.accumulated-a.paidOut,b.accumulated-b.paidOut,fmt)}
-      ${row('Podiums',aPod,bPod)}
-      ${row('1st places',a.w1,b.w1)}
-      ${row('2nd places',a.w2,b.w2)}
-      ${row('3rd places',a.w3,b.w3)}
+      ${row('Accumulated',i=>ps[i].accumulated,v=>'₦'+v.toLocaleString())}
+      ${row('Balance',i=>ps[i].accumulated-ps[i].paidOut,v=>'₦'+v.toLocaleString())}
+      ${row('Podiums',i=>ps[i].w1+ps[i].w2+ps[i].w3)}
+      ${row('1st places',i=>ps[i].w1)}
+      ${row('2nd places',i=>ps[i].w2)}
+      ${row('3rd places',i=>ps[i].w3)}
     </tbody>
   </table>
-  <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">Both on podium same GW: <strong style="color:var(--text)">${bothGWs}</strong></div>`;
+  <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">${ps.length===3?'All 3':'Both'} on podium same GW: <strong style="color:var(--text)">${allSameGW}</strong></div>`;
 }
 
 // ── Player profile ────────────────────────────────────────────────────────────
