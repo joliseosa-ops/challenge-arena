@@ -306,7 +306,7 @@ function renderGWDetail(){
 
 function setSort(s){
   currentSort=s;
-  ['earnings','bank','gold','podiums'].forEach(k=>{
+  ['earnings','bank','podiums'].forEach(k=>{
     const btn=document.getElementById('sort-'+k); if(!btn) return;
     btn.className=k===s?'btn':'btn btn-ghost';
     btn.style.cssText='font-size:11px;padding:4px 10px;height:28px';
@@ -317,8 +317,7 @@ function setSort(s){
 function renderStandings(){
   const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
     if(currentSort==='bank') return (b.accumulated-b.paidOut)-(a.accumulated-a.paidOut);
-    if(currentSort==='gold') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
-    if(currentSort==='podiums') return (b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3);
+    if(currentSort==='podiums') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
     return b.accumulated-a.accumulated; // earnings
   });
   const totalAcc=state.players.reduce((s,p)=>s+p.accumulated,0);
