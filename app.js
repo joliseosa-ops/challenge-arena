@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v3';
+const KEY='challenge_arena_v4';
 
 const INIT_PLAYERS=[
   'Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf',
@@ -52,7 +52,7 @@ const PRESET=[
   {gw:37,awards:{10:2500,14:11000,15:2500,18:22000},pos:{1:[18],2:[14],3:[10,15]},note:'Kel Lee 1st · Gege 2nd · Dafe & Emeka joint 3rd (₦2,500 each)'},
 ];
 
-const PAID_OUT_IDX=[];
+const PAID_OUT_IDX=[...Array(20).keys()];
 
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
@@ -199,19 +199,6 @@ function renderStandings(){
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
     </tr>`;
   }).join('');
-}
-
-function payoutAll(){
-  const gw=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
-  const eligible=state.players.filter(p=>(p.accumulated-p.paidOut)>0);
-  if(!eligible.length){ alert('No outstanding balances'); return; }
-  const total=eligible.reduce((s,p)=>s+(p.accumulated-p.paidOut),0);
-  if(!confirm(`Pay out ₦${total.toLocaleString()} across ${eligible.length} player${eligible.length>1?'s':''}?`)) return;
-  state.players.forEach(p=>{
-    const bal=p.accumulated-p.paidOut;
-    if(bal>0){ state.payouts.push({player:p.name,amount:bal,gw}); p.paidOut+=bal; }
-  });
-  save(); renderPayoutLog(); renderStandings(); updatePayoutInfo();
 }
 
 function updatePayoutInfo(){
