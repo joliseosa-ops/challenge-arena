@@ -76,6 +76,10 @@ td:last-child{border-right:none}
 tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--surface2)}
 
+/* Standings player column — prevent name wrapping on mobile */
+#standings-body td:nth-child(2){min-width:150px}
+#standings-body td:nth-child(2) .player-name{white-space:nowrap}
+
 /* Player init circle */
 .init{width:30px;height:30px;border-radius:9999px;background:var(--surface2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono','Fira Code',monospace;font-size:10px;color:var(--muted);flex-shrink:0;font-weight:500}
 

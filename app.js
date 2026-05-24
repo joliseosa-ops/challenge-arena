@@ -333,7 +333,7 @@ function renderStandings(){
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
-      <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}</div></div></td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}</div></div></td>
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
