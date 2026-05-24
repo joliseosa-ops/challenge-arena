@@ -45,6 +45,7 @@ const TEAM_NAMES=[
 ];
 
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
+const PROXY='https://corsproxy.io/?';
 const ENTRY_MAP={
   21635:0, 375780:1, 75964:2, 806861:3, 96602:4,
   390180:5, 13603:6, 807952:7, 56156:8, 8328:9,
@@ -212,7 +213,7 @@ async function fetchLatestGW(){
   try{
     const results=await Promise.all(
       Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`${FPL_BASE}/entry/${entryId}/history/`)
+        fetch(`${PROXY}${FPL_BASE}/entry/${entryId}/history/`)
           .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
           .then(d=>{ const row=d.current?.find(r=>r.event===targetGW); return row?{playerIdx,pts:row.points}:null; })
           .catch(()=>null)
@@ -670,7 +671,7 @@ async function syncFromFPL(){
   try{
     const results=await Promise.all(
       Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`${FPL_BASE}/entry/${entryId}/`)
+        fetch(`${PROXY}${FPL_BASE}/entry/${entryId}/`)
           .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
           .then(d=>({ playerIdx, name:(d.player_first_name+' '+d.player_last_name).trim(), teamName:d.name||d.entry_name||'' }))
           .catch(()=>null)
