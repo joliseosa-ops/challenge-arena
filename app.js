@@ -333,8 +333,7 @@ function renderStandings(){
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
-      <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
-      <td class="col-team"><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}</div></div></td>
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
@@ -622,13 +621,12 @@ function renderWeeklyTable(gwNum,gwRecord){
   const rC=r=>r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-n';
   const rL=r=>r===1?'1st':r===2?'2nd':r===3?'3rd':'—';
   document.getElementById('weekly-content').innerHTML=`<div class="card"><div class="card-title">GW ${gwNum} — prize results</div><div class="tbl-wrap"><table>
-    <thead><tr><th>Pos</th><th>Player</th><th>Team</th><th>Prize</th></tr></thead>
+    <thead><tr><th>Pos</th><th>Player</th><th>Prize</th></tr></thead>
     <tbody>${entries.map(e=>{
       const podiumCls=e.pos===1?'podium-1':e.pos===2?'podium-2':e.pos===3?'podium-3':'';
       return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${e.idx})" style="cursor:pointer">
         <td><span class="${rC(e.pos)}">${rL(e.pos)}</span></td>
-        <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${e.name}</span></div></td>
-        <td class="col-team"><span style="font-size:.85rem;color:var(--muted)">${e.teamName||'—'}</span></td>
+        <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><div><div style="font-weight:500">${e.name}</div>${e.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${e.teamName}</div>`:''}</div></div></td>
         <td>${e.prize>0?`<span class="bal-pos">₦${e.prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
       </tr>`;
     }).join('')}</tbody>
