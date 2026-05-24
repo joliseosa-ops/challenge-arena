@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v4';
+const KEY='challenge_arena_v5';
 
 const INIT_PLAYERS=[
   'Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf',
@@ -9,6 +9,29 @@ const INIT_PLAYERS=[
 // idx: 0=Osahon,1=Syb,2=Emmanuel,3=William,4=Hensalos,5=Kingz,6=AWB,7=Yusuf
 //      8=EluigweFrank,9=Hadassah,10=Dafe,11=Dickson,12=Joseph,13=Ose,14=Gege
 //      15=Emeka,16=KodedCity,17=Ifeanyi,18=KelLee,19=Paschal
+
+const TEAM_NAMES=[
+  'No more Benin People', // 0  Osahon
+  'Mascotas',             // 1  Syb
+  'Emmanwachi',           // 2  Emmanuel
+  'Kop Fc',               // 3  William
+  'SosmanFC',             // 4  Hensalos
+  'KINGZ',                // 5  Kingz
+  'FPL Farm',             // 6  AWB
+  'Gesuke Wolves',        // 7  Yusuf
+  'HaCunha Mateta',       // 8  Eluigwe Frank
+  'H.S.g',               // 9  Hadassah
+  'Okan fc',              // 10 Dafe
+  'Ogwaligho FC',         // 11 Dickson
+  'Jaggo',                // 12 Joseph
+  'Wegoagain FC',         // 13 Ose
+  'metabolites 2',        // 14 Gege
+  'Ross FC',              // 15 Emeka
+  'Kode Fc',              // 16 Koded City
+  'Ghg',                  // 17 Ifeanyi
+  'Sure Beans',           // 18 Kel Lee
+  'You Kante Compete',    // 19 Paschal
+];
 
 const OPENING=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
@@ -55,7 +78,7 @@ const PRESET=[
 const PAID_OUT_IDX=[...Array(20).keys()];
 
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
   const gameweeks=[];
   PRESET.forEach(g=>{
     Object.entries(g.awards).forEach(([idx,prize])=>{ players[parseInt(idx)].accumulated+=prize; });
