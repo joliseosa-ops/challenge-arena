@@ -614,6 +614,36 @@ function renderDebtTracker(){
   el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
 }
 
+// ── Sync names from FPL ───────────────────────────────────────────────────────
+async function syncFromFPL(){
+  const btn=document.getElementById('sync-fpl-btn');
+  const status=document.getElementById('sync-fpl-status');
+  btn.disabled=true; status.textContent='Fetching from FPL…';
+  try{
+    const results=await Promise.all(
+      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
+        fetch(`${FPL_BASE}/entry/${entryId}/`)
+          .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
+          .then(d=>({ playerIdx, name:(d.player_first_name+' '+d.player_last_name).trim(), teamName:d.name||d.entry_name||'' }))
+          .catch(()=>null)
+      )
+    );
+    let updated=0;
+    results.forEach(r=>{
+      if(!r) return;
+      const p=state.players[r.playerIdx]; if(!p) return;
+      p.name=r.name||p.name;
+      p.teamName=r.teamName||p.teamName;
+      updated++;
+    });
+    save(); renderAdminPlayers(); populateSelects(); renderStandings();
+    status.textContent=`Updated ${updated} players`;
+  } catch(err){
+    status.textContent=`Failed: ${err.message}`;
+  }
+  btn.disabled=false;
+}
+
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV(){
   const sorted=[...state.players].map((p,i)=>({...p,i})).sort((a,b)=>(b.accumulated-b.paidOut)-(a.accumulated-a.paidOut));

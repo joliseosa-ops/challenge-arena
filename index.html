@@ -163,6 +163,14 @@
       </div>
     </div>
     <div class="card">
+      <div class="card-title">Sync from FPL</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Pull the latest player names and team names directly from FPL Challenge.</p>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="sync-fpl-btn" onclick="syncFromFPL()">Sync from FPL</button>
+        <span id="sync-fpl-status" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">Player list</div>
       <div id="admin-player-list"></div>
     </div>
