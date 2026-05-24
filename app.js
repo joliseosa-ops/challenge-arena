@@ -327,7 +327,6 @@ function renderStandings(){
   }).join('');
   renderSeasonSummary();
   renderEarningsChart();
-  checkGWReminder();
 }
 
 function updatePayoutInfo(){
@@ -534,14 +533,69 @@ function renderEarningsChart(){
     </div>`).join('');
 }
 
-// ── GW reminder ───────────────────────────────────────────────────────────────
-function checkGWReminder(){
-  const el=document.getElementById('gw-reminder');
-  if(!el) return;
-  const last=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
-  const next=last+1;
-  if(next<=38){ el.classList.remove('hidden'); el.textContent=`GW ${next} not yet recorded.`; }
-  else el.classList.add('hidden');
+// ── Weekly standings ──────────────────────────────────────────────────────────
+const weeklyCache={};
+
+function setStandingsView(v){
+  const overall=v==='overall';
+  document.getElementById('overall-view').classList.toggle('hidden',!overall);
+  document.getElementById('weekly-view').classList.toggle('hidden',overall);
+  document.getElementById('view-overall-btn').className=overall?'btn':'btn btn-ghost';
+  document.getElementById('view-weekly-btn').className=overall?'btn btn-ghost':'btn';
+  if(!overall) populateWeeklySelect();
+}
+
+function populateWeeklySelect(){
+  const sel=document.getElementById('weekly-gw-sel');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— select a gameweek —</option>';
+  [...state.gameweeks].reverse().forEach(g=>{ sel.innerHTML+=`<option value="${g.gw}">GW ${g.gw}</option>`; });
+  sel.value=cur||(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:'');
+  if(sel.value) loadWeeklyGW();
+}
+
+async function loadWeeklyGW(){
+  const gwNum=parseInt(document.getElementById('weekly-gw-sel').value);
+  const el=document.getElementById('weekly-content');
+  if(!gwNum){ el.innerHTML='<div class="empty">select a gameweek above</div>'; return; }
+  if(weeklyCache[gwNum]){ renderWeeklyTable(gwNum,weeklyCache[gwNum]); return; }
+  el.innerHTML='<div class="empty">Fetching GW'+gwNum+' scores…</div>';
+  try{
+    const results=await Promise.all(
+      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
+        fetch(`${FPL_BASE}/entry/${entryId}/history/`)
+          .then(r=>r.json())
+          .then(d=>{ const row=d.current?.find(r=>r.event===gwNum); return row?{playerIdx,pts:row.points}:null; })
+          .catch(()=>null)
+      )
+    );
+    const data=results.filter(Boolean);
+    if(!data.length){ el.innerHTML='<div class="empty">No data for GW'+gwNum+'</div>'; return; }
+    weeklyCache[gwNum]=data;
+    renderWeeklyTable(gwNum,data);
+  } catch(err){ el.innerHTML=`<div class="empty">Failed: ${err.message}</div>`; }
+}
+
+function renderWeeklyTable(gwNum,data){
+  const sorted=[...data].sort((a,b)=>b.pts-a.pts);
+  const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
+  const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
+  const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
+  document.getElementById('weekly-content').innerHTML=`<div class="card"><div class="card-title">GW ${gwNum} — full leaderboard</div><div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Points</th><th>Prize</th></tr></thead>
+    <tbody>${sorted.map((d,rank)=>{
+      const p=state.players[d.playerIdx];
+      const prize=gwRecord?(gwRecord.awards[d.playerIdx]||0):0;
+      const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
+      return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${d.playerIdx})" style="cursor:pointer">
+        <td><span class="${rC(rank)}">${rL(rank)}</span></td>
+        <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${(p?.name||'?').slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p?.name||'?'}</span></div></td>
+        <td><span style="font-size:.85rem;color:var(--muted)">${p?.teamName||'—'}</span></td>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600">${d.pts}</span></td>
+        <td>${prize>0?`<span class="bal-pos">₦${prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div></div>`;
 }
 
 // ── Head-to-head ──────────────────────────────────────────────────────────────
