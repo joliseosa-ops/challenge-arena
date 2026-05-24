@@ -137,11 +137,31 @@ function buildDefault(){
   return {players,gameweeks,payouts,cyclePayments:cp};
 }
 
+// ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
+const SB_URL='https://pbcurdniutfmecwzuzpl.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBiY3VyZG5pdXRmbWVjd3p1enBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTE5NjMsImV4cCI6MjA5NTIyNzk2M30.55K_3wL_eEiDD9jBo3tyCstjujfEcFqWUAJed8s1HWI';
+const _sbc=window.supabase.createClient(SB_URL,SB_KEY);
+
+async function syncToCloud(s){
+  try{ await _sbc.from('arena_state').upsert({id:1,data:s,updated_at:new Date().toISOString()}); }
+  catch(e){ console.warn('Cloud sync failed',e); }
+}
+async function loadFromCloud(){
+  try{
+    const {data,error}=await _sbc.from('arena_state').select('data').eq('id',1).single();
+    if(error||!data||!data.data||!data.data.players) return null;
+    return data.data;
+  }catch(e){ return null; }
+}
+
 function load(){
   try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
   return buildDefault();
 }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+  syncToCloud(state);
+}
 
 const ADMIN_PIN='0697'; // change this to your preferred PIN
 let isAdmin=!!sessionStorage.getItem('ca_admin');
@@ -569,6 +589,18 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
+
+// Load from cloud and re-render if newer data is available
+(async()=>{
+  const cloud=await loadFromCloud();
+  if(cloud){
+    state=cloud;
+    try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+    populateSelects(); renderStandings();
+  } else {
+    syncToCloud(state); // seed cloud on first run
+  }
+})();
 
 // ── Season summary ────────────────────────────────────────────────────────────
 function renderSeasonSummary(){
