@@ -493,8 +493,6 @@ function showTab(t){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
   document.getElementById('sec-'+t).classList.add('active');
-  const bar=document.getElementById('section-bar');
-  if(bar) bar.style.background=TAB_COLORS[t]||'var(--accent)';
   if(t==='standings') renderStandings();
   if(t==='payout'){ populateSelects(); renderPayoutLog(); }
   if(t==='payments') renderPayments();
@@ -530,8 +528,6 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
-const _bar=document.getElementById('section-bar');
-if(_bar) _bar.style.background=TAB_COLORS.standings;
 
 // ── Season summary ────────────────────────────────────────────────────────────
 function renderSeasonSummary(){
@@ -546,7 +542,7 @@ function renderSeasonSummary(){
   });
   const topPlayer=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
   const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
-  el.innerHTML=`<div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#37003c 0%,#00c875 100%);border-radius:7px 7px 0 0">
+  el.innerHTML=`<div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
       <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:.06em">SEASON OVERVIEW</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
