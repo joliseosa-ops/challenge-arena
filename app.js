@@ -320,7 +320,7 @@ function renderStandings(){
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
       <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
-      <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
+      <td><span class="wins"><span class="w1">🥇${p.w1||0}</span><span class="w2">🥈${p.w2||0}</span><span class="w3">🥉${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
@@ -663,7 +663,7 @@ function openProfile(idx){
       <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Paid out</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600">₦${p.paidOut.toLocaleString()}</div></div>
       <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">${p.w1} 1st</span><span class="w2">${p.w2} 2nd</span><span class="w3">${p.w3} 3rd</span></div>
+    <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">🥇${p.w1} 1st</span><span class="w2">🥈${p.w2} 2nd</span><span class="w3">🥉${p.w3} 3rd</span></div>
     <div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
     ${history.length?history.map(g=>`<div class="gw-item"><span class="gw-num">GW${g.gw}</span><span class="gw-detail"><strong style="color:var(--accent)">₦${g.amount.toLocaleString()}</strong></span></div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
   document.getElementById('profile-overlay').classList.add('open');
