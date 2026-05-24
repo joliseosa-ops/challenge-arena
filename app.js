@@ -314,7 +314,8 @@ function renderStandings(){
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
     const bal=p.accumulated-p.paidOut;
-    return `<tr onclick="openProfile(${p.i})" style="cursor:pointer">
+    const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
+    return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
       <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
@@ -449,12 +450,15 @@ function confirmReset(){
   alert('Season reset. Ready for a new season!');
 }
 
+const TAB_COLORS={standings:'#6b21a8',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payments:'#2563eb',admin:'#e11d48'};
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='payments'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
   document.getElementById('sec-'+t).classList.add('active');
+  const bar=document.getElementById('section-bar');
+  if(bar) bar.style.background=TAB_COLORS[t]||'var(--accent)';
   if(t==='standings') renderStandings();
   if(t==='payout'){ populateSelects(); renderPayoutLog(); }
   if(t==='payments') renderPayments();
@@ -490,6 +494,8 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
+const _bar=document.getElementById('section-bar');
+if(_bar) _bar.style.background=TAB_COLORS.standings;
 
 // ── Season summary ────────────────────────────────────────────────────────────
 function renderSeasonSummary(){

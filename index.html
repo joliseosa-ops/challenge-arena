@@ -28,13 +28,14 @@
   <h1 class="page-title">FPL Table</h1>
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('standings')">Standings</button>
-    <button class="tab" onclick="showTab('history')">History</button>
-    <button class="tab" onclick="showTab('gameweek')">Record GW</button>
-    <button class="tab" onclick="showTab('payout')">Payout</button>
-    <button class="tab" onclick="showTab('payments')">Payments</button>
-    <button class="tab" onclick="showTab('admin')">Admin</button>
+    <button class="tab tab-standings active" onclick="showTab('standings')">Standings</button>
+    <button class="tab tab-history" onclick="showTab('history')">History</button>
+    <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
+    <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
+    <button class="tab tab-payments" onclick="showTab('payments')">Payments</button>
+    <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
   </div>
+  <div id="section-bar"></div>
 
   <!-- STANDINGS -->
   <div id="sec-standings" class="section active">

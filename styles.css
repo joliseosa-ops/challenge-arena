@@ -30,11 +30,30 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .page-title{font-size:30px;font-weight:700;letter-spacing:-0.02em;color:var(--text);margin-bottom:1.5rem}
 
 /* Tabs */
-.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.75rem;overflow-x:auto;overscroll-behavior-x:contain;gap:0}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:0;overflow-x:auto;overscroll-behavior-x:contain;gap:0}
 .tab{padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 150ms ease,border-color 150ms ease;white-space:nowrap}
 .tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab.active{border-bottom-color:currentColor}
+/* Per-tab colours */
+.tab-standings{--tc:#6b21a8}.tab-history{--tc:#0d9488}.tab-gameweek{--tc:#d97706}
+.tab-payout{--tc:#16a34a}.tab-payments{--tc:#2563eb}.tab-admin{--tc:#e11d48}
+.tab-standings:hover,.tab-history:hover,.tab-gameweek:hover,
+.tab-payout:hover,.tab-payments:hover,.tab-admin:hover{color:var(--tc)}
+.tab-standings.active,.tab-history.active,.tab-gameweek.active,
+.tab-payout.active,.tab-payments.active,.tab-admin.active{color:var(--tc)}
+/* Section accent bar */
+#section-bar{height:3px;margin-bottom:1.75rem;transition:background 250ms ease}
 .section{display:none}.section.active{display:block}
+/* Podium row ribbons */
+tr.podium-1 td{background:rgba(180,83,9,.05)}
+tr.podium-1 td:first-child{border-left:3px solid var(--gold)}
+tr.podium-2 td{background:rgba(75,85,99,.05)}
+tr.podium-2 td:first-child{border-left:3px solid var(--silver)}
+tr.podium-3 td{background:rgba(146,64,14,.05)}
+tr.podium-3 td:first-child{border-left:3px solid var(--bronze)}
+tr.podium-1:hover td{background:rgba(180,83,9,.1)!important}
+tr.podium-2:hover td{background:rgba(75,85,99,.1)!important}
+tr.podium-3:hover td{background:rgba(146,64,14,.1)!important}
 
 /* Cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1rem}
