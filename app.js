@@ -33,6 +33,14 @@ const TEAM_NAMES=[
   'You Kante Compete',    // 19 Paschal
 ];
 
+const FPL_BASE='https://fplchallenge.premierleague.com/api';
+const ENTRY_MAP={
+  21635:0, 375780:1, 75964:2, 806861:3, 96602:4,
+  390180:5, 13603:6, 807952:7, 56156:8, 8328:9,
+  285576:10, 807950:11, 91090:12, 51087:13, 139142:14,
+  141573:15, 253699:16, 420591:17, 278195:18, 244443:19,
+};
+
 const OPENING=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
 const PRESET=[
@@ -178,6 +186,63 @@ function updatePreview(){
   box.innerHTML=lines.join('<br>');
 }
 ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>document.getElementById(id)?.addEventListener('change',updatePreview));
+
+async function fetchLatestGW(){
+  const btn=document.getElementById('fetch-gw-btn');
+  const status=document.getElementById('fetch-gw-status');
+  const targetGW=(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37)+1;
+  btn.disabled=true; status.textContent=`Fetching GW${targetGW}…`;
+
+  try{
+    const results=await Promise.all(
+      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
+        fetch(`${FPL_BASE}/entry/${entryId}/history/`)
+          .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
+          .then(d=>{ const row=d.current?.find(r=>r.event===targetGW); return row?{playerIdx,pts:row.points}:null; })
+          .catch(()=>null)
+      )
+    );
+
+    const scores={};
+    results.forEach(r=>{ if(r) scores[r.playerIdx]=r.pts; });
+
+    if(!Object.keys(scores).length){
+      status.textContent=`GW${targetGW} not available yet — enter manually`;
+      btn.disabled=false; return;
+    }
+
+    const ranking=Object.entries(scores).map(([i,pts])=>[+i,pts]).sort((a,b)=>b[1]-a[1]);
+    const topPts=ranking[0][1];
+    const first=ranking.filter(([,pts])=>pts===topPts).map(([i])=>i);
+    const rest=ranking.filter(([,pts])=>pts<topPts);
+
+    const fill=(prefix,arr)=>['a','b','c'].forEach((s,i)=>{ const el=document.getElementById(prefix+s); if(el) el.value=arr[i]??''; });
+    ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+
+    if(first.length>=3){
+      fill('p1',first.slice(0,3));
+    } else if(first.length===2){
+      fill('p1',first);
+      if(rest.length){ const tpts=rest[0][1]; fill('p3',rest.filter(([,p])=>p===tpts).map(([i])=>i).slice(0,3)); }
+    } else {
+      fill('p1',first);
+      if(rest.length){
+        const spts=rest[0][1];
+        const second=rest.filter(([,p])=>p===spts).map(([i])=>i);
+        const rest2=rest.filter(([,p])=>p<spts);
+        fill('p2',second.slice(0,2));
+        if(second.length===1&&rest2.length){ const tpts=rest2[0][1]; fill('p3',rest2.filter(([,p])=>p===tpts).map(([i])=>i).slice(0,3)); }
+      }
+    }
+
+    updatePreview();
+    const found=Object.keys(scores).length;
+    status.textContent=`GW${targetGW} loaded (${found} players) — review and record`;
+  } catch(err){
+    status.textContent=`Failed: ${err.message} — enter manually`;
+  }
+  btn.disabled=false;
+}
 
 function recordGW(){
   if(!getSlots('p1').length){ alert('Select at least 1st place'); return; }
