@@ -320,7 +320,7 @@ function renderStandings(){
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
       <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
-      <td><span class="wins"><span class="w1">🥇${p.w1||0}</span><span class="w2">🥈${p.w2||0}</span><span class="w3">🥉${p.w3||0}</span></span></td>
+      <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
