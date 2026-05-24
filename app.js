@@ -149,7 +149,7 @@ let state=load();
 let activeCycleIdx=null;
 
 function populateSelects(){
-  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','po-player'].forEach(id=>{
+  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','po-player','h2h-a','h2h-b'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur=el.value;
     el.innerHTML='<option value="">—</option>';
@@ -299,7 +299,7 @@ function renderGWDetail(){
     const rows=arr.map(i=>`<div style="display:flex;align-items:center;gap:10px"><div class="init">${nm(i).slice(0,2).toUpperCase()}</div><span style="font-weight:500">${nm(i)}</span></div>`).join('');
     return `<div class="pos-group"><div class="pos-label ${cls}">${label} &mdash; ₦${amt.toLocaleString()}${perEach}</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">${rows}</div></div>`;
   }
-  el.innerHTML=`<div class="card"><div class="card-title">GW ${g.gw} results</div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
+  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:500;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
 }
 
 function renderStandings(){
@@ -308,14 +308,13 @@ function renderStandings(){
   const totalPaid=state.players.reduce((s,p)=>s+p.paidOut,0);
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
   document.getElementById('m-gw').textContent=lastGW;
-  document.getElementById('hdr-gw').textContent='GW '+lastGW;
   document.getElementById('m-acc').textContent='₦'+(totalAcc-totalPaid).toLocaleString();
   document.getElementById('m-paid').textContent='₦'+totalPaid.toLocaleString();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
     const bal=p.accumulated-p.paidOut;
-    return `<tr>
+    return `<tr onclick="openProfile(${p.i})" style="cursor:pointer">
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><span style="font-weight:500">${p.name}</span></div></td>
       <td><span style="font-size:.85rem;color:var(--muted)">${p.teamName||'—'}</span></td>
@@ -324,6 +323,9 @@ function renderStandings(){
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
     </tr>`;
   }).join('');
+  renderSeasonSummary();
+  renderEarningsChart();
+  checkGWReminder();
 }
 
 function updatePayoutInfo(){
@@ -364,6 +366,7 @@ function renderPayments(){
   const curPaid=curData.players.filter(i=>curCP[i]).length;
   document.getElementById('m-cycle').textContent=curCycle+1;
   document.getElementById('m-cycle-paid').textContent=curPaid+'/'+curData.players.length;
+  renderDebtTracker();
   document.getElementById('cycle-grid').innerHTML=CYCLES.map((c,i)=>{
     const cp=state.cyclePayments[i]||{};
     const paid=c.players.filter(j=>cp[j]).length;
@@ -486,3 +489,139 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
+
+// ── Season summary ────────────────────────────────────────────────────────────
+function renderSeasonSummary(){
+  const el=document.getElementById('season-summary-card');
+  if(!el) return;
+  if(!state.gameweeks.length){ el.style.display='none'; return; }
+  el.style.display='';
+  const totalPot=state.players.reduce((s,p)=>s+p.accumulated,0);
+  let bigWin={player:'',amount:0,gw:0};
+  state.gameweeks.forEach(g=>{
+    Object.entries(g.awards).forEach(([idx,amt])=>{ if(amt>bigWin.amount) bigWin={player:state.players[parseInt(idx)]?.name||'?',amount:amt,gw:g.gw}; });
+  });
+  const topPlayer=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
+  const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
+  el.innerHTML=`<div class="card-title">Season overview</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent)">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:var(--dim)">across ${state.gameweeks.length} gameweeks</div></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Biggest single win</div><div style="font-weight:600;font-size:14px">${bigWin.player}</div><div style="font-size:11px;color:var(--dim)">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Most podiums</div><div style="font-weight:600;font-size:14px">${topPlayer.name}</div><div style="font-size:11px;color:var(--dim)">${topPlayer.w1+topPlayer.w2+topPlayer.w3} finishes</div></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Top earner</div><div style="font-weight:600;font-size:14px">${topEarner.name}</div><div style="font-size:11px;color:var(--dim)">₦${topEarner.accumulated.toLocaleString()} total</div></div>
+    </div>`;
+}
+
+// ── Earnings chart ────────────────────────────────────────────────────────────
+function renderEarningsChart(){
+  const el=document.getElementById('earnings-chart');
+  if(!el) return;
+  const players=[...state.players].map((p,i)=>({...p,i})).filter(p=>p.accumulated>0).sort((a,b)=>b.accumulated-a.accumulated);
+  if(!players.length){ el.innerHTML='<div class="empty">No data yet</div>'; return; }
+  const max=players[0].accumulated;
+  el.innerHTML=players.map(p=>`
+    <div style="display:grid;grid-template-columns:100px 1fr 60px;gap:8px;align-items:center;margin-bottom:7px">
+      <span style="font-size:12px;font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:var(--accent)" onclick="openProfile(${p.i})">${p.name}</span>
+      <div style="background:var(--surface2);border-radius:4px;height:10px;overflow:hidden"><div style="background:var(--accent);height:100%;width:${Math.round((p.accumulated/max)*100)}%;border-radius:4px;opacity:.8"></div></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">₦${Math.round(p.accumulated/1000)}k</span>
+    </div>`).join('');
+}
+
+// ── GW reminder ───────────────────────────────────────────────────────────────
+function checkGWReminder(){
+  const el=document.getElementById('gw-reminder');
+  if(!el) return;
+  const last=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
+  const next=last+1;
+  if(next<=38){ el.classList.remove('hidden'); el.textContent=`GW ${next} not yet recorded.`; }
+  else el.classList.add('hidden');
+}
+
+// ── Head-to-head ──────────────────────────────────────────────────────────────
+function renderH2H(){
+  const ai=document.getElementById('h2h-a').value, bi=document.getElementById('h2h-b').value;
+  const el=document.getElementById('h2h-result');
+  if(!ai||!bi||ai===bi){ el.innerHTML='<div class="empty" style="padding:1rem">select two different players to compare</div>'; return; }
+  const ia=parseInt(ai), ib=parseInt(bi);
+  const a=state.players[ia], b=state.players[ib];
+  let aGWs=0,bGWs=0,bothGWs=0;
+  state.gameweeks.forEach(g=>{
+    const aIn=(g.awards[ia]||0)>0, bIn=(g.awards[ib]||0)>0;
+    if(aIn&&bIn) bothGWs++; else if(aIn) aGWs++; else if(bIn) bGWs++;
+  });
+  const aPod=a.w1+a.w2+a.w3, bPod=b.w1+b.w2+b.w3;
+  const hi=(x,y)=>x>y?'color:var(--accent);font-weight:700':x<y?'color:var(--dim)':'';
+  const row=(label,av,bv,fmt=v=>v)=>`<tr><td style="font-size:12px;color:var(--muted);padding:8px 4px;border-bottom:1px solid var(--border)">${label}</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(av,bv)}">${fmt(av)}</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(bv,av)}">${fmt(bv)}</td></tr>`;
+  const fmt=v=>'₦'+v.toLocaleString();
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse">
+    <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500;width:40%"></th><th style="font-size:13px;font-weight:600;text-align:center;padding:6px 4px;width:30%">${a.name}</th><th style="font-size:13px;font-weight:600;text-align:center;padding:6px 4px;width:30%">${b.name}</th></tr></thead>
+    <tbody>
+      ${row('Accumulated',a.accumulated,b.accumulated,fmt)}
+      ${row('Balance',a.accumulated-a.paidOut,b.accumulated-b.paidOut,fmt)}
+      ${row('Podiums',aPod,bPod)}
+      ${row('1st places',a.w1,b.w1)}
+      ${row('2nd places',a.w2,b.w2)}
+      ${row('3rd places',a.w3,b.w3)}
+      ${row('Solo GW wins',aGWs,bGWs)}
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">Both on podium same GW: <strong style="color:var(--text)">${bothGWs}</strong></div>`;
+}
+
+// ── Player profile ────────────────────────────────────────────────────────────
+function openProfile(idx){
+  const p=state.players[idx];
+  const history=state.gameweeks.filter(g=>(g.awards[idx]||0)>0).map(g=>({gw:g.gw,amount:g.awards[idx]})).reverse();
+  const bal=p.accumulated-p.paidOut;
+  document.getElementById('profile-name').textContent=p.name+(p.teamName?' · '+p.teamName:'');
+  document.getElementById('profile-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
+      <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Accumulated</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600">₦${p.accumulated.toLocaleString()}</div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Paid out</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600">₦${p.paidOut.toLocaleString()}</div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">${p.w1} 1st</span><span class="w2">${p.w2} 2nd</span><span class="w3">${p.w3} 3rd</span></div>
+    <div style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
+    ${history.length?history.map(g=>`<div class="gw-item"><span class="gw-num">GW${g.gw}</span><span class="gw-detail"><strong style="color:var(--accent)">₦${g.amount.toLocaleString()}</strong></span></div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
+  document.getElementById('profile-overlay').classList.add('open');
+}
+function closeProfile(){ document.getElementById('profile-overlay').classList.remove('open'); }
+document.getElementById('profile-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeProfile(); });
+
+// ── Copy GW results ───────────────────────────────────────────────────────────
+function copyGWResults(gwNum,btn){
+  const g=state.gameweeks.find(x=>x.gw===gwNum); if(!g) return;
+  const nm=i=>state.players[i]?.name||'?';
+  const medal=pos=>pos===1?'1st':pos===2?'2nd':'3rd';
+  const lines=[`GW${gwNum} Results — Challenge Arena`,`─────────────────────`];
+  [1,2,3].forEach(pos=>{
+    const arr=g.pos[pos]||[]; if(!arr.length) return;
+    const amt=g.awards[arr[0]]||0;
+    lines.push(`${medal(pos)}: ${arr.map(nm).join(' & ')} — ₦${amt.toLocaleString()}${arr.length>1?' each':''}`);
+  });
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{ const orig=btn.textContent; btn.textContent='Copied!'; setTimeout(()=>btn.textContent=orig,2000); }).catch(()=>alert('Copy failed — try manually'));
+}
+
+// ── Debt tracker ──────────────────────────────────────────────────────────────
+function renderDebtTracker(){
+  const el=document.getElementById('debt-tracker'); if(!el) return;
+  const debtors=CYCLES.map((c,ci)=>{
+    const cp=state.cyclePayments[ci]||{};
+    const unpaid=c.players.filter(i=>!cp[i]).map(i=>state.players[i]?.name||'?');
+    return unpaid.length?{cycle:ci+1,gw:`GW${c.gw[0]}–${c.gw[1]}`,fee:c.fee,unpaid}:null;
+  }).filter(Boolean);
+  if(!debtors.length){ el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div><div style="font-size:13px;color:var(--green);font-weight:500">All cycle fees accounted for.</div></div>`; return; }
+  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV(){
+  const sorted=[...state.players].map((p,i)=>({...p,i})).sort((a,b)=>(b.accumulated-b.paidOut)-(a.accumulated-a.paidOut));
+  const header=['Rank','Player','Team','1st','2nd','3rd','Podiums','Accumulated','Paid Out','Balance'];
+  const rows=sorted.map((p,rank)=>[rank+1,p.name,p.teamName||'',p.w1,p.w2,p.w3,p.w1+p.w2+p.w3,p.accumulated,p.paidOut,p.accumulated-p.paidOut]);
+  const csv=[header,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='challenge-arena-standings.csv';
+  a.click();
+}

@@ -38,19 +38,40 @@
 
   <!-- STANDINGS -->
   <div id="sec-standings" class="section active">
+    <div id="gw-reminder" class="hidden" style="background:var(--caution-bg);border:1px solid #fde68a;border-left:3px solid var(--caution);border-radius:6px;padding:10px 14px;font-size:13px;color:var(--caution);margin-bottom:1rem"></div>
     <div class="metrics">
       <div class="metric"><div class="metric-label">Last GW</div><div class="metric-val accent" id="m-gw">37</div></div>
       <div class="metric"><div class="metric-label">Weekly pot</div><div class="metric-val">₦38,000</div></div>
       <div class="metric"><div class="metric-label">Balance</div><div class="metric-val" id="m-acc">—</div></div>
       <div class="metric"><div class="metric-label">Total paid out</div><div class="metric-val" id="m-paid">—</div></div>
     </div>
-    <div class="card">
+    <div class="card" id="season-summary-card" style="margin-bottom:1rem;display:none"></div>
+    <div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <span style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0.01em">STANDINGS</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="exportCSV()">↓ CSV</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="window.print()">↓ PDF</button>
+        </div>
+      </div>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>#</th><th>Player</th><th>Team name</th><th>Podiums</th><th>Accumulated</th><th>Paid out</th></tr></thead>
           <tbody id="standings-body"></tbody>
         </table>
       </div>
+    </div>
+    <div class="card" id="earnings-chart-card" style="margin-bottom:1rem">
+      <div class="card-title">Earnings chart</div>
+      <div id="earnings-chart"></div>
+    </div>
+    <div class="card" id="h2h-card">
+      <div class="card-title">Head-to-head</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+        <div class="field" style="margin:0"><label>Player A</label><select id="h2h-a" onchange="renderH2H()"><option value="">— select —</option></select></div>
+        <div class="field" style="margin:0"><label>Player B</label><select id="h2h-b" onchange="renderH2H()"><option value="">— select —</option></select></div>
+      </div>
+      <div id="h2h-result"><div class="empty" style="padding:1rem">select two players to compare</div></div>
     </div>
   </div>
 
@@ -128,6 +149,7 @@
       <div class="metric"><div class="metric-label">Paid this cycle</div><div class="metric-val" id="m-cycle-paid">—</div></div>
     </div>
     <div class="cycle-grid" id="cycle-grid"></div>
+    <div id="debt-tracker" style="margin-top:1rem"></div>
   </div>
 
   <!-- ADMIN -->
@@ -150,6 +172,17 @@
     </div>
   </div>
 
+</div>
+
+<!-- Player profile modal -->
+<div class="overlay" id="profile-overlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title" id="profile-name"></div>
+    <div id="profile-content" style="max-height:60vh;overflow-y:auto"></div>
+    <div style="margin-top:1.25rem">
+      <button class="btn btn-ghost" onclick="closeProfile()">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- PIN modal -->
