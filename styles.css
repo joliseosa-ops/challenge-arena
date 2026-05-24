@@ -14,6 +14,7 @@
   --gold:#b45309;--silver:#4b5563;--bronze:#92400e;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+.hidden{display:none!important}
 html,body{overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;min-height:100vh;font-size:14px;line-height:1.5}
 .mono{font-family:'JetBrains Mono','Fira Code',monospace}
