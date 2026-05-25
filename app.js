@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v10';
+const KEY='challenge_arena_v11';
 
 // 7 payment cycles reflecting actual manager counts and GW ranges
 const CYCLES=[
@@ -132,8 +132,8 @@ function buildDefault(){
   });
   const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
   const cp={};
-  // Pre-mark cycle 7 (GW31-38) as all 19 active players paid
-  cp[6]=Object.fromEntries(CYCLES[6].players.map(i=>[i,true]));
+  // All cycles fully paid
+  CYCLES.forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
   return {players,gameweeks,payouts,cyclePayments:cp};
 }
 
