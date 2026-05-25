@@ -143,13 +143,14 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const _sbc=window.supabase.createClient(SB_URL,SB_KEY);
 
 async function syncToCloud(s){
-  try{ await _sbc.from('arena_state').upsert({id:1,data:s,updated_at:new Date().toISOString()}); }
+  try{ await _sbc.from('arena_state').upsert({id:1,data:{...s,_key:KEY},updated_at:new Date().toISOString()}); }
   catch(e){ console.warn('Cloud sync failed',e); }
 }
 async function loadFromCloud(){
   try{
     const {data,error}=await _sbc.from('arena_state').select('data').eq('id',1).single();
     if(error||!data||!data.data||!data.data.players) return null;
+    if(data.data._key && data.data._key!==KEY) return null; // stale version — rebuild
     return data.data;
   }catch(e){ return null; }
 }
