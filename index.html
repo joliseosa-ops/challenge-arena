@@ -19,22 +19,27 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="shell">
 
   <header>
-    <div class="logo">
-      <div class="logo-icon">
-        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="16" cy="16" r="13" stroke="white" stroke-width="1.8"/>
-          <path d="M16 5 L18.5 11.5 L25.5 11.5 L19.8 15.8 L22 22.5 L16 18.5 L10 22.5 L12.2 15.8 L6.5 11.5 L13.5 11.5 Z" fill="white"/>
-          <circle cx="16" cy="16" r="13" stroke="white" stroke-width="1.8" stroke-dasharray="4 3" fill="none" opacity="0.3"/>
-        </svg>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="13" stroke="white" stroke-width="1.8"/>
+            <path d="M16 5 L18.5 11.5 L25.5 11.5 L19.8 15.8 L22 22.5 L16 18.5 L10 22.5 L12.2 15.8 L6.5 11.5 L13.5 11.5 Z" fill="white"/>
+            <circle cx="16" cy="16" r="13" stroke="white" stroke-width="1.8" stroke-dasharray="4 3" fill="none" opacity="0.3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-name">Challenge Arena</div>
+          <div class="logo-sub">FPL Mini-League</div>
+        </div>
       </div>
-      <div>
-        <div class="logo-name">Challenge Arena</div>
-      </div>
+      <div class="gw-badge" id="header-gw-badge">GW 38</div>
     </div>
   </header>
+
+<div class="shell">
 
   <div class="tabs">
     <button class="tab tab-standings active" onclick="showTab('standings')">Standings</button>

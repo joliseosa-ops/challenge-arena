@@ -346,6 +346,8 @@ function renderStandings(){
   const totalPaid=state.players.reduce((s,p)=>s+p.paidOut,0);
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
   document.getElementById('m-gw').textContent=lastGW;
+  const hb=document.getElementById('header-gw-badge');
+  if(hb) hb.textContent='GW '+lastGW;
   document.getElementById('m-acc').textContent='₦'+(totalAcc-totalPaid).toLocaleString();
   document.getElementById('m-paid').textContent='₦'+totalPaid.toLocaleString();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
