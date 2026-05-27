@@ -46,8 +46,8 @@
     <button class="tab tab-history" onclick="showTab('history')">History</button>
     <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
     <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
-    <button class="tab tab-fees" onclick="showTab('fees')">Fees</button>
-    <button class="tab tab-payments" onclick="showTab('payments')">Payments</button>
+    <button class="tab tab-payment" onclick="showTab('payment')">Payment</button>
+    <button class="tab tab-cycles" onclick="showTab('cycles')">Cycles</button>
     <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
   </div>
 
@@ -180,13 +180,13 @@
     </div>
   </div>
 
-  <!-- FEES (public) -->
-  <div id="sec-fees" class="section">
-    <div id="fees-cycle-table"></div>
+  <!-- PAYMENT (public) -->
+  <div id="sec-payment" class="section">
+    <div id="payment-cycle-list"></div>
   </div>
 
-  <!-- PAYMENTS -->
-  <div id="sec-payments" class="section">
+  <!-- CYCLES (admin) -->
+  <div id="sec-cycles" class="section">
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">How payment cycles work</div>
       <p style="font-size:.85rem;color:var(--muted);line-height:1.7">The 38-week season is split into <strong style="color:var(--text)">7 payment cycles</strong>. Players pay upfront per cycle to cover their ₦2,000/week stake — <strong style="color:var(--accent)">₦10,000</strong> for cycles 1–6, and <strong style="color:var(--accent)">₦16,000</strong> for the final cycle (GW31–38, 8 weeks). Tap <strong style="color:var(--text)">Manage</strong> on any cycle to mark who has paid.</p>
