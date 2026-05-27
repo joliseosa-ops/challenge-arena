@@ -719,9 +719,15 @@ async function fetchLivePoints(){
   try{
     const results=await Promise.all(
       Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`${PROXY}${encodeURIComponent(FPL_BASE+'/entry/'+entryId+'/history/')}`)
+        fetch(`${PROXY}${FPL_BASE}/entry/${entryId}/history/`)
           .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
-          .then(d=>{ const gw=d.current?.find(g=>g.event===gwNum); return {playerIdx:parseInt(playerIdx),pts:gw?.points??null}; })
+          .then(d=>{
+            if(parseInt(playerIdx)===0) console.log('FPL history response sample:',JSON.stringify(d).slice(0,300));
+            const history=d.current||d.history||d.gameweeks||d.events||[];
+            const gw=history.find(g=>(g.event||g.gameweek||g.round)===gwNum);
+            const pts=gw?.points??gw?.total??gw?.score??null;
+            return {playerIdx:parseInt(playerIdx),pts};
+          })
           .catch(()=>({playerIdx:parseInt(playerIdx),pts:null}))
       )
     );
