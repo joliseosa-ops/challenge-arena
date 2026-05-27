@@ -458,10 +458,9 @@ function renderPaymentTab(){
       return {name:p.name,breakdown,cashOwed,isPaid};
     }).sort((a,b)=>b.cashOwed-a.cashOwed);
     const tableHTML=`<div class="tbl-wrap" style="margin-top:.75rem"><table>
-      <thead><tr><th>Player</th><th>Breakdown</th><th>Cash Owed</th><th>Status</th></tr></thead>
+      <thead><tr><th>Player</th><th>Cash Owed</th><th>Status</th></tr></thead>
       <tbody>${rows.map(r=>`<tr>
         <td style="font-weight:500">${r.name}</td>
-        <td style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
         <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
         <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
       </tr>`).join('')}</tbody>
