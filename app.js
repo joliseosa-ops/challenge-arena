@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v11';
+const KEY='challenge_arena_v12';
 
 // 7 payment cycles reflecting actual manager counts and GW ranges
 const CYCLES=[
@@ -10,6 +10,7 @@ const CYCLES=[
   {gw:[21,25], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players (Paschal left)
   {gw:[26,30], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players
   {gw:[31,38], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:16000}, // 19 players, 8 GWs
+  {gw:[39,43], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players, next season
 ];
 
 const INIT_PLAYERS=[
@@ -132,8 +133,8 @@ function buildDefault(){
   });
   const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
   const cp={};
-  // All cycles fully paid
-  CYCLES.forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
+  // Historical cycles (1-7) fully paid; future cycles start unpaid
+  CYCLES.slice(0,7).forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
   return {players,gameweeks,payouts,cyclePayments:cp};
 }
 
@@ -450,18 +451,26 @@ function openCycleModal(idx){
   document.getElementById('modal-checklist').innerHTML=c.players.map(i=>{
     const p=state.players[i];
     const bal=p.accumulated-p.paidOut;
-    const type=cp[i]; // true/'cash'/'winnings'/undefined
+    const type=cp[i]; // true/'cash'/'winnings'/'partial'/undefined
     const isCash=type===true||type==='cash';
     const isWin=type==='winnings';
-    const canWin=!isCash&&!isWin&&bal>=c.fee;
+    const isPartial=type==='partial';
+    const canWin=!isCash&&!isWin&&!isPartial&&bal>=c.fee;
+    const canPartial=!isCash&&!isWin&&!isPartial&&bal>0&&bal<c.fee;
+    const partialOffset=isPartial?(state.payouts.findLast(x=>x.player===p.name&&x.gw===`Cycle ${idx+1} fee`)?.amount||bal):bal;
+    const cashOwed=c.fee-partialOffset;
     return `<div class="check-item" style="flex-wrap:wrap">
-      <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){var w=document.getElementById('cpw${i}');if(w)w.checked=false;}">
+      <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){var w=document.getElementById('cpw${i}');if(w)w.checked=false;var pw=document.getElementById('cppw${i}');if(pw)pw.checked=false;}">
       <label for="cp${i}" style="flex:1">${p.name}</label>
       <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--dim);margin-right:4px">₦${bal.toLocaleString()}</span>
-      <span class="${isCash||isWin?'paid-tag':'unpaid-tag'}">${isWin?'✓ winnings':isCash?'✓ cash':'—'}</span>
+      <span class="${isCash||isWin||isPartial?'paid-tag':'unpaid-tag'}" style="${isPartial?'color:var(--caution)':''}">${isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:'—'}</span>
       ${canWin||isWin?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:6px">
         <input type="checkbox" id="cpw${i}" ${isWin?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
         <label for="cpw${i}" style="font-size:12px;color:var(--accent);cursor:pointer">pay ₦${c.fee.toLocaleString()} from winnings</label>
+      </div>`:''}
+      ${canPartial||isPartial?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:6px">
+        <input type="checkbox" id="cppw${i}" ${isPartial?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
+        <label for="cppw${i}" style="font-size:12px;color:var(--caution);cursor:pointer">offset ₦${bal.toLocaleString()} from winnings + ₦${cashOwed.toLocaleString()} cash still owed</label>
       </div>`:''}
     </div>`;
   }).join('');
@@ -474,25 +483,25 @@ function saveCycle(){
   const newCP={};
   c.players.forEach(i=>{
     const winEl=document.getElementById('cpw'+i);
+    const partialEl=document.getElementById('cppw'+i);
     const cashEl=document.getElementById('cp'+i);
     if(winEl?.checked) newCP[i]='winnings';
+    else if(partialEl?.checked) newCP[i]='partial';
     else if(cashEl?.checked) newCP[i]='cash';
   });
   c.players.forEach(i=>{
     const prev=prevCP[i];
     const next=newCP[i];
-    if(next==='winnings'&&prev!=='winnings'){
-      state.players[i].paidOut+=c.fee;
-      state.payouts.push({player:state.players[i].name,amount:c.fee,gw:`Cycle ${activeCycleIdx+1} fee`});
-    } else if(prev==='winnings'&&next!=='winnings'){
-      state.players[i].paidOut-=c.fee;
-      const label=`Cycle ${activeCycleIdx+1} fee`;
-      let pIdx=-1;
-      for(let j=state.payouts.length-1;j>=0;j--){
-        if(state.payouts[j].player===state.players[i].name&&state.payouts[j].gw===label&&state.payouts[j].amount===c.fee){pIdx=j;break;}
-      }
-      if(pIdx!==-1) state.payouts.splice(pIdx,1);
-    }
+    if(prev===next) return;
+    const p=state.players[i];
+    const label=`Cycle ${activeCycleIdx+1} fee`;
+    const removePayout=(amt)=>{ const j=state.payouts.findLastIndex(x=>x.player===p.name&&x.gw===label&&(amt===undefined||x.amount===amt)); if(j!==-1) state.payouts.splice(j,1); };
+    // Undo previous state
+    if(prev==='winnings'){ p.paidOut-=c.fee; removePayout(c.fee); }
+    else if(prev==='partial'){ const rec=state.payouts.findLast(x=>x.player===p.name&&x.gw===label); if(rec){ p.paidOut-=rec.amount; removePayout(rec.amount); } }
+    // Apply new state
+    if(next==='winnings'){ p.paidOut+=c.fee; state.payouts.push({player:p.name,amount:c.fee,gw:label}); }
+    else if(next==='partial'){ const off=p.accumulated-p.paidOut; if(off>0){ p.paidOut+=off; state.payouts.push({player:p.name,amount:off,gw:label}); } }
   });
   state.cyclePayments[activeCycleIdx]=newCP;
   save(); closeModal(); renderPayments(); renderStandings();
@@ -799,7 +808,7 @@ function openProfile(idx){
       <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">🥇${p.w1} 1st</span><span class="w2">🥈${p.w2} 2nd</span><span class="w3">🥉${p.w3} 3rd</span></div>
-    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
+<div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
     ${history.length?history.map(g=>`<div class="gw-item"><span class="gw-num">GW${g.gw}</span><span class="gw-detail"><strong style="color:var(--accent)">₦${g.amount.toLocaleString()}</strong></span></div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
   document.getElementById('profile-overlay').classList.add('open');
 }
