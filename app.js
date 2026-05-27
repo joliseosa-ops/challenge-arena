@@ -158,7 +158,7 @@ async function loadFromCloud(){
 
 function load(){
   try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
-  // Migrate paidOut from v11 (preserves payouts recorded through the app)
+  // Migrate paidOut + payouts log from v11 (preserves payouts recorded through the app)
   try{
     const s=localStorage.getItem('challenge_arena_v11');
     if(s){
@@ -166,6 +166,7 @@ function load(){
       if(Array.isArray(old?.players)){
         const fresh=buildDefault();
         old.players.forEach((p,i)=>{ if(fresh.players[i]&&typeof p.paidOut==='number') fresh.players[i].paidOut=p.paidOut; });
+        if(Array.isArray(old.payouts)&&old.payouts.length) fresh.payouts=old.payouts;
         return fresh;
       }
     }
