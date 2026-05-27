@@ -447,28 +447,33 @@ function renderCycleOwingTable(cycleIdx){
     const offset=isWin?c.fee:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):isCo?type.own:0;
     const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
     const benefactorName=isCo?state.players[type.by]?.name:'';
-    const statusLabel=isWin?'✓ winnings':isCash?'✓ cash':isPartial?'⚡ partial':isSettled?'✓ settled':isCo?`✓ ₦${offset.toLocaleString()} own + ₦${(c.fee-offset).toLocaleString()} by ${benefactorName}`:'unpaid';
-    const statusColor=isWin||isCash||isCo||isSettled?'var(--green)':isPartial?'var(--caution)':'var(--red)';
-    return {name:p.name,fee:c.fee,offset,cashOwed,statusLabel,statusColor};
+    const isPaid=isCash||isWin||isCo||isSettled;
+    const breakdown=isWin?`₦${c.fee.toLocaleString()} from winnings`
+      :isCash?`₦${c.fee.toLocaleString()} cash`
+      :isSettled?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} cash`
+      :isCo?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} covered by ${benefactorName}`
+      :isPartial?`₦${offset.toLocaleString()} from winnings · ₦${cashOwed.toLocaleString()} cash pending`
+      :'—';
+    return {name:p.name,fee:c.fee,offset,cashOwed,breakdown,isPaid};
   }).sort((a,b)=>b.cashOwed-a.cashOwed);
   const anyOwed=rows.some(r=>r.cashOwed>0);
   el.innerHTML=`<div class="card">
-    <div class="card-title">Cycle ${cycleIdx+1} — Cash still owed</div>
-    ${!anyOwed?'<div style="font-size:13px;color:var(--green);font-weight:500">All players settled for this cycle.</div>':''}
+    <div class="card-title">Cycle ${cycleIdx+1} — Payment status</div>
+    ${!anyOwed?'<div style="font-size:13px;color:var(--green);font-weight:500;margin-bottom:.75rem">All players settled for this cycle.</div>':''}
     <div class="tbl-wrap"><table>
       <thead><tr>
         <th>Player</th>
-        <th>Cycle fee</th>
-        <th>Offset (winnings)</th>
+        <th>Fee</th>
+        <th>Breakdown</th>
         <th>Cash owed</th>
         <th>Status</th>
       </tr></thead>
       <tbody>${rows.map(r=>`<tr>
         <td style="font-weight:500">${r.name}</td>
         <td class="mono">₦${r.fee.toLocaleString()}</td>
-        <td class="mono" style="color:var(--accent)">${r.offset?'₦'+r.offset.toLocaleString():'—'}</td>
-        <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'₦0'}</td>
-        <td><span style="font-size:11px;font-weight:700;color:${r.statusColor}">${r.statusLabel}</span></td>
+        <td style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
+        <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
+        <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
       </tr>`).join('')}</tbody>
     </table></div>
   </div>`;
