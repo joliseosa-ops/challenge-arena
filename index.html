@@ -153,8 +153,12 @@
           <div class="field"><label>Player C (tie)</label><select id="p3c"><option value="">—</option></select></div>
         </div>
       </div>
-      <div id="prize-preview" class="info-box hidden"></div>
-      <button class="btn" onclick="recordGW()">Record gameweek</button>
+      <div class="card" style="margin:1rem 0 0;padding:1rem;background:#f8f8f8;border-color:#e5e5e5">
+        <div class="card-title" style="margin-bottom:.75rem">GW Points</div>
+        <div id="gw-points-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px"></div>
+      </div>
+      <div id="prize-preview" class="info-box hidden" style="margin-top:1rem"></div>
+      <button class="btn" style="margin-top:1rem" onclick="recordGW()">Record gameweek</button>
     </div>
   </div>
 

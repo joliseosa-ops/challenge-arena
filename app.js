@@ -180,6 +180,18 @@ function populateSelects(){
     state.players.forEach((p,i)=>el.innerHTML+=`<option value="${i}">${p.name}</option>`);
     el.value=cur;
   });
+  renderPointsGrid();
+}
+
+function renderPointsGrid(){
+  const grid=document.getElementById('gw-points-grid'); if(!grid) return;
+  grid.innerHTML=state.players.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="init" style="flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
+      <span style="font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</span>
+      <input type="number" id="pts-${i}" min="0" max="200" placeholder="—"
+        style="width:60px;height:30px;font-size:13px;padding:4px 6px;text-align:center;flex-shrink:0">
+    </div>`).join('');
 }
 
 function getSlots(pre){ return ['a','b','c'].map(s=>document.getElementById(pre+s)?.value).filter(v=>v!==''); }
@@ -288,13 +300,17 @@ function recordGW(){
   if(!getSlots('p1').length){ alert('Select at least 1st place'); return; }
   const {awards,note,positions}=calcPrizes();
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:30;
+  // collect points
+  const points={};
+  state.players.forEach((_,i)=>{ const v=document.getElementById('pts-'+i)?.value; if(v!==''&&v!=null) points[i]=parseInt(v)||0; });
   Object.entries(awards).forEach(([idx,prize])=>{ state.players[parseInt(idx)].accumulated+=prize; });
   positions[1].forEach(i=>state.players[i].w1++);
   positions[2].forEach(i=>state.players[i].w2++);
   positions[3].forEach(i=>state.players[i].w3++);
-  state.gameweeks.push({gw:lastGW+1,awards,pos:positions,note});
+  state.gameweeks.push({gw:lastGW+1,awards,pos:positions,note,points:Object.keys(points).length?points:undefined});
   save();
   ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  state.players.forEach((_,i)=>{ const e=document.getElementById('pts-'+i); if(e) e.value=''; });
   document.getElementById('prize-preview').classList.add('hidden');
   renderStandings();
 }
@@ -671,8 +687,8 @@ function loadWeeklyGW(){
   if(!gwNum){ el.innerHTML='<div class="empty">select a gameweek above</div>'; return; }
   const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
   if(!gwRecord){ el.innerHTML=`<div class="empty">GW${gwNum} not recorded yet</div>`; return; }
-  renderWeeklyTable(gwNum,gwRecord);
-  fetchLivePoints();
+  const ptsMap=gwRecord.points||null;
+  renderWeeklyTable(gwNum,gwRecord,ptsMap);
 }
 
 function renderWeeklyTable(gwNum,gwRecord,ptsMap=null){
@@ -689,7 +705,6 @@ function renderWeeklyTable(gwNum,gwRecord,ptsMap=null){
   document.getElementById('weekly-content').innerHTML=`<div class="card">
     <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">GW ${gwNum} — RESULTS</span>
-      <span id="fpl-points-status" style="font-size:11px;color:rgba(255,255,255,.75)"></span>
     </div>
     <div class="tbl-wrap"><table>
       <thead><tr><th>${hasPoints?'Rank':'Pos'}</th><th>Player</th>${hasPoints?'<th>GW Pts</th>':''}<th>Prize</th></tr></thead>
