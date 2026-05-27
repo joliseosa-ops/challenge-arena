@@ -249,10 +249,13 @@
 
 <!-- Player profile modal -->
 <div class="overlay" id="profile-overlay">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-title" id="profile-name"></div>
-    <div id="profile-content" style="max-height:60vh;overflow-y:auto"></div>
-    <div style="margin-top:1.25rem">
+  <div class="modal" style="max-width:460px;padding:0;overflow:hidden">
+    <div id="profile-header" style="background:linear-gradient(135deg,#37003c 0%,#6b21a8 100%);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:14px">
+      <div id="profile-avatar" style="width:44px;height:44px;border-radius:9999px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#fff;flex-shrink:0"></div>
+      <div><div id="profile-name" style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.01em"></div><div id="profile-team" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px"></div></div>
+    </div>
+    <div id="profile-content" style="max-height:60vh;overflow-y:auto;padding:1.25rem 1.5rem"></div>
+    <div style="padding:.75rem 1.5rem 1.25rem">
       <button class="btn btn-ghost" onclick="closeProfile()">Close</button>
     </div>
   </div>

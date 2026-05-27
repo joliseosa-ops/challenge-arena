@@ -964,16 +964,23 @@ function openProfile(idx){
   const p=state.players[idx];
   const history=state.gameweeks.filter(g=>(g.awards[idx]||0)>0).map(g=>({gw:g.gw,amount:g.awards[idx]})).reverse();
   const bal=p.accumulated-p.paidOut;
-  document.getElementById('profile-name').textContent=p.name+(p.teamName?' · '+p.teamName:'');
+  const initials=p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('profile-avatar').textContent=initials;
+  document.getElementById('profile-name').textContent=p.name;
+  document.getElementById('profile-team').textContent=p.teamName||'';
   document.getElementById('profile-content').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
-      <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Accumulated</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600">₦${p.accumulated.toLocaleString()}</div></div>
-      <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Paid out</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600">₦${p.paidOut.toLocaleString()}</div></div>
-      <div style="background:var(--surface2);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
+      <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Earned</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${p.accumulated.toLocaleString()}</div></div>
+      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Paid out</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--muted)">₦${p.paidOut.toLocaleString()}</div></div>
+      <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">🥇${p.w1} 1st</span><span class="w2">🥈${p.w2} 2nd</span><span class="w3">🥉${p.w3} 3rd</span></div>
-<div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.01em">PRIZE HISTORY</div>
-    ${history.length?history.map(g=>`<div class="gw-item"><span class="gw-num">GW${g.gw}</span><span class="gw-detail"><strong style="color:var(--accent)">₦${g.amount.toLocaleString()}</strong></span></div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
+    <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">🥇 ${p.w1} 1st</span><span class="w2">🥈 ${p.w2} 2nd</span><span class="w3">🥉 ${p.w3} 3rd</span></div>
+    <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;border-left:3px solid var(--accent);padding-left:8px">Prize History</div>
+    ${history.length?history.map(g=>`<div class="gw-item" style="border-bottom:1px solid var(--border)">
+      <span class="gw-num">GW${g.gw}</span>
+      <span class="gw-detail" style="flex:1">Prize awarded</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${g.amount.toLocaleString()}</span>
+    </div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
   document.getElementById('profile-overlay').classList.add('open');
 }
 function closeProfile(){ document.getElementById('profile-overlay').classList.remove('open'); }
