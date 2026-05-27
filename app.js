@@ -354,7 +354,7 @@ function renderGWDetail(){
     const rows=arr.map(i=>`<div style="display:flex;align-items:center;gap:10px"><div class="init">${nm(i).slice(0,2).toUpperCase()}</div><span style="font-weight:500">${nm(i)}</span></div>`).join('');
     return `<div class="pos-group"><div class="pos-label ${cls}">${label} &mdash; ₦${amt.toLocaleString()}${perEach}</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">${rows}</div></div>`;
   }
-  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
+  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;min-height:36px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
 }
 
 function setSort(s){
@@ -362,7 +362,7 @@ function setSort(s){
   ['earnings','bank','podiums'].forEach(k=>{
     const btn=document.getElementById('sort-'+k); if(!btn) return;
     btn.className=k===s?'btn':'btn btn-ghost';
-    btn.style.cssText='font-size:11px;padding:4px 10px;height:28px';
+    btn.style.cssText='font-size:12px;padding:6px 10px;min-height:36px';
   });
   renderStandings();
 }
@@ -548,7 +548,7 @@ function renderPayments(){
       <div style="font-size:10px;color:var(--dim);margin-bottom:6px">₦${c.fee.toLocaleString()}</div>
       <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${c.players.length}</span></div>
       <div class="cycle-bar"><div class="cycle-bar-fill" style="width:${pct}%"></div></div>
-      <button class="btn btn-ghost" style="padding:4px 10px;font-size:.7rem;width:100%;margin-top:4px" onclick="openCycleModal(${i})">Manage</button>
+      <button class="btn btn-ghost" style="padding:6px 10px;font-size:.8rem;width:100%;margin-top:4px;min-height:36px" onclick="openCycleModal(${i})">Manage</button>
     </div>`;
   }).join('');
 }
@@ -678,9 +678,9 @@ function renderAdminPlayers(){
     <div class="player-row">
       <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="flex:1;font-size:.9rem;font-weight:500">${p.name}</span>
-      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.75rem;padding:3px 6px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:130px;margin-right:8px">
-      <span class="mono" style="font-size:.75rem;color:var(--muted);margin-right:8px">₦${(p.accumulated-p.paidOut).toLocaleString()}</span>
-      <button class="btn btn-ghost" style="padding:3px 10px;font-size:.7rem;color:var(--red);border-color:#fca5a5" onclick="removePlayer(${i})">Remove</button>
+      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:120px;max-width:35vw;height:32px">
+      <span class="mono" style="font-size:.75rem;color:var(--muted)">₦${(p.accumulated-p.paidOut).toLocaleString()}</span>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:.8rem;color:var(--red);border-color:#fca5a5;min-height:32px;flex-shrink:0" onclick="removePlayer(${i})">Remove</button>
     </div>`).join('');
 }
 
@@ -810,7 +810,7 @@ function renderSeasonSummary(){
   el.innerHTML=`<div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON OVERVIEW</span>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
       <div style="background:#f8f8f8;border:1px solid #e5e5e5;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Total distributed</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#6b21a8">₦${totalPot.toLocaleString()}</div><div style="font-size:11px;color:var(--dim)">across ${state.gameweeks.length} gameweeks</div></div>
       <div style="background:#f8f8f8;border:1px solid #e5e5e5;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Biggest single win</div><div style="font-weight:700;font-size:14px;color:var(--accent)">${bigWin.player}</div><div style="font-size:11px;color:var(--dim)">₦${bigWin.amount.toLocaleString()} · GW${bigWin.gw}</div></div>
       <div style="background:#f8f8f8;border:1px solid #e5e5e5;border-radius:8px;padding:.75rem"><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Most podiums</div><div style="font-weight:700;font-size:14px;color:var(--accent)">${topPlayer.name}</div><div style="font-size:11px;color:var(--dim)">${topPlayer.w1+topPlayer.w2+topPlayer.w3} finishes</div></div>
@@ -826,7 +826,7 @@ function renderEarningsChart(){
   if(!players.length){ el.innerHTML='<div class="empty">No data yet</div>'; return; }
   const max=players[0].accumulated;
   el.innerHTML=players.map(p=>`
-    <div style="display:grid;grid-template-columns:100px 1fr 64px;gap:8px;align-items:center;margin-bottom:9px">
+    <div style="display:grid;grid-template-columns:clamp(60px,25%,100px) 1fr clamp(44px,12%,64px);gap:6px;align-items:center;margin-bottom:9px">
       <span style="font-size:12px;font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#6b21a8" onclick="openProfile(${p.i})">${p.name}</span>
       <div style="background:rgba(0,0,0,.07);border-radius:4px;height:10px;overflow:hidden"><div style="background:linear-gradient(90deg,#7c3aed 0%,#00c875 100%);height:100%;width:${Math.round((p.accumulated/max)*100)}%;border-radius:4px"></div></div>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#374151">₦${Math.round(p.accumulated/1000)}k</span>
