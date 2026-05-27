@@ -672,6 +672,7 @@ function loadWeeklyGW(){
   const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
   if(!gwRecord){ el.innerHTML=`<div class="empty">GW${gwNum} not recorded yet</div>`; return; }
   renderWeeklyTable(gwNum,gwRecord);
+  fetchLivePoints();
 }
 
 function renderWeeklyTable(gwNum,gwRecord,ptsMap=null){
@@ -688,10 +689,7 @@ function renderWeeklyTable(gwNum,gwRecord,ptsMap=null){
   document.getElementById('weekly-content').innerHTML=`<div class="card">
     <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">GW ${gwNum} — RESULTS</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span id="fpl-points-status" style="font-size:11px;color:rgba(255,255,255,.75)"></span>
-        <button onclick="fetchLivePoints()" style="font-size:11px;padding:4px 10px;height:28px;border-color:rgba(255,255,255,.35);color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);border-radius:5px;cursor:pointer;font-weight:600" id="fetch-pts-btn">Fetch GW Pts</button>
-      </div>
+      <span id="fpl-points-status" style="font-size:11px;color:rgba(255,255,255,.75)"></span>
     </div>
     <div class="tbl-wrap"><table>
       <thead><tr><th>${hasPoints?'Rank':'Pos'}</th><th>Player</th>${hasPoints?'<th>GW Pts</th>':''}<th>Prize</th></tr></thead>
@@ -716,10 +714,8 @@ async function fetchLivePoints(){
   if(!gwNum){ alert('Select a gameweek first.'); return; }
   const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
   if(!gwRecord){ alert(`GW${gwNum} has no recorded prize data yet.`); return; }
-  const btn=document.getElementById('fetch-pts-btn');
   const status=document.getElementById('fpl-points-status');
-  if(btn) btn.disabled=true;
-  if(status) status.textContent=`Fetching…`;
+  if(status) status.textContent=`Loading points…`;
   try{
     const results=await Promise.all(
       Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
@@ -730,13 +726,12 @@ async function fetchLivePoints(){
       )
     );
     const valid=results.filter(r=>r.pts!==null);
-    if(!valid.length){ if(status) status.textContent='No points data found'; if(btn) btn.disabled=false; return; }
+    if(!valid.length){ if(status) status.textContent='No points data found'; return; }
     const ptsMap=Object.fromEntries(results.map(r=>[r.playerIdx,r.pts]));
     renderWeeklyTable(gwNum,gwRecord,ptsMap);
   }catch(err){
     if(status) status.textContent=`Failed: ${err.message}`;
   }
-  if(btn) btn.disabled=false;
 }
 
 // ── Head-to-head ──────────────────────────────────────────────────────────────
