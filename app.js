@@ -447,7 +447,7 @@ function renderCycleOwingTable(cycleIdx){
     const offset=isWin?c.fee:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):isCo?type.own:0;
     const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
     const benefactorName=isCo?state.players[type.by]?.name:'';
-    const statusLabel=isWin?'✓ winnings':isCash?'✓ cash':isPartial?'⚡ partial':isSettled?'✓ settled':isCo?`✓ co-offset (${benefactorName})`:'unpaid';
+    const statusLabel=isWin?'✓ winnings':isCash?'✓ cash':isPartial?'⚡ partial':isSettled?'✓ settled':isCo?`✓ ₦${offset.toLocaleString()} own + ₦${(c.fee-offset).toLocaleString()} by ${benefactorName}`:'unpaid';
     const statusColor=isWin||isCash||isCo||isSettled?'var(--green)':isPartial?'var(--caution)':'var(--red)';
     return {name:p.name,fee:c.fee,offset,cashOwed,statusLabel,statusColor};
   }).sort((a,b)=>b.cashOwed-a.cashOwed);
@@ -524,7 +524,7 @@ function openCycleModal(idx){
       const q=state.players[j]; const qbal=q.accumulated-q.paidOut;
       return `<option value="${j}" ${isCo&&type.by===j?'selected':''} ${qbal<shortfall?'disabled':''}>${q.name} (₦${qbal.toLocaleString()})</option>`;
     }).join('');
-    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ co-offset (${benefactorName} covers ₦${cashOwed.toLocaleString()})`:'—';
+    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ ₦${ownOffset.toLocaleString()} own + ₦${cashOwed.toLocaleString()} by ${benefactorName}`:'—';
     const statusClass=(isCash||isWin||isCo||isSettled)?'paid-tag':isPartial?'paid-tag':'unpaid-tag';
     const statusStyle=isPartial?'color:var(--caution)':isSettled||isCo?'color:var(--green)':'';
     return `<div class="check-item" style="flex-wrap:wrap">
@@ -605,9 +605,12 @@ function saveCycle(){
       const off=p.accumulated-p.paidOut; if(off>0){ p.paidOut+=off; state.payouts.push({player:p.name,amount:off,gw:label}); }
     }
     else if(nextIsCo){
-      const shortfall=c.fee-next.own; const ben=state.players[next.by];
-      if(next.own>0){ p.paidOut+=next.own; state.payouts.push({player:p.name,amount:next.own,gw:label}); }
+      // Compute own contribution from actual balance AFTER undo (fixes 0-value bug when transitioning from partial)
+      const actualOwn=p.accumulated-p.paidOut;
+      const shortfall=c.fee-actualOwn; const ben=state.players[next.by];
+      if(actualOwn>0){ p.paidOut+=actualOwn; state.payouts.push({player:p.name,amount:actualOwn,gw:label}); }
       if(ben&&shortfall>0){ ben.paidOut+=shortfall; state.payouts.push({player:ben.name,amount:shortfall,gw:`${label} (on behalf of ${p.name})`}); }
+      newCP[i]={type:'co-offset',own:actualOwn,by:next.by}; // update with correct own value
     }
   });
   state.cyclePayments[activeCycleIdx]=newCP;
