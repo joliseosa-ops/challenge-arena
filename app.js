@@ -431,6 +431,46 @@ function renderPayoutLog(){
   }).join('');
 }
 
+function renderCycleOwingTable(cycleIdx){
+  const el=document.getElementById('cycle-owing-table'); if(!el) return;
+  const c=CYCLES[cycleIdx];
+  const cp=state.cyclePayments[cycleIdx]||{};
+  const label=`Cycle ${cycleIdx+1} fee`;
+  const rows=c.players.map(i=>{
+    const p=state.players[i];
+    const type=cp[i];
+    const isCash=type===true||type==='cash';
+    const isWin=type==='winnings';
+    const isPartial=type==='partial';
+    const offset=isWin?c.fee:isPartial?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):0;
+    const cashOwed=isCash||isWin?0:c.fee-offset;
+    const statusLabel=isWin?'✓ winnings':isCash?'✓ cash':isPartial?'⚡ partial':'unpaid';
+    const statusColor=isWin||isCash?'var(--green)':isPartial?'var(--caution)':'var(--red)';
+    return {name:p.name,fee:c.fee,offset,cashOwed,statusLabel,statusColor};
+  }).sort((a,b)=>b.cashOwed-a.cashOwed);
+  const anyOwed=rows.some(r=>r.cashOwed>0);
+  el.innerHTML=`<div class="card">
+    <div class="card-title">Cycle ${cycleIdx+1} — Cash still owed</div>
+    ${!anyOwed?'<div style="font-size:13px;color:var(--green);font-weight:500">All players settled for this cycle.</div>':''}
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>Player</th>
+        <th>Cycle fee</th>
+        <th>Offset (winnings)</th>
+        <th>Cash owed</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td style="font-weight:500">${r.name}</td>
+        <td class="mono">₦${r.fee.toLocaleString()}</td>
+        <td class="mono" style="color:var(--accent)">${r.offset?'₦'+r.offset.toLocaleString():'—'}</td>
+        <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'₦0'}</td>
+        <td><span style="font-size:11px;font-weight:700;color:${r.statusColor}">${r.statusLabel}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
 function renderPayments(){
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
   const curCycle=Math.min(Math.floor((lastGW-1)/5),CYCLES.length-1);
@@ -440,6 +480,7 @@ function renderPayments(){
   document.getElementById('m-cycle').textContent=curCycle+1;
   document.getElementById('m-cycle-paid').textContent=curPaid+'/'+curData.players.length;
   renderDebtTracker();
+  renderCycleOwingTable(curCycle);
   document.getElementById('cycle-grid').innerHTML=CYCLES.map((c,i)=>{
     const cp=state.cyclePayments[i]||{};
     const paid=c.players.filter(j=>cp[j]).length;
