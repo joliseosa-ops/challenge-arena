@@ -431,6 +431,54 @@ function renderPayoutLog(){
   }).join('');
 }
 
+function renderFeesTab(){
+  const el=document.getElementById('fees-cycle-table'); if(!el) return;
+  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
+  const curCycle=Math.min(Math.floor((lastGW-1)/5),CYCLES.length-1);
+  // Build read-only table for every cycle
+  el.innerHTML=CYCLES.map((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const label=`Cycle ${idx+1} fee`;
+    const rows=c.players.map(i=>{
+      const p=state.players[i];
+      const type=cp[i];
+      const isCash=type===true||type==='cash';
+      const isWin=type==='winnings';
+      const isPartial=type==='partial';
+      const isSettled=type==='settled';
+      const isCo=typeof type==='object'&&type?.type==='co-offset';
+      const offset=isWin?c.fee:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):isCo?type.own:0;
+      const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
+      const benefactorName=isCo?state.players[type.by]?.name:'';
+      const isPaid=isCash||isWin||isCo||isSettled;
+      const breakdown=isWin?`₦${c.fee.toLocaleString()} from winnings`
+        :isCash?`₦${c.fee.toLocaleString()} cash`
+        :isSettled?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} cash`
+        :isCo?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} covered by ${benefactorName}`
+        :isPartial?`₦${offset.toLocaleString()} from winnings · ₦${cashOwed.toLocaleString()} cash pending`
+        :'—';
+      return {name:p.name,breakdown,cashOwed,isPaid};
+    }).sort((a,b)=>b.cashOwed-a.cashOwed);
+    const allPaid=rows.every(r=>r.isPaid);
+    const isCur=idx===curCycle;
+    return `<div class="card" style="${isCur?'border-color:var(--accent);border-width:2px':''}">
+      <div class="card-title" style="${isCur?'color:var(--accent)':''}">
+        ${isCur?'▶ ':''}Cycle ${idx+1} — GW${c.gw[0]}–${c.gw[1]} — ₦${c.fee.toLocaleString()}/player
+      </div>
+      ${allPaid?`<div style="font-size:13px;color:var(--green);font-weight:500;margin-bottom:.5rem">All players settled.</div>`:''}
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Player</th><th>Breakdown</th><th>Cash Owed</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td style="font-weight:500">${r.name}</td>
+          <td style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
+          <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
+          <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+}
+
 function renderCycleOwingTable(cycleIdx){
   const el=document.getElementById('cycle-owing-table'); if(!el) return;
   const c=CYCLES[cycleIdx];
@@ -690,9 +738,10 @@ function confirmReset(){
   alert('Season reset. Ready for a new season!');
 }
 
-const TAB_COLORS={standings:'#6b21a8',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payments:'#2563eb',admin:'#e11d48'};
+const TAB_COLORS={standings:'#6b21a8',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',fees:'#0ea5e9',payments:'#2563eb',admin:'#e11d48'};
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='payments'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
+  if(t==='fees'){ renderFeesTab(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');

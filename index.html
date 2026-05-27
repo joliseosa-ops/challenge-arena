@@ -46,6 +46,7 @@
     <button class="tab tab-history" onclick="showTab('history')">History</button>
     <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
     <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
+    <button class="tab tab-fees" onclick="showTab('fees')">Fees</button>
     <button class="tab tab-payments" onclick="showTab('payments')">Payments</button>
     <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
   </div>
@@ -177,6 +178,11 @@
       <div class="card-title">Payout log</div>
       <div id="payout-log"><div class="empty">no payouts recorded</div></div>
     </div>
+  </div>
+
+  <!-- FEES (public) -->
+  <div id="sec-fees" class="section">
+    <div id="fees-cycle-table"></div>
   </div>
 
   <!-- PAYMENTS -->
