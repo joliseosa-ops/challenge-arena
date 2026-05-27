@@ -442,10 +442,12 @@ function renderCycleOwingTable(cycleIdx){
     const isCash=type===true||type==='cash';
     const isWin=type==='winnings';
     const isPartial=type==='partial';
-    const offset=isWin?c.fee:isPartial?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):0;
-    const cashOwed=isCash||isWin?0:c.fee-offset;
-    const statusLabel=isWin?'✓ winnings':isCash?'✓ cash':isPartial?'⚡ partial':'unpaid';
-    const statusColor=isWin||isCash?'var(--green)':isPartial?'var(--caution)':'var(--red)';
+    const isCo=typeof type==='object'&&type?.type==='co-offset';
+    const offset=isWin?c.fee:isPartial?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):isCo?type.own:0;
+    const cashOwed=isCash||isWin||isCo?0:c.fee-offset;
+    const benefactorName=isCo?state.players[type.by]?.name:'';
+    const statusLabel=isWin?'✓ winnings':isCash?'✓ cash':isPartial?'⚡ partial':isCo?`✓ co-offset (${benefactorName})`:'unpaid';
+    const statusColor=isWin||isCash||isCo?'var(--green)':isPartial?'var(--caution)':'var(--red)';
     return {name:p.name,fee:c.fee,offset,cashOwed,statusLabel,statusColor};
   }).sort((a,b)=>b.cashOwed-a.cashOwed);
   const anyOwed=rows.some(r=>r.cashOwed>0);
@@ -505,26 +507,46 @@ function openCycleModal(idx){
   document.getElementById('modal-checklist').innerHTML=c.players.map(i=>{
     const p=state.players[i];
     const bal=p.accumulated-p.paidOut;
-    const type=cp[i]; // true/'cash'/'winnings'/'partial'/undefined
+    const type=cp[i];
     const isCash=type===true||type==='cash';
     const isWin=type==='winnings';
     const isPartial=type==='partial';
-    const canWin=!isCash&&!isWin&&!isPartial&&bal>=c.fee;
-    const canPartial=!isCash&&!isWin&&!isPartial&&bal>0&&bal<c.fee;
-    const partialOffset=isPartial?(state.payouts.findLast(x=>x.player===p.name&&x.gw===`Cycle ${idx+1} fee`)?.amount||bal):bal;
-    const cashOwed=c.fee-partialOffset;
+    const isCo=typeof type==='object'&&type?.type==='co-offset';
+    const canWin=!isCash&&!isWin&&!isPartial&&!isCo&&bal>=c.fee;
+    const canPartial=!isCash&&!isWin&&!isPartial&&!isCo&&bal>0&&bal<c.fee;
+    const ownOffset=isCo?type.own:isPartial?(state.payouts.findLast(x=>x.player===p.name&&x.gw===`Cycle ${idx+1} fee`)?.amount||bal):bal;
+    const cashOwed=c.fee-ownOffset;
+    const benefactorName=isCo?state.players[type.by]?.name:'';
+    // dropdown of other players in this cycle who have enough balance to cover the shortfall
+    const shortfall=cashOwed;
+    const coverOptions=c.players.filter(j=>j!==i).map(j=>{
+      const q=state.players[j]; const qbal=q.accumulated-q.paidOut;
+      return `<option value="${j}" ${isCo&&type.by===j?'selected':''} ${qbal<shortfall?'disabled':''}>${q.name} (₦${qbal.toLocaleString()})</option>`;
+    }).join('');
+    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ co-offset (${benefactorName} covers ₦${cashOwed.toLocaleString()})`:'—';
+    const statusClass=(isCash||isWin||isCo)?'paid-tag':isPartial?'paid-tag':'unpaid-tag';
+    const statusStyle=isPartial?'color:var(--caution)':isCo?'color:var(--green)':'';
     return `<div class="check-item" style="flex-wrap:wrap">
-      <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){var w=document.getElementById('cpw${i}');if(w)w.checked=false;var pw=document.getElementById('cppw${i}');if(pw)pw.checked=false;}">
+      <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){['cpw${i}','cppw${i}'].forEach(id=>{var el=document.getElementById(id);if(el)el.checked=false;})}">
       <label for="cp${i}" style="flex:1">${p.name}</label>
       <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--dim);margin-right:4px">₦${bal.toLocaleString()}</span>
-      <span class="${isCash||isWin||isPartial?'paid-tag':'unpaid-tag'}" style="${isPartial?'color:var(--caution)':''}">${isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:'—'}</span>
+      <span class="${statusClass}" style="${statusStyle}">${statusTag}</span>
       ${canWin||isWin?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:6px">
         <input type="checkbox" id="cpw${i}" ${isWin?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
         <label for="cpw${i}" style="font-size:12px;color:var(--accent);cursor:pointer">pay ₦${c.fee.toLocaleString()} from winnings</label>
       </div>`:''}
-      ${canPartial||isPartial?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:6px">
-        <input type="checkbox" id="cppw${i}" ${isPartial?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
-        <label for="cppw${i}" style="font-size:12px;color:var(--caution);cursor:pointer">offset ₦${bal.toLocaleString()} from winnings + ₦${cashOwed.toLocaleString()} cash still owed</label>
+      ${canPartial||isPartial||isCo?`<div style="width:100%;padding:4px 0 0 23px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="cppw${i}" ${isPartial||isCo?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
+          <label for="cppw${i}" style="font-size:12px;color:var(--caution);cursor:pointer">offset ₦${ownOffset.toLocaleString()} from own winnings (₦${cashOwed.toLocaleString()} shortfall)</label>
+        </div>
+        <div style="padding-left:21px;display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;color:var(--muted);white-space:nowrap">Shortfall covered by:</label>
+          <select id="cpco${i}" style="height:28px;font-size:12px;padding:2px 6px;flex:1">
+            <option value="">— (cash still owed)</option>
+            ${coverOptions}
+          </select>
+        </div>
       </div>`:''}
     </div>`;
   }).join('');
@@ -539,23 +561,39 @@ function saveCycle(){
     const winEl=document.getElementById('cpw'+i);
     const partialEl=document.getElementById('cppw'+i);
     const cashEl=document.getElementById('cp'+i);
+    const coEl=document.getElementById('cpco'+i);
     if(winEl?.checked) newCP[i]='winnings';
-    else if(partialEl?.checked) newCP[i]='partial';
-    else if(cashEl?.checked) newCP[i]='cash';
+    else if(partialEl?.checked){
+      const byIdx=coEl&&coEl.value!==''?parseInt(coEl.value):null;
+      if(byIdx!==null&&!isNaN(byIdx)) newCP[i]={type:'co-offset',own:state.players[i].accumulated-state.players[i].paidOut,by:byIdx};
+      else newCP[i]='partial';
+    } else if(cashEl?.checked) newCP[i]='cash';
   });
   c.players.forEach(i=>{
     const prev=prevCP[i];
     const next=newCP[i];
-    if(prev===next) return;
+    const prevIsCo=typeof prev==='object'&&prev?.type==='co-offset';
+    const nextIsCo=typeof next==='object'&&next?.type==='co-offset';
+    if(JSON.stringify(prev)===JSON.stringify(next)) return;
     const p=state.players[i];
     const label=`Cycle ${activeCycleIdx+1} fee`;
-    const removePayout=(amt)=>{ const j=state.payouts.findLastIndex(x=>x.player===p.name&&x.gw===label&&(amt===undefined||x.amount===amt)); if(j!==-1) state.payouts.splice(j,1); };
+    const removePayout=(playerName,amt)=>{ const j=state.payouts.findLastIndex(x=>x.player===playerName&&x.gw===label&&(amt===undefined||x.amount===amt)); if(j!==-1) state.payouts.splice(j,1); };
     // Undo previous state
-    if(prev==='winnings'){ p.paidOut-=c.fee; removePayout(c.fee); }
-    else if(prev==='partial'){ const rec=state.payouts.findLast(x=>x.player===p.name&&x.gw===label); if(rec){ p.paidOut-=rec.amount; removePayout(rec.amount); } }
+    if(prev==='winnings'){ p.paidOut-=c.fee; removePayout(p.name,c.fee); }
+    else if(prev==='partial'){ const rec=state.payouts.findLast(x=>x.player===p.name&&x.gw===label); if(rec){ p.paidOut-=rec.amount; removePayout(p.name,rec.amount); } }
+    else if(prevIsCo){
+      const ben=state.players[prev.by];
+      p.paidOut-=prev.own; removePayout(p.name,prev.own);
+      if(ben){ ben.paidOut-=(c.fee-prev.own); removePayout(ben.name,c.fee-prev.own); }
+    }
     // Apply new state
     if(next==='winnings'){ p.paidOut+=c.fee; state.payouts.push({player:p.name,amount:c.fee,gw:label}); }
     else if(next==='partial'){ const off=p.accumulated-p.paidOut; if(off>0){ p.paidOut+=off; state.payouts.push({player:p.name,amount:off,gw:label}); } }
+    else if(nextIsCo){
+      const shortfall=c.fee-next.own; const ben=state.players[next.by];
+      if(next.own>0){ p.paidOut+=next.own; state.payouts.push({player:p.name,amount:next.own,gw:label}); }
+      if(ben&&shortfall>0){ ben.paidOut+=shortfall; state.payouts.push({player:ben.name,amount:shortfall,gw:`${label} (on behalf of ${p.name})`}); }
+    }
   });
   state.cyclePayments[activeCycleIdx]=newCP;
   save(); closeModal(); renderPayments(); renderStandings();
