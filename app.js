@@ -1,5 +1,5 @@
 const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v13';
+const KEY='challenge_arena_v14';
 
 // 7 payment cycles reflecting actual manager counts and GW ranges
 const CYCLES=[
@@ -10,7 +10,6 @@ const CYCLES=[
   {gw:[21,25], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players (Paschal left)
   {gw:[26,30], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players
   {gw:[31,38], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:16000}, // 19 players, 8 GWs
-  {gw:[39,43], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players, next season
 ];
 
 const INIT_PLAYERS=[
@@ -133,8 +132,8 @@ function buildDefault(){
   });
   const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
   const cp={};
-  // Historical cycles (1-7) fully paid; future cycles start unpaid
-  CYCLES.slice(0,7).forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
+  // All cycles fully paid (all historical)
+  CYCLES.forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
   return {players,gameweeks,payouts,cyclePayments:cp};
 }
 
@@ -158,19 +157,21 @@ async function loadFromCloud(){
 
 function load(){
   try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
-  // Migrate paidOut + payouts log from v11 (preserves payouts recorded through the app)
-  try{
-    const s=localStorage.getItem('challenge_arena_v11');
-    if(s){
-      const old=JSON.parse(s);
-      if(Array.isArray(old?.players)){
-        const fresh=buildDefault();
-        old.players.forEach((p,i)=>{ if(fresh.players[i]&&typeof p.paidOut==='number') fresh.players[i].paidOut=p.paidOut; });
-        if(Array.isArray(old.payouts)&&old.payouts.length) fresh.payouts=old.payouts;
-        return fresh;
+  // Migrate paidOut + payouts log from previous version (try v13 first, then v11)
+  for(const prev of['challenge_arena_v13','challenge_arena_v11']){
+    try{
+      const s=localStorage.getItem(prev);
+      if(s){
+        const old=JSON.parse(s);
+        if(Array.isArray(old?.players)){
+          const fresh=buildDefault();
+          old.players.forEach((p,i)=>{ if(fresh.players[i]&&typeof p.paidOut==='number') fresh.players[i].paidOut=p.paidOut; });
+          if(Array.isArray(old.payouts)&&old.payouts.length) fresh.payouts=old.payouts;
+          return fresh;
+        }
       }
-    }
-  }catch(e){}
+    }catch(e){}
+  }
   return buildDefault();
 }
 function save(){
