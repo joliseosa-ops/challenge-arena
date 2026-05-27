@@ -674,74 +674,69 @@ function loadWeeklyGW(){
   renderWeeklyTable(gwNum,gwRecord);
 }
 
-function renderWeeklyTable(gwNum,gwRecord){
+function renderWeeklyTable(gwNum,gwRecord,ptsMap=null){
+  const hasPoints=ptsMap!==null;
   const entries=state.players.map((p,i)=>({
     idx:i, name:p.name, teamName:p.teamName,
     prize:gwRecord.awards[i]||0,
-    pos:gwRecord.pos[1]?.includes(i)?1:gwRecord.pos[2]?.includes(i)?2:gwRecord.pos[3]?.includes(i)?3:null
-  })).sort((a,b)=>b.prize-a.prize);
+    pos:gwRecord.pos[1]?.includes(i)?1:gwRecord.pos[2]?.includes(i)?2:gwRecord.pos[3]?.includes(i)?3:null,
+    pts:hasPoints?(ptsMap[i]??null):null
+  })).sort((a,b)=>hasPoints?((b.pts??-1)-(a.pts??-1))||b.prize-a.prize:b.prize-a.prize);
   const rC=r=>r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-n';
   const rL=r=>r===1?'1st':r===2?'2nd':r===3?'3rd':'—';
-  document.getElementById('weekly-content').innerHTML=`<div class="card"><div class="card-title">GW ${gwNum} — prize results</div><div class="tbl-wrap"><table>
-    <thead><tr><th>Pos</th><th>Player</th><th>Prize</th></tr></thead>
-    <tbody>${entries.map(e=>{
-      const podiumCls=e.pos===1?'podium-1':e.pos===2?'podium-2':e.pos===3?'podium-3':'';
-      return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${e.idx})" style="cursor:pointer">
-        <td><span class="${rC(e.pos)}">${rL(e.pos)}</span></td>
-        <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><div><div style="font-weight:500">${e.name}</div>${e.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${e.teamName}</div>`:''}</div></div></td>
-        <td>${e.prize>0?`<span class="bal-pos">₦${e.prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table></div></div>`;
+  let rank=0,prevPts=null;
+  document.getElementById('weekly-content').innerHTML=`<div class="card">
+    <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">GW ${gwNum} — RESULTS</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="fpl-points-status" style="font-size:11px;color:rgba(255,255,255,.75)"></span>
+        <button onclick="fetchLivePoints()" style="font-size:11px;padding:4px 10px;height:28px;border-color:rgba(255,255,255,.35);color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);border-radius:5px;cursor:pointer;font-weight:600" id="fetch-pts-btn">Fetch GW Pts</button>
+      </div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>${hasPoints?'Rank':'Pos'}</th><th>Player</th>${hasPoints?'<th>GW Pts</th>':''}<th>Prize</th></tr></thead>
+      <tbody>${entries.map(e=>{
+        if(hasPoints){ if(e.pts!==prevPts){rank++;prevPts=e.pts;} }
+        const displayRank=hasPoints?rank:null;
+        const podiumCls=hasPoints?(rank<=3?`podium-${rank}`:''):(e.pos?`podium-${e.pos}`:'');
+        return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${e.idx})" style="cursor:pointer">
+          <td><span class="${hasPoints?rC(displayRank):rC(e.pos)}">${hasPoints?rL(displayRank):rL(e.pos)}</span></td>
+          <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${e.name}</div>${e.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${e.teamName}</div>`:''}</div></div></td>
+          ${hasPoints?`<td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--fpl-dark)">${e.pts??'—'}</span></td>`:''}
+          <td>${e.prize>0?`<span class="bal-pos">₦${e.prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>
+  </div>`;
 }
 
 // ── Live FPL Challenge points ─────────────────────────────────────────────────
 async function fetchLivePoints(){
   const gwNum=parseInt(document.getElementById('weekly-gw-sel').value);
   if(!gwNum){ alert('Select a gameweek first.'); return; }
-  const btn=document.querySelector('[onclick="fetchLivePoints()"]');
+  const gwRecord=state.gameweeks.find(g=>g.gw===gwNum);
+  if(!gwRecord){ alert(`GW${gwNum} has no recorded prize data yet.`); return; }
+  const btn=document.getElementById('fetch-pts-btn');
   const status=document.getElementById('fpl-points-status');
-  const content=document.getElementById('fpl-points-content');
-  btn.disabled=true; status.textContent=`Fetching GW${gwNum} from FPL Challenge…`; content.innerHTML='';
+  if(btn) btn.disabled=true;
+  if(status) status.textContent=`Fetching…`;
   try{
     const results=await Promise.all(
       Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
         fetch(`${PROXY}${encodeURIComponent(FPL_BASE+'/entry/'+entryId+'/history/')}`)
           .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
-          .then(d=>{
-            const gw=d.current?.find(g=>g.event===gwNum);
-            return {playerIdx,points:gw?.points??null};
-          })
-          .catch(()=>({playerIdx,points:null}))
+          .then(d=>{ const gw=d.current?.find(g=>g.event===gwNum); return {playerIdx:parseInt(playerIdx),pts:gw?.points??null}; })
+          .catch(()=>({playerIdx:parseInt(playerIdx),pts:null}))
       )
     );
-    const valid=results.filter(r=>r.points!==null);
-    if(!valid.length){ status.textContent='No data returned — GW may not be played yet or API endpoint changed.'; btn.disabled=false; return; }
-    const sorted=[...results].sort((a,b)=>(b.points??-1)-(a.points??-1));
-    const rC=r=>r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-n';
-    const rL=r=>r===1?'1st':r===2?'2nd':r===3?'3rd':r;
-    let rank=0,prevPts=null;
-    content.innerHTML=`<div class="tbl-wrap" style="margin-top:1rem"><table>
-      <thead><tr><th>Rank</th><th>Player</th><th>GW${gwNum} Pts</th></tr></thead>
-      <tbody>${sorted.map(r=>{
-        const p=state.players[r.playerIdx];
-        if(r.points!==prevPts){rank++; prevPts=r.points;}
-        const rc=rC(rank); const rl=rL(rank);
-        const podCls=rank<=3?` class="podium-${rank}"`:'';
-        return `<tr${podCls}>
-          <td><span class="${rc}">${rl}</span></td>
-          <td><div style="display:flex;align-items:center;gap:8px">
-            <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
-            <div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
-          </div></td>
-          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--fpl-dark)">${r.points??'—'}</span></td>
-        </tr>`;
-      }).join('')}</tbody></table></div>`;
-    status.textContent=`GW${gwNum} points loaded`;
+    const valid=results.filter(r=>r.pts!==null);
+    if(!valid.length){ if(status) status.textContent='No points data found'; if(btn) btn.disabled=false; return; }
+    const ptsMap=Object.fromEntries(results.map(r=>[r.playerIdx,r.pts]));
+    renderWeeklyTable(gwNum,gwRecord,ptsMap);
   }catch(err){
-    status.textContent=`Failed: ${err.message}`;
+    if(status) status.textContent=`Failed: ${err.message}`;
   }
-  btn.disabled=false;
+  if(btn) btn.disabled=false;
 }
 
 // ── Head-to-head ──────────────────────────────────────────────────────────────

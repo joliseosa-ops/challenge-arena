@@ -110,15 +110,6 @@
         <div class="field" style="margin:0"><label>Gameweek</label><select id="weekly-gw-sel" onchange="loadWeeklyGW()"><option value="">— select a gameweek —</option></select></div>
       </div>
       <div id="weekly-content"><div class="empty">select a gameweek above</div></div>
-      <div class="card" style="margin-top:1rem">
-        <div class="card-title">FPL Challenge Points</div>
-        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Pull live GW scores directly from FPL Challenge and see how everyone ranked by points.</p>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="fetchLivePoints()">Fetch GW Points</button>
-          <span id="fpl-points-status" style="font-size:12px;color:var(--muted)"></span>
-        </div>
-        <div id="fpl-points-content"></div>
-      </div>
     </div>
   </div>
 
