@@ -695,6 +695,55 @@ function renderWeeklyTable(gwNum,gwRecord){
   </table></div></div>`;
 }
 
+// ── Live FPL Challenge points ─────────────────────────────────────────────────
+async function fetchLivePoints(){
+  const gwNum=parseInt(document.getElementById('weekly-gw-sel').value);
+  if(!gwNum){ alert('Select a gameweek first.'); return; }
+  const btn=document.querySelector('[onclick="fetchLivePoints()"]');
+  const status=document.getElementById('fpl-points-status');
+  const content=document.getElementById('fpl-points-content');
+  btn.disabled=true; status.textContent=`Fetching GW${gwNum} from FPL Challenge…`; content.innerHTML='';
+  try{
+    const results=await Promise.all(
+      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
+        fetch(`${PROXY}${encodeURIComponent(FPL_BASE+'/entry/'+entryId+'/history/')}`)
+          .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+          .then(d=>{
+            const gw=d.current?.find(g=>g.event===gwNum);
+            return {playerIdx,points:gw?.points??null};
+          })
+          .catch(()=>({playerIdx,points:null}))
+      )
+    );
+    const valid=results.filter(r=>r.points!==null);
+    if(!valid.length){ status.textContent='No data returned — GW may not be played yet or API endpoint changed.'; btn.disabled=false; return; }
+    const sorted=[...results].sort((a,b)=>(b.points??-1)-(a.points??-1));
+    const rC=r=>r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-n';
+    const rL=r=>r===1?'1st':r===2?'2nd':r===3?'3rd':r;
+    let rank=0,prevPts=null;
+    content.innerHTML=`<div class="tbl-wrap" style="margin-top:1rem"><table>
+      <thead><tr><th>Rank</th><th>Player</th><th>GW${gwNum} Pts</th></tr></thead>
+      <tbody>${sorted.map(r=>{
+        const p=state.players[r.playerIdx];
+        if(r.points!==prevPts){rank++; prevPts=r.points;}
+        const rc=rC(rank); const rl=rL(rank);
+        const podCls=rank<=3?` class="podium-${rank}"`:'';
+        return `<tr${podCls}>
+          <td><span class="${rc}">${rl}</span></td>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
+            <div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
+          </div></td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--fpl-dark)">${r.points??'—'}</span></td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`;
+    status.textContent=`GW${gwNum} points loaded`;
+  }catch(err){
+    status.textContent=`Failed: ${err.message}`;
+  }
+  btn.disabled=false;
+}
+
 // ── Head-to-head ──────────────────────────────────────────────────────────────
 function renderH2H(){
   const vals=['h2h-a','h2h-b','h2h-c'].map(id=>document.getElementById(id).value).filter(v=>v!=='');
