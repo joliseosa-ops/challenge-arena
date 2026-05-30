@@ -469,7 +469,6 @@ function renderStandings(){
   document.getElementById('m-gw').textContent=lastGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
-  const mgws=document.getElementById('m-gws'); if(mgws) mgws.textContent=state.gameweeks.length;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
@@ -896,8 +895,11 @@ function renderSeasonRecap(){
   const el=document.getElementById('season-recap-card'); if(!el) return;
   if(!state.gameweeks.length){ el.style.display='none'; return; }
   el.style.display='';
-  const totalPrizes=state.players.reduce((s,p)=>s+p.paidOut,0);
+  const totalPaidOut=state.players.reduce((s,p)=>s+p.paidOut,0);
+  const totalAccumulated=state.players.reduce((s,p)=>s+p.accumulated,0);
   const totalFees=CYCLES.reduce((s,c,idx)=>{ const cp=state.cyclePayments[idx]||{}; return s+c.players.filter(i=>cp[i]).length*c.fee; },0);
+  const surplus=totalFees-totalAccumulated;
+  const totalPrizes=totalPaidOut+Math.max(0,surplus);
   let bigWin={player:'',amount:0,gw:0};
   state.gameweeks.forEach(g=>{ Object.entries(g.awards).forEach(([idx,amt])=>{ if(amt>bigWin.amount) bigWin={player:state.players[parseInt(idx)]?.name||'?',amount:amt,gw:g.gw}; }); });
   const topPodium=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
