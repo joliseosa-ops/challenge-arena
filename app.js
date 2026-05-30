@@ -407,7 +407,7 @@ function computeBadges(playerIdx){
   // Hat-trick
   if(p.w1>=3) badges.push({icon:'🎯',label:'Hat-trick',desc:`${p.w1} gameweek wins`});
   // Podium regular
-  if(total>=5) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
+  if(total>=7) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
   // Streak
   let streak=0,max=0;
   state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
