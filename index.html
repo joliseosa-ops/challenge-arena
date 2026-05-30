@@ -17,6 +17,12 @@
 <meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#37003c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ChalArena">
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </head>
 <body>
 
@@ -67,7 +73,9 @@
         <div class="metric"><div class="metric-label">Balance</div><div class="metric-val" id="m-acc">—</div></div>
         <div class="metric"><div class="metric-label">Total paid out</div><div class="metric-val" id="m-paid">—</div></div>
       </div>
+      <div class="card" id="countdown-card" style="margin-bottom:1rem;border-color:var(--accent);border-width:2px;display:none"></div>
       <div class="card" id="season-summary-card" style="margin-bottom:1rem;display:none"></div>
+      <div class="card" id="season-finances-card" style="margin-bottom:1rem;background:#f8f8f8;border-color:#e5e5e5;display:none"></div>
       <div class="card" style="margin-bottom:1rem;background:#f8f8f8;border-color:#e5e5e5">
         <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0;display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">STANDINGS</span>
@@ -231,6 +239,11 @@
     <div class="card">
       <div class="card-title">Player list</div>
       <div id="admin-player-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Next season countdown</div>
+      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Set the date the next season kicks off — a countdown will appear on the Standings page for all players to see.</p>
+      <div class="field"><label>Start date</label><input type="date" id="next-season-date" onchange="setNextSeasonDate(this.value)"></div>
     </div>
     <div class="card card-danger">
       <div class="card-title" style="color:var(--red)">Delete last GW entry</div>

@@ -354,7 +354,7 @@ function renderGWDetail(){
     const rows=arr.map(i=>`<div style="display:flex;align-items:center;gap:10px"><div class="init">${nm(i).slice(0,2).toUpperCase()}</div><span style="font-weight:500">${nm(i)}</span></div>`).join('');
     return `<div class="pos-group"><div class="pos-label ${cls}">${label} &mdash; ₦${amt.toLocaleString()}${perEach}</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">${rows}</div></div>`;
   }
-  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;min-height:36px" onclick="copyGWResults(${g.gw},this)">Copy results</button></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
+  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:6px"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;min-height:36px" onclick="copyGWResults(${g.gw},this)">Copy</button><button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;min-height:36px;background:#25d366;color:#fff;border-color:#25d366" onclick="shareGWWhatsApp(${g.gw})">Share</button></div></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
 }
 
 function setSort(s){
@@ -365,6 +365,45 @@ function setSort(s){
     btn.style.cssText='font-size:12px;padding:6px 10px;min-height:36px';
   });
   renderStandings();
+}
+
+function computeBadges(playerIdx){
+  const p=state.players[playerIdx];
+  const badges=[];
+  const total=p.w1+p.w2+p.w3;
+  // Top earner
+  if(state.players.every(q=>q.accumulated<=p.accumulated)&&p.accumulated>0)
+    badges.push({icon:'💰',label:'Top Earner',desc:'Highest total prize earnings'});
+  // Most wins
+  if(p.w1>=1&&state.players.every(q=>q.w1<=p.w1))
+    badges.push({icon:'👑',label:'Champion',desc:`Most 1st place finishes (${p.w1})`});
+  // Hat-trick
+  if(p.w1>=3) badges.push({icon:'🎯',label:'Hat-trick',desc:`${p.w1} gameweek wins`});
+  // Podium regular
+  if(total>=5) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
+  // Streak
+  let streak=0,max=0;
+  state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
+  if(max>=3) badges.push({icon:'🔥',label:'On Fire',desc:`${max} podiums in a row`});
+  else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:'2 consecutive podiums'});
+  // Consistent (podium 25%+ of GWs)
+  if(state.gameweeks.length>5&&total/state.gameweeks.length>=0.25)
+    badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
+  // Silver specialist
+  if(p.w2>=3&&state.players.every(q=>q.w2<=p.w2))
+    badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
+  return badges;
+}
+
+function formGuide(playerIdx){
+  const gws=state.gameweeks.slice(-5);
+  const dots=gws.map(g=>{
+    const won=(g.awards[playerIdx]||0)>0;
+    const col=won?'#16a34a':'#e5e5e5';
+    return `<div title="GW${g.gw}${won?' ✔':''}" style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></div>`;
+  });
+  const pad=Array(Math.max(0,5-gws.length)).fill('<div style="width:7px;height:7px;border-radius:50%;background:#e5e5e5;opacity:.3;flex-shrink:0"></div>');
+  return `<div style="display:flex;gap:3px;margin-top:4px">${[...pad,...dots].join('')}</div>`;
 }
 
 function renderStandings(){
@@ -388,7 +427,7 @@ function renderStandings(){
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
-      <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}</div></div></td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}<div>${formGuide(p.i)}</div></div></div></td>
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
@@ -396,6 +435,8 @@ function renderStandings(){
     </tr>`;
   }).join('');
   renderSeasonSummary();
+  renderSeasonFinances();
+  renderCountdown();
   renderEarningsChart();
 }
 
@@ -474,7 +515,7 @@ function renderPaymentTab(){
         </div>
         <span class="chev" style="font-size:16px;color:var(--muted)">${isCur?'▾':'▸'}</span>
       </div>
-      <div style="display:${isCur?'block':'none'}">${tableHTML}</div>
+      <div style="display:${isCur?'block':'none'}">${tableHTML}${!allPaid?`<button onclick="shareDebtReminder(${idx})" style="margin-top:.75rem;display:flex;align-items:center;gap:8px;padding:8px 14px;background:#25d366;color:#fff;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;min-height:36px">📢 Send payment reminder</button>`:''}</div>
     </div>`;
   }).join('');
 }
@@ -672,6 +713,11 @@ function saveCycle(){
 function closeModal(){ document.getElementById('cycle-overlay').classList.remove('open'); }
 document.getElementById('cycle-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
 
+function setNextSeasonDate(val){
+  state.nextSeasonDate=val||null;
+  save(); renderStandings();
+}
+
 function renderAdminPlayers(){
   const el=document.getElementById('admin-player-list'); if(!el) return;
   el.innerHTML=state.players.map((p,i)=>`
@@ -751,7 +797,7 @@ function showTab(t){
   if(t==='cycles') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd&&state.nextSeasonDate) nd.value=state.nextSeasonDate; }
 }
 
 function requireAdmin(tab){
@@ -819,6 +865,41 @@ function renderSeasonSummary(){
 }
 
 // ── Earnings chart ────────────────────────────────────────────────────────────
+function renderCountdown(){
+  const el=document.getElementById('countdown-card'); if(!el) return;
+  const d=state.nextSeasonDate;
+  if(!d){ el.style.display='none'; return; }
+  const ms=new Date(d)-new Date();
+  if(ms<=0){ el.style.display='none'; return; }
+  const days=Math.floor(ms/86400000);
+  const hrs=Math.floor((ms%86400000)/3600000);
+  el.style.display='';
+  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Next season starts</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:800;color:var(--fpl-dark)">${days}<span style="font-size:13px;font-weight:500;color:var(--muted)"> days</span> ${hrs}<span style="font-size:13px;font-weight:500;color:var(--muted)"> hrs</span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">${new Date(d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>
+    <div style="font-size:28px">⏳</div>
+  </div>`;
+}
+
+function renderSeasonFinances(){
+  const el=document.getElementById('season-finances-card'); if(!el) return;
+  const totalPrizes=state.gameweeks.reduce((s,g)=>s+Object.values(g.awards).reduce((a,b)=>a+b,0),0);
+  const totalFees=CYCLES.reduce((s,c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const paid=c.players.filter(i=>cp[i]).length;
+    return s+paid*c.fee;
+  },0);
+  const net=totalFees-totalPrizes;
+  el.style.display='';
+  el.innerHTML=`<div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0"><span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON FINANCES</span></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+    <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Fees collected</div><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div></div>
+    <div style="background:#dcfce7;border-top:3px solid var(--green);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Prizes paid</div><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div></div>
+    <div style="background:${net>=0?'#dbeafe':'#fee2e2'};border-top:3px solid ${net>=0?'var(--blue)':'var(--red)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${net>=0?'var(--blue)':'var(--red)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Net balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:${net>=0?'var(--blue)':'var(--red)'}">₦${Math.abs(net).toLocaleString()}</div></div>
+  </div>`;
+}
+
 function renderEarningsChart(){
   const el=document.getElementById('earnings-chart');
   if(!el) return;
@@ -975,6 +1056,7 @@ function openProfile(idx){
       <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem"><span class="w1">🥇 ${p.w1} 1st</span><span class="w2">🥈 ${p.w2} 2nd</span><span class="w3">🥉 ${p.w3} 3rd</span></div>
+    ${(()=>{const b=computeBadges(idx);return b.length?`<div style="margin-bottom:1.25rem"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px">Achievements</div><div style="display:flex;flex-wrap:wrap;gap:6px">${b.map(b=>`<div title="${b.desc}" style="display:flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#92400e">${b.icon} ${b.label}</div>`).join('')}</div></div>`:''})()}
     <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;border-left:3px solid var(--accent);padding-left:8px">Prize History</div>
     ${history.length?history.map(g=>`<div class="gw-item" style="border-bottom:1px solid var(--border)">
       <span class="gw-num">GW${g.gw}</span>
@@ -998,6 +1080,36 @@ function copyGWResults(gwNum,btn){
     lines.push(`${medal(pos)}: ${arr.map(nm).join(' & ')} — ₦${amt.toLocaleString()}${arr.length>1?' each':''}`);
   });
   navigator.clipboard.writeText(lines.join('\n')).then(()=>{ const orig=btn.textContent; btn.textContent='Copied!'; setTimeout(()=>btn.textContent=orig,2000); }).catch(()=>alert('Copy failed — try manually'));
+}
+
+function shareGWWhatsApp(gwNum){
+  const g=state.gameweeks.find(x=>x.gw===gwNum); if(!g) return;
+  const nm=i=>state.players[i]?.name||'?';
+  const lines=[`🏆 Challenge Arena – GW${gwNum} Results`,``];
+  [[1,'🥇'],[2,'🥈'],[3,'🥉']].forEach(([pos,medal])=>{
+    const arr=g.pos[pos]||[]; if(!arr.length) return;
+    const amt=g.awards[arr[0]]||0;
+    lines.push(`${medal} ${arr.map(nm).join(' & ')} — ₦${amt.toLocaleString()}${arr.length>1?' each':''}`);
+  });
+  lines.push(``,`📊 challenge-arena-two.vercel.app`);
+  window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
+}
+
+function shareDebtReminder(cycleIdx){
+  const c=CYCLES[cycleIdx];
+  const cp=state.cyclePayments[cycleIdx]||{};
+  const label=`Cycle ${cycleIdx+1} fee`;
+  const debtors=c.players.filter(i=>{
+    const t=cp[i];
+    return !(t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset'));
+  }).map(i=>{
+    const p=state.players[i]; const t=cp[i];
+    const offset=t==='partial'?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):0;
+    return `• ${p.name}: ₦${(c.fee-offset).toLocaleString()}`;
+  });
+  if(!debtors.length){ alert('All players are settled for this cycle!'); return; }
+  const lines=[`📢 Challenge Arena – Cycle ${cycleIdx+1} Payment Reminder`,`GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,``,`Outstanding:`, ...debtors,``,`Please settle asap 🙏`];
+  window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
 }
 
 // ── Debt tracker ──────────────────────────────────────────────────────────────
