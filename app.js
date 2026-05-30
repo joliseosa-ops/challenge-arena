@@ -471,6 +471,7 @@ function renderStandings(){
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
   document.getElementById('m-acc').textContent='₦'+(totalAcc-totalPaidOut).toLocaleString();
+  document.getElementById('m-paid').textContent='₦'+totalPaidOut.toLocaleString();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
