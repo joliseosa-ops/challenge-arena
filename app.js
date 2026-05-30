@@ -374,6 +374,16 @@ function renderAchievements(){
   const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
   const topWinner=[...state.players].sort((a,b)=>b.w1-a.w1)[0];
   const topPodium=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
+  const BADGE_LEGEND=[
+    {icon:'👑',label:'Champion',desc:'Has the most 1st place GW wins in the league'},
+    {icon:'🎯',label:'Hat-trick',desc:'Won 3 or more gameweeks outright'},
+    {icon:'💰',label:'Top Earner',desc:'Highest total accumulated prize money'},
+    {icon:'🏅',label:'Podium Regular',desc:'Finished in the top 3 at least 7 times'},
+    {icon:'🔥',label:'On Fire',desc:'3 or more consecutive GWs on the podium'},
+    {icon:'⚡',label:'Back-to-back',desc:'2 consecutive GWs on the podium'},
+    {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
+    {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes (minimum 3)'},
+  ];
   el.innerHTML=`
     <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
       <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem">Season Highlights</div>
@@ -381,6 +391,18 @@ function renderAchievements(){
         <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">💰</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Top Earner</div><div style="font-size:13px;font-weight:700;color:#fff">${topEarner?.name||'—'}</div></div>
         <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">👑</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Wins</div><div style="font-size:13px;font-weight:700;color:#fff">${topWinner?.name||'—'}</div></div>
         <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">🏅</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Podiums</div><div style="font-size:13px;font-weight:700;color:#fff">${topPodium?.name||'—'}</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'grid':'none';this.querySelector('.chev').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
+        <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px">Badge Legend</div>
+        <span class="chev" style="font-size:14px;color:var(--muted)">▾</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:.75rem">
+        ${BADGE_LEGEND.map(b=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--surface2);border-radius:8px">
+          <span style="font-size:20px;flex-shrink:0">${b.icon}</span>
+          <div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${b.label}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${b.desc}</div></div>
+        </div>`).join('')}
       </div>
     </div>
     ${rows.map(({p,i,badges})=>`
