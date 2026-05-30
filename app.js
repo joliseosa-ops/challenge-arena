@@ -464,12 +464,13 @@ function renderStandings(){
     if(currentSort==='podiums') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
     return b.accumulated-a.accumulated; // earnings
   });
-  const totalPaidOut=state.players.reduce((s,p)=>s+p.paidOut,0);
+
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
   document.getElementById('m-gw').textContent=lastGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
-  document.getElementById('m-paid').textContent='₦'+totalPaidOut.toLocaleString();
+  const mgws=document.getElementById('m-gws'); if(mgws) mgws.textContent=state.gameweeks.length;
+  const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
