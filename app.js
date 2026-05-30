@@ -447,9 +447,12 @@ function computeBadges(playerIdx){
 function formGuide(playerIdx){
   const gws=state.gameweeks.slice(-5);
   const dots=gws.map(g=>{
-    const won=(g.awards[playerIdx]||0)>0;
-    const col=won?'#16a34a':'#e5e5e5';
-    return `<div title="GW${g.gw}${won?' ✔':''}" style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></div>`;
+    const is1=(g.pos[1]||[]).includes(playerIdx);
+    const is2=(g.pos[2]||[]).includes(playerIdx);
+    const is3=(g.pos[3]||[]).includes(playerIdx);
+    const col=is1?'#f59e0b':is2?'#9ca3af':is3?'#cd7c3c':'#e5e5e5';
+    const label=is1?'🥇 1st':is2?'🥈 2nd':is3?'🥉 3rd':'—';
+    return `<div title="GW${g.gw}: ${label}" style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></div>`;
   });
   const pad=Array(Math.max(0,5-gws.length)).fill('<div style="width:7px;height:7px;border-radius:50%;background:#e5e5e5;opacity:.3;flex-shrink:0"></div>');
   return `<div style="display:flex;gap:3px;margin-top:4px">${[...pad,...dots].join('')}</div>`;
