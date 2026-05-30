@@ -464,13 +464,11 @@ function renderStandings(){
     if(currentSort==='podiums') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
     return b.accumulated-a.accumulated; // earnings
   });
-  const totalAcc=state.players.reduce((s,p)=>s+p.accumulated,0);
   const totalPaidOut=state.players.reduce((s,p)=>s+p.paidOut,0);
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
   document.getElementById('m-gw').textContent=lastGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
-  document.getElementById('m-acc').textContent='₦'+(totalAcc-totalPaidOut).toLocaleString();
   document.getElementById('m-paid').textContent='₦'+totalPaidOut.toLocaleString();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
@@ -908,7 +906,8 @@ function renderSeasonRecap(){
     <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON AT A GLANCE</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+    ${(()=>{ const acc=state.players.reduce((s,p)=>s+p.accumulated,0); const mib=acc-totalPrizes; return `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Fees in</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
@@ -917,7 +916,11 @@ function renderSeasonRecap(){
         <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Prizes out</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div>
       </div>
-    </div>
+      <div style="background:#dbeafe;border-top:3px solid var(--blue);border-radius:8px;padding:.75rem;text-align:center">
+        <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">In bank</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--blue)">₦${mib.toLocaleString()}</div>
+      </div>
+    </div>`; })()}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
       <div style="padding:.75rem;border:1px solid var(--border);border-radius:8px">
         <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Top earner</div>
