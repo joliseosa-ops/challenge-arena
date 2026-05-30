@@ -367,6 +367,33 @@ function setSort(s){
   renderStandings();
 }
 
+function renderAchievements(){
+  const el=document.getElementById('achievements-content'); if(!el) return;
+  const rows=state.players.map((p,i)=>({p,i,badges:computeBadges(i)}))
+    .sort((a,b)=>b.badges.length-a.badges.length);
+  const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
+  const topWinner=[...state.players].sort((a,b)=>b.w1-a.w1)[0];
+  const topPodium=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem">Season Highlights</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">💰</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Top Earner</div><div style="font-size:13px;font-weight:700;color:#fff">${topEarner?.name||'—'}</div></div>
+        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">👑</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Wins</div><div style="font-size:13px;font-weight:700;color:#fff">${topWinner?.name||'—'}</div></div>
+        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">🏅</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Podiums</div><div style="font-size:13px;font-weight:700;color:#fff">${topPodium?.name||'—'}</div></div>
+      </div>
+    </div>
+    ${rows.map(({p,i,badges})=>`
+      <div class="card" style="margin-bottom:.75rem;cursor:pointer" onclick="showTab('standings');setTimeout(()=>openProfile(${i}),50)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:${badges.length?'.75rem':'0'}">
+          <div class="init" style="width:36px;height:36px;font-size:11px;flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
+          <div style="flex:1"><div style="font-weight:600;font-size:14px">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
+          <div style="font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace">${badges.length} badge${badges.length!==1?'s':''}</div>
+        </div>
+        ${badges.length?`<div style="display:flex;flex-wrap:wrap;gap:6px">${badges.map(b=>`<div title="${b.desc}" style="display:flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#92400e">${b.icon} ${b.label}</div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--dim)">No achievements yet</div>'}
+      </div>`).join('')}`;
+}
+
 function computeBadges(playerIdx){
   const p=state.players[playerIdx];
   const badges=[];
@@ -784,10 +811,11 @@ function confirmReset(){
   alert('Season reset. Ready for a new season!');
 }
 
-const TAB_COLORS={standings:'#6b21a8',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payment:'#0ea5e9',cycles:'#2563eb',admin:'#e11d48'};
+const TAB_COLORS={standings:'#6b21a8',achievements:'#f59e0b',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payment:'#0ea5e9',cycles:'#2563eb',admin:'#e11d48'};
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   if(t==='payment'){ renderPaymentTab(); }
+  if(t==='achievements'){ renderAchievements(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
