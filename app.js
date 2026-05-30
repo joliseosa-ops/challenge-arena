@@ -897,7 +897,7 @@ function renderSeasonRecap(){
   const el=document.getElementById('season-recap-card'); if(!el) return;
   if(!state.gameweeks.length){ el.style.display='none'; return; }
   el.style.display='';
-  const totalPrizes=state.players.reduce((s,p)=>s+p.accumulated,0);
+  const totalPrizes=state.players.reduce((s,p)=>s+p.paidOut,0);
   const totalFees=CYCLES.reduce((s,c,idx)=>{ const cp=state.cyclePayments[idx]||{}; return s+c.players.filter(i=>cp[i]).length*c.fee; },0);
   const net=totalFees-totalPrizes;
   let bigWin={player:'',amount:0,gw:0};
