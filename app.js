@@ -899,7 +899,6 @@ function renderSeasonRecap(){
   el.style.display='';
   const totalPrizes=state.players.reduce((s,p)=>s+p.paidOut,0);
   const totalFees=CYCLES.reduce((s,c,idx)=>{ const cp=state.cyclePayments[idx]||{}; return s+c.players.filter(i=>cp[i]).length*c.fee; },0);
-  const net=totalFees-totalPrizes;
   let bigWin={player:'',amount:0,gw:0};
   state.gameweeks.forEach(g=>{ Object.entries(g.awards).forEach(([idx,amt])=>{ if(amt>bigWin.amount) bigWin={player:state.players[parseInt(idx)]?.name||'?',amount:amt,gw:g.gw}; }); });
   const topPodium=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
@@ -909,7 +908,7 @@ function renderSeasonRecap(){
     <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON AT A GLANCE</span>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Fees in</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
@@ -917,10 +916,6 @@ function renderSeasonRecap(){
       <div style="background:#dcfce7;border-top:3px solid var(--green);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Prizes out</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div>
-      </div>
-      <div style="background:${net>=0?'#dbeafe':'#fee2e2'};border-top:3px solid ${net>=0?'var(--blue)':'var(--red)'};border-radius:8px;padding:.75rem;text-align:center">
-        <div style="font-size:10px;font-weight:700;color:${net>=0?'var(--blue)':'var(--red)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Surplus</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${net>=0?'var(--blue)':'var(--red)'}">₦${Math.abs(net).toLocaleString()}</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
