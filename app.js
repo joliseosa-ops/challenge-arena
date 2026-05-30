@@ -406,7 +406,7 @@ function renderAchievements(){
       </div>
     </div>
     ${rows.map(({p,i,badges})=>`
-      <div class="card" style="margin-bottom:.75rem;cursor:pointer" onclick="showTab('standings');setTimeout(()=>openProfile(${i}),50)">
+      <div class="card" style="margin-bottom:.75rem;cursor:pointer" onclick="openProfile(${i})">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:${badges.length?'.75rem':'0'}">
           <div class="init" style="width:36px;height:36px;font-size:11px;flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
           <div style="flex:1"><div style="font-weight:600;font-size:14px">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
