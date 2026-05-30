@@ -909,7 +909,7 @@ function renderSeasonRecap(){
     <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON AT A GLANCE</span>
     </div>
-    ${(()=>{ const acc=state.players.reduce((s,p)=>s+p.accumulated,0); const mib=acc-totalPrizes; return `
+    ${(()=>{ const mib=totalFees-totalPrizes; return `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Season Prize Pot</div>
