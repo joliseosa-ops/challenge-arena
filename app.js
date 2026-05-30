@@ -1056,9 +1056,9 @@ function openProfile(idx){
       <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem">
-      <span class="w1">🥇 ${p.w1} Gold${p.w1!==1?'s':''}</span>
-      <span class="w2">🥈 ${p.w2} Silver${p.w2!==1?'s':''}</span>
-      <span class="w3">🥉 ${p.w3} Bronze${p.w3!==1?'s':''}</span>
+      <span class="w1">${p.w1} 🥇</span>
+      <span class="w2">${p.w2} 🥈</span>
+      <span class="w3">${p.w3} 🥉</span>
     </div>
     ${(()=>{const b=computeBadges(idx);return b.length?`<div style="margin-bottom:1.25rem"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px">Achievements</div><div style="display:flex;flex-wrap:wrap;gap:6px">${b.map(b=>`<div title="${b.desc}" style="display:flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#92400e">${b.icon} ${b.label}</div>`).join('')}</div></div>`:''})()}
     <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;border-left:3px solid var(--accent);padding-left:8px">Prize History</div>
