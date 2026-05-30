@@ -910,7 +910,7 @@ function renderSeasonRecap(){
     ${(()=>{ const acc=state.players.reduce((s,p)=>s+p.accumulated,0); const mib=acc-totalPrizes; return `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
-        <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Fees Collected</div>
+        <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Season Prize Pot</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
       </div>
       <div style="background:#dcfce7;border-top:3px solid var(--green);border-radius:8px;padding:.75rem;text-align:center">
