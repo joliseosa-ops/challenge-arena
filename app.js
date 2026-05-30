@@ -465,14 +465,12 @@ function renderStandings(){
     return b.accumulated-a.accumulated; // earnings
   });
   const totalAcc=state.players.reduce((s,p)=>s+p.accumulated,0);
-  const totalFees=CYCLES.reduce((s,c,idx)=>{ const cp=state.cyclePayments[idx]||{}; return s+c.players.filter(i=>cp[i]).length*c.fee; },0);
+  const totalPaidOut=state.players.reduce((s,p)=>s+p.paidOut,0);
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
   document.getElementById('m-gw').textContent=lastGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
-  const mp=document.getElementById('m-players'); if(mp) mp.textContent=state.players.length;
-  document.getElementById('m-acc').textContent='₦'+totalFees.toLocaleString();
-  document.getElementById('m-paid').textContent='₦'+Math.abs(totalFees-totalAcc).toLocaleString();
+  document.getElementById('m-acc').textContent='₦'+(totalAcc-totalPaidOut).toLocaleString();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
