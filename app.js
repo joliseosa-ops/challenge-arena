@@ -450,7 +450,7 @@ function formGuide(playerIdx){
     const is1=(g.pos[1]||[]).includes(playerIdx);
     const is2=(g.pos[2]||[]).includes(playerIdx);
     const is3=(g.pos[3]||[]).includes(playerIdx);
-    const col=is1?'#f59e0b':is2?'#9ca3af':is3?'#cd7c3c':'#e5e5e5';
+    const col=is1?'#16a34a':is2?'#eab308':is3?'#f97316':'#ef4444';
     const label=is1?'🥇 1st':is2?'🥈 2nd':is3?'🥉 3rd':'—';
     return `<div title="GW${g.gw}: ${label}" style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></div>`;
   });
