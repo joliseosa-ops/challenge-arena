@@ -516,10 +516,23 @@ function processPayout(){
 function renderPayoutLog(){
   const el=document.getElementById('payout-log');
   if(!state.payouts.length){ el.innerHTML='<div class="empty">no payouts recorded</div>'; return; }
-  el.innerHTML=[...state.payouts].reverse().map(p=>{
+  el.innerHTML=state.payouts.map((p,i)=>({...p,_idx:i})).reverse().map(p=>{
     const gwLabel=typeof p.gw==='number'?`GW${p.gw}`:p.gw;
-    return `<div class="gw-item"><span class="gw-num">${gwLabel}</span><span class="gw-detail">${p.player} — <strong style="color:var(--accent)">₦${p.amount.toLocaleString()}</strong> paid out</span></div>`;
+    return `<div class="gw-item" style="align-items:center">
+      <span class="gw-num">${gwLabel}</span>
+      <span class="gw-detail" style="flex:1">${p.player} — <strong style="color:var(--accent)">₦${p.amount.toLocaleString()}</strong> paid out</span>
+      <button onclick="reversePayout(${p._idx})" style="padding:3px 10px;font-size:.75rem;min-height:30px;background:none;border:1px solid #fca5a5;color:var(--red);border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Reverse</button>
+    </div>`;
   }).join('');
+}
+
+function reversePayout(idx){
+  const p=state.payouts[idx]; if(!p) return;
+  if(!confirm(`Reverse ₦${p.amount.toLocaleString()} payout to ${p.player}?`)) return;
+  const player=state.players.find(pl=>pl.name===p.player);
+  if(player) player.paidOut=Math.max(0,player.paidOut-p.amount);
+  state.payouts.splice(idx,1);
+  save(); renderPayoutLog(); updatePayoutInfo(); renderStandings();
 }
 
 function renderPaymentTab(){
