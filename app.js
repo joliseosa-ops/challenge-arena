@@ -205,7 +205,7 @@ function renderPointsGrid(){
       <div class="init" style="flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</span>
       <input type="number" id="pts-${i}" min="0" max="200" placeholder="—"
-        style="width:60px;height:30px;font-size:13px;padding:4px 6px;text-align:center;flex-shrink:0">
+        style="width:clamp(44px,15vw,60px);height:30px;font-size:13px;padding:4px 6px;text-align:center;flex-shrink:0">
     </div>`).join('');
 }
 
@@ -387,18 +387,18 @@ function renderAchievements(){
   el.innerHTML=`
     <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
       <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem">Season Highlights</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
         <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">💰</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Top Earner</div><div style="font-size:13px;font-weight:700;color:#fff">${topEarner?.name||'—'}</div></div>
         <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">👑</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Wins</div><div style="font-size:13px;font-weight:700;color:#fff">${topWinner?.name||'—'}</div></div>
         <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">🏅</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Podiums</div><div style="font-size:13px;font-weight:700;color:#fff">${topPodium?.name||'—'}</div></div>
       </div>
     </div>
     <div class="card" style="margin-bottom:1.25rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'grid':'none';this.querySelector('.chev').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;flex-wrap:wrap;gap:4px" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'grid':'none';this.querySelector('.chev').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
         <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px">Badge Legend</div>
         <span class="chev" style="font-size:14px;color:var(--muted)">▾</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:.75rem">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:.75rem">
         ${BADGE_LEGEND.map(b=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--surface2);border-radius:8px">
           <span style="font-size:20px;flex-shrink:0">${b.icon}</span>
           <div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${b.label}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${b.desc}</div></div>
@@ -602,14 +602,14 @@ function renderCycleOwingTable(cycleIdx){
       <thead><tr>
         <th>Player</th>
         <th>Fee</th>
-        <th>Breakdown</th>
+        <th class="hide-mobile">Breakdown</th>
         <th>Cash owed</th>
         <th>Status</th>
       </tr></thead>
       <tbody>${rows.map(r=>`<tr>
         <td style="font-weight:500">${r.name}</td>
         <td class="mono">₦${r.fee.toLocaleString()}</td>
-        <td style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
+        <td class="hide-mobile" style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
         <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
         <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
       </tr>`).join('')}</tbody>
@@ -773,9 +773,9 @@ function renderAdminPlayers(){
     <div class="player-row">
       <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="flex:1;font-size:.9rem;font-weight:500">${p.name}</span>
-      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:120px;max-width:35vw;height:32px">
+      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:120px;max-width:30vw;height:36px">
       <span class="mono" style="font-size:.75rem;color:var(--muted)">₦${(p.accumulated-p.paidOut).toLocaleString()}</span>
-      <button class="btn btn-ghost" style="padding:4px 10px;font-size:.8rem;color:var(--red);border-color:#fca5a5;min-height:32px;flex-shrink:0" onclick="removePlayer(${i})">Remove</button>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:.8rem;color:var(--red);border-color:#fca5a5;min-height:36px;flex-shrink:0" onclick="removePlayer(${i})">Remove</button>
     </div>`).join('');
 }
 
@@ -910,7 +910,7 @@ function renderSeasonRecap(){
       <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">SEASON AT A GLANCE</span>
     </div>
     ${(()=>{ const mib=totalFees-totalPrizes; return `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Season Prize Pot</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
@@ -1191,7 +1191,7 @@ function renderDebtTracker(){
     return unpaid.length?{cycle:ci+1,gw:`GW${c.gw[0]}–${c.gw[1]}`,fee:c.fee,unpaid}:null;
   }).filter(Boolean);
   if(!debtors.length){ el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div><div style="font-size:13px;color:var(--green);font-weight:500">All cycle fees accounted for.</div></div>`; return; }
-  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
+  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
 }
 
 // ── Sync names from FPL ───────────────────────────────────────────────────────

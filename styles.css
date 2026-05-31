@@ -162,6 +162,7 @@ select option{background:#fff}
 .card-danger{border-color:#fecaca}
 
 @media(max-width:600px){
+  .hide-mobile{display:none!important}
   header{padding:.875rem 1rem}
   .shell{padding:1.25rem 1rem}
   .page-title{font-size:24px;margin-bottom:1rem}
@@ -195,6 +196,7 @@ select option{background:#fff}
 }
 @media(max-width:400px){
   .metrics{grid-template-columns:1fr}
+  .hide-mobile{display:none!important}
 }
 
 @media print{
