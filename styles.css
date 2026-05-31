@@ -168,7 +168,7 @@ select option{background:#fff}
   .page-title{font-size:24px;margin-bottom:1rem}
   .tabs{margin-bottom:1.25rem}
   .tab{padding:8px 10px;font-size:12px;min-height:36px}
-  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metrics{grid-template-columns:repeat(2,1fr)!important}
   .metric{padding:.75rem}
   .metric-val{font-size:16px}
   .card{padding:1rem}

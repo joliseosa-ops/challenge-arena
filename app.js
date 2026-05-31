@@ -912,16 +912,16 @@ function renderSeasonRecap(){
     ${(()=>{ const mib=totalFees-totalPrizes; return `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
-        <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Season Prize Pot</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Prize Pot</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
       </div>
       <div style="background:#dcfce7;border-top:3px solid var(--green);border-radius:8px;padding:.75rem;text-align:center">
-        <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Total Paid Out</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Paid Out</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div>
       </div>
       <div style="background:#dbeafe;border-top:3px solid var(--blue);border-radius:8px;padding:.75rem;text-align:center">
-        <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">In bank</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--blue)">₦${mib.toLocaleString()}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">In Bank</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--blue)">₦${mib.toLocaleString()}</div>
       </div>
     </div>`; })()}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
