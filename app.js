@@ -886,7 +886,7 @@ function showTab(t){
   if(t==='cycles') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd&&state.nextSeasonDate) nd.value=state.nextSeasonDate; const gd=document.getElementById('next-gw-date'); if(gd&&state.nextGWDate) gd.value=state.nextGWDate; }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd&&state.nextSeasonDate) nd.value=state.nextSeasonDate.includes('T')?state.nextSeasonDate:state.nextSeasonDate+'T00:00'; const gd=document.getElementById('next-gw-date'); if(gd&&state.nextGWDate) gd.value=state.nextGWDate; }
 }
 
 function requireAdmin(tab){
@@ -991,15 +991,18 @@ function renderCountdown(){
   const el=document.getElementById('countdown-card'); if(!el) return;
   const d=state.nextSeasonDate;
   if(!d){ el.style.display='none'; return; }
-  const ms=new Date(d)-new Date();
+  const target=new Date(d.includes('T')?d:d+'T00:00');
+  const ms=target-new Date();
   if(ms<=0){ el.style.display='none'; return; }
   const days=Math.floor(ms/86400000);
   const hrs=Math.floor((ms%86400000)/3600000);
+  const dateStr=target.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const timeStr=target.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
   el.style.display='';
   el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
     <div><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Next season starts</div>
     <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:800;color:var(--fpl-dark)">${days}<span style="font-size:13px;font-weight:500;color:var(--muted)"> days</span> ${hrs}<span style="font-size:13px;font-weight:500;color:var(--muted)"> hrs</span></div>
-    <div style="font-size:12px;color:var(--muted);margin-top:2px">${new Date(d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">${dateStr} · ${timeStr}</div></div>
     <div style="font-size:28px">⏳</div>
   </div>`;
 }
