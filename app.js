@@ -794,9 +794,10 @@ function gwCountdownText(){
   const days=Math.floor(ms/86400000);
   const hrs=Math.floor((ms%86400000)/3600000);
   const mins=Math.floor((ms%3600000)/60000);
-  if(days>0) return days+'d '+hrs+'h';
-  if(hrs>0) return hrs+'h '+mins+'m';
-  return mins+'m';
+  const secs=Math.floor((ms%60000)/1000);
+  if(days>0) return days+'d '+hrs+'h '+mins+'m';
+  if(hrs>0) return hrs+'h '+mins+'m '+secs+'s';
+  return mins+'m '+secs+'s';
 }
 
 function updateGWCountdown(){
@@ -1296,7 +1297,7 @@ function importState(input){
 }
 
 // ── GW countdown ticker ───────────────────────────────────────────────────────
-setInterval(updateGWCountdown, 60000);
+setInterval(updateGWCountdown, 1000);
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV(){
