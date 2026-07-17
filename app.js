@@ -776,13 +776,20 @@ function saveCycle(){
 function closeModal(){ document.getElementById('cycle-overlay').classList.remove('open'); }
 document.getElementById('cycle-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
 
+function toInputDatetime(iso){
+  if(!iso) return '';
+  const d=new Date(iso);
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+}
+
 function setNextSeasonDate(val){
-  state.nextSeasonDate=val||null;
+  state.nextSeasonDate=val?new Date(val).toISOString():null;
   save(); renderStandings();
 }
 
 function setNextGWDate(val){
-  state.nextGWDate=val||null;
+  state.nextGWDate=val?new Date(val).toISOString():null;
   save(); updateGWCountdown();
 }
 
@@ -887,7 +894,7 @@ function showTab(t){
   if(t==='cycles') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd&&state.nextSeasonDate) nd.value=state.nextSeasonDate.includes('T')?state.nextSeasonDate:state.nextSeasonDate+'T00:00'; const gd=document.getElementById('next-gw-date'); if(gd&&state.nextGWDate) gd.value=state.nextGWDate; }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
 }
 
 function requireAdmin(tab){
