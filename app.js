@@ -134,7 +134,7 @@ function buildDefault(){
   const cp={};
   // All cycles fully paid (all historical)
   CYCLES.forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
-  return {players,gameweeks,payouts,cyclePayments:cp};
+  return {players,gameweeks,payouts,cyclePayments:cp,nextGWDate:null,nextSeasonDate:null};
 }
 
 // ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
@@ -470,6 +470,7 @@ function renderStandings(){
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
+  updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
@@ -780,6 +781,31 @@ function setNextSeasonDate(val){
   save(); renderStandings();
 }
 
+function setNextGWDate(val){
+  state.nextGWDate=val||null;
+  save(); updateGWCountdown();
+}
+
+function gwCountdownText(){
+  const d=state.nextGWDate;
+  if(!d) return '—';
+  const ms=new Date(d)-new Date();
+  if(ms<=0) return 'LIVE';
+  const days=Math.floor(ms/86400000);
+  const hrs=Math.floor((ms%86400000)/3600000);
+  const mins=Math.floor((ms%3600000)/60000);
+  if(days>0) return days+'d '+hrs+'h';
+  if(hrs>0) return hrs+'h '+mins+'m';
+  return mins+'m';
+}
+
+function updateGWCountdown(){
+  const el=document.getElementById('m-nextgw'); if(!el) return;
+  const t=gwCountdownText();
+  el.textContent=t;
+  el.style.color=t==='LIVE'?'var(--green)':t==='—'?'var(--dim)':'var(--fpl-dark)';
+}
+
 function renderAdminPlayers(){
   const el=document.getElementById('admin-player-list'); if(!el) return;
   el.innerHTML=state.players.map((p,i)=>`
@@ -860,7 +886,7 @@ function showTab(t){
   if(t==='cycles') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd&&state.nextSeasonDate) nd.value=state.nextSeasonDate; }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd&&state.nextSeasonDate) nd.value=state.nextSeasonDate; const gd=document.getElementById('next-gw-date'); if(gd&&state.nextGWDate) gd.value=state.nextGWDate; }
 }
 
 function requireAdmin(tab){
@@ -1265,6 +1291,9 @@ function importState(input){
   };
   reader.readAsText(file);
 }
+
+// ── GW countdown ticker ───────────────────────────────────────────────────────
+setInterval(updateGWCountdown, 60000);
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV(){
