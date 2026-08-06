@@ -1,5 +1,5 @@
 const PRIZE1=5000,PRIZE2=3000,PRIZE3=2000; // 5-player pool: 5×₦2k=₦10k (50/30/20%)
-const KEY='challenge_arena_v15';
+const KEY='challenge_arena_v17';
 
 // 2026/27 season — 8 cycles, players updated as they join
 const CYCLES=[
