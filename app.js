@@ -35,7 +35,7 @@ const OPENING=[0,37666,44666,8000,5000];
 const PRESET=[]; // 2026/27 — populated week by week
 
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0}));
   return {players,gameweeks:[],payouts:[],cyclePayments:{},nextGWDate:null,nextSeasonDate:null};
 }
 
@@ -86,6 +86,7 @@ let isAdmin=!!sessionStorage.getItem('ca_admin');
 let pendingTab=null;
 
 let state=load();
+state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });
 let activeCycleIdx=null;
 let currentSort='earnings';
 
@@ -362,9 +363,9 @@ function formGuide(playerIdx){
 
 function renderStandings(){
   const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
-    if(currentSort==='bank') return (b.accumulated-b.paidOut)-(a.accumulated-a.paidOut);
+    if(currentSort==='bank') return (b.accumulated-b.paidOut+(b.carryOver||0))-(a.accumulated-a.paidOut+(a.carryOver||0));
     if(currentSort==='podiums') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
-    return b.accumulated-a.accumulated; // earnings
+    return b.accumulated-a.accumulated; // earnings this season only
   });
 
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
@@ -376,13 +377,14 @@ function renderStandings(){
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
-    const bal=p.accumulated-p.paidOut;
+    const bal=p.accumulated-p.paidOut+(p.carryOver||0);
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
+    const carryTag=(p.carryOver||0)>0?`<span style="font-size:10px;color:var(--caution);margin-left:4px">(+₦${(p.carryOver||0).toLocaleString()} c/f)</span>`:'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}<div>${formGuide(p.i)}</div></div></div></td>
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
-      <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
+      <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span>${carryTag}</td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
     </tr>`;
@@ -397,9 +399,9 @@ function updatePayoutInfo(){
   const box=document.getElementById('po-info');
   if(!idx){ box.classList.add('hidden'); return; }
   const p=state.players[parseInt(idx)];
-  const bal=p.accumulated-p.paidOut;
+  const bal=p.accumulated-p.paidOut+(p.carryOver||0);
   box.classList.remove('hidden');
-  box.innerHTML=`accumulated: ₦${p.accumulated.toLocaleString()} &nbsp;·&nbsp; paid out: ₦${p.paidOut.toLocaleString()} &nbsp;·&nbsp; <strong>balance: ₦${bal.toLocaleString()}</strong>`;
+  box.innerHTML=`earned: ₦${p.accumulated.toLocaleString()} &nbsp;·&nbsp; carry-over: ₦${(p.carryOver||0).toLocaleString()} &nbsp;·&nbsp; paid out: ₦${p.paidOut.toLocaleString()} &nbsp;·&nbsp; <strong>balance: ₦${bal.toLocaleString()}</strong>`;
   document.getElementById('po-amt').value=bal>0?bal:'';
 }
 
@@ -409,7 +411,7 @@ function processPayout(){
   if(!idx){ alert('Select a player'); return; }
   if(!amt||amt<=0){ alert('Enter a valid amount'); return; }
   const p=state.players[parseInt(idx)];
-  const bal=p.accumulated-p.paidOut;
+  const bal=p.accumulated-p.paidOut+(p.carryOver||0);
   if(amt>bal){ alert(`Max available is ₦${bal.toLocaleString()}`); return; }
   p.paidOut+=amt;
   state.payouts.push({player:p.name,amount:amt,gw:state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37});
@@ -737,7 +739,7 @@ function addPlayer(){
   const name=document.getElementById('new-player-name').value.trim();
   if(!name){ alert('Enter a player name'); return; }
   if(state.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Player already exists'); return; }
-  state.players.push({name,teamName:'',accumulated:0,paidOut:0,w1:0,w2:0,w3:0});
+  state.players.push({name,teamName:'',accumulated:0,paidOut:0,carryOver:0,w1:0,w2:0,w3:0});
   save(); document.getElementById('new-player-name').value='';
   renderAdminPlayers(); populateSelects(); renderStandings();
 }
