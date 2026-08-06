@@ -53,7 +53,7 @@ async function loadFromCloud(){
   try{
     const {data,error}=await _sbc.from('arena_state').select('data').eq('id',1).single();
     if(error||!data||!data.data||!data.data.players) return null;
-    if(data.data._key && data.data._key!==KEY) return null; // stale version — rebuild
+    if(!data.data._key || data.data._key!==KEY) return null; // stale version — rebuild
     return data.data;
   }catch(e){ return null; }
 }
@@ -374,6 +374,7 @@ function renderStandings(){
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
+  const mwp=document.getElementById('m-weekly-pot'); if(mwp) mwp.textContent='₦'+(PRIZE1+PRIZE2+PRIZE3).toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
