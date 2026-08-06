@@ -1,4 +1,4 @@
-const KEY='challenge_arena_v15';
+const KEY='challenge_arena_v16';
 const WEEKLY_RATE=2000;  // ₦2k per player per GW → weekly prize pool
 const SEASON_RATE=1000;  // ₦1k per player per GW → season prize pool
 const FPL_LEAGUE_ID=318;
@@ -57,7 +57,8 @@ const ENTRY_MAP={
   141573:15, 253699:16, 420591:17, 278195:18, 244443:19,
 };
 
-const OPENING=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+// Carry-over from 2024/25: accumulated - paid_out for each player
+const OPENING=[0,37666,0,44666,8000,25000,0,11000,9666,11000,47166,0,11000,11000,55000,5000,0,22000,22000,0];
 const PRESET=[]; // 2025/26 — populated week by week
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
