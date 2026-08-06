@@ -1,5 +1,5 @@
 const PRIZE1=5000,PRIZE2=3000,PRIZE3=2000; // 5-player pool: 5×₦2k=₦10k (50/30/20%)
-const KEY='challenge_arena_v17';
+const KEY='challenge_arena_v18';
 
 // 2026/27 season — 8 cycles, players updated as they join
 const CYCLES=[
@@ -60,21 +60,6 @@ async function loadFromCloud(){
 
 function load(){
   try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
-  // Migrate paidOut + payouts log from previous version (try v13 first, then v11)
-  for(const prev of['challenge_arena_v13','challenge_arena_v11']){
-    try{
-      const s=localStorage.getItem(prev);
-      if(s){
-        const old=JSON.parse(s);
-        if(Array.isArray(old?.players)){
-          const fresh=buildDefault();
-          old.players.forEach((p,i)=>{ if(fresh.players[i]&&typeof p.paidOut==='number') fresh.players[i].paidOut=p.paidOut; });
-          if(Array.isArray(old.payouts)&&old.payouts.length) fresh.payouts=old.payouts;
-          return fresh;
-        }
-      }
-    }catch(e){}
-  }
   return buildDefault();
 }
 function save(){
