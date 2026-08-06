@@ -881,10 +881,20 @@ function confirmReset(){
 }
 
 const TAB_COLORS={standings:'#6b21a8',achievements:'#f59e0b',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payment:'#0ea5e9',cycles:'#2563eb',admin:'#e11d48'};
+function renderSeasonTab(){
+  const fmt=n=>'₦'+n.toLocaleString();
+  document.getElementById('m-season-pot').textContent=fmt(0);
+  document.getElementById('m-season-paid').textContent=fmt(0);
+  document.getElementById('m-season-remaining').textContent=fmt(0);
+  document.getElementById('season-pot-body').innerHTML=
+    '<div class="empty">Season pot tracking begins when 2026/27 kicks off</div>';
+}
+
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   if(t==='payment'){ renderPaymentTab(); }
   if(t==='achievements'){ renderAchievements(); }
+  if(t==='season'){ renderSeasonTab(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');

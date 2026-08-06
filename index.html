@@ -55,6 +55,7 @@
     <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
     <button class="tab tab-payment" onclick="showTab('payment')">Payment</button>
     <button class="tab tab-cycles" onclick="showTab('cycles')">Cycles</button>
+    <button class="tab tab-season" onclick="showTab('season')">Season Pot</button>
     <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
   </div>
 
@@ -212,6 +213,19 @@
     <div class="cycle-grid" id="cycle-grid"></div>
     <div id="cycle-owing-table" style="margin-top:1rem"></div>
     <div id="debt-tracker" style="margin-top:1rem"></div>
+  </div>
+
+  <!-- SEASON POT -->
+  <div id="sec-season" class="section">
+    <div class="metrics" style="margin-bottom:1.5rem">
+      <div class="metric" style="border-top-color:#f59e0b"><div class="metric-label">Season Pot</div><div class="metric-val" id="m-season-pot">—</div></div>
+      <div class="metric" style="border-top-color:#16a34a"><div class="metric-label">Paid Out</div><div class="metric-val" id="m-season-paid">—</div></div>
+      <div class="metric" style="border-top-color:#0ea5e9"><div class="metric-label">Remaining</div><div class="metric-val" id="m-season-remaining">—</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Season Pot</div>
+      <div id="season-pot-body"><div class="empty">No season pot data yet</div></div>
+    </div>
   </div>
 
   <!-- ADMIN -->
