@@ -1,140 +1,42 @@
-const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
-const KEY='challenge_arena_v14';
+const PRIZE1=5000,PRIZE2=3000,PRIZE3=2000; // 5-player pool: 5×₦2k=₦10k (50/30/20%)
+const KEY='challenge_arena_v15';
 
-// 7 payment cycles reflecting actual manager counts and GW ranges
+// 2026/27 season — 8 cycles, players updated as they join
 const CYCLES=[
-  {gw:[1,5],   players:[0,1,2,4,5,8,9,10,12,13,14,15,16,17,18,19],                      fee:10000}, // 16 players
-  {gw:[6,10],  players:[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19],               fee:10000}, // 19 players (+ William, Yusuf, Dickson)
-  {gw:[11,15], players:[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19],               fee:10000}, // 19 players
-  {gw:[16,20], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19],             fee:10000}, // 20 players (+ AWB)
-  {gw:[21,25], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players (Paschal left)
-  {gw:[26,30], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players
-  {gw:[31,38], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:16000}, // 19 players, 8 GWs
+  {gw:[1,5],   players:[0,1,2,3,4], fee:15000}, // ₦3k/week × 5 GWs
+  {gw:[6,10],  players:[0,1,2,3,4], fee:15000},
+  {gw:[11,15], players:[0,1,2,3,4], fee:15000},
+  {gw:[16,20], players:[0,1,2,3,4], fee:15000},
+  {gw:[21,25], players:[0,1,2,3,4], fee:15000},
+  {gw:[26,30], players:[0,1,2,3,4], fee:15000},
+  {gw:[31,35], players:[0,1,2,3,4], fee:15000},
+  {gw:[36,38], players:[0,1,2,3,4], fee:9000},  // ₦3k/week × 3 GWs
 ];
 
-const INIT_PLAYERS=[
-  'Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf',
-  'Eluigwe Frank','Hadassah','Dafe','Dickson','Joseph','Ose','Gege','Emeka',
-  'Koded City','Ifeanyi','Kel Lee','Paschal'
-];
-// idx: 0=Osahon,1=Syb,2=Emmanuel,3=William,4=Hensalos,5=Kingz,6=AWB,7=Yusuf
-//      8=EluigweFrank,9=Hadassah,10=Dafe,11=Dickson,12=Joseph,13=Ose,14=Gege
-//      15=Emeka,16=KodedCity,17=Ifeanyi,18=KelLee,19=Paschal
+// 2026/27 starting roster — others will join and be added
+const INIT_PLAYERS=['Osahon','Syb','William','Hensalos','Emeka'];
+// idx: 0=Osahon, 1=Syb, 2=William, 3=Hensalos, 4=Emeka
 
 const TEAM_NAMES=[
   'No more Benin People', // 0  Osahon
   'Mascotas',             // 1  Syb
-  'Emmanwachi',           // 2  Emmanuel
-  'Kop Fc',               // 3  William
-  'SosmanFC',             // 4  Hensalos
-  'KINGZ',                // 5  Kingz
-  'FPL Farm',             // 6  AWB
-  'Gesuke Wolves',        // 7  Yusuf
-  'HaCunha Mateta',       // 8  Eluigwe Frank
-  'H.S.g',               // 9  Hadassah
-  'Okan fc',              // 10 Dafe
-  'Ogwaligho FC',         // 11 Dickson
-  'Jaggo',                // 12 Joseph
-  'Wegoagain FC',         // 13 Ose
-  'metabolites 2',        // 14 Gege
-  'Ross FC',              // 15 Emeka
-  'Kode Fc',              // 16 Koded City
-  'Ghg',                  // 17 Ifeanyi
-  'Sure Beans',           // 18 Kel Lee
-  'You Kante Compete',    // 19 Paschal
+  'Kop Fc',               // 2  William
+  'SosmanFC',             // 3  Hensalos
+  'Ross FC',              // 4  Emeka
 ];
 
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
-const ENTRY_MAP={
-  21635:0, 375780:1, 75964:2, 806861:3, 96602:4,
-  390180:5, 13603:6, 807952:7, 56156:8, 8328:9,
-  285576:10, 807950:11, 91090:12, 51087:13, 139142:14,
-  141573:15, 253699:16, 420591:17, 278195:18, 244443:19,
-};
+const ENTRY_MAP={}; // populated once players register for 2026/27 FPL Challenge
 
-const OPENING=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+// Carry-over from 2025/26 — unpaid winnings each player is owed
+const OPENING=[0,37666,44666,8000,5000];
 
-const PRESET=[
-  {gw:1,awards:{1:7000,5:7000,14:18000},pos:{1:[14],2:[1,5],3:[]},note:'Gege 1st · Syb & Kingz joint 2nd (₦7,000 each)'},
-  {gw:2,awards:{8:10000,13:18000,15:4000},pos:{1:[13],2:[8],3:[15]},note:'Ose 1st · Eluigwe Frank 2nd · Emeka 3rd (₦4,000)'},
-  {gw:3,awards:{8:10000,15:4000,18:18000},pos:{1:[18],2:[8],3:[15]},note:'Kel Lee 1st · Eluigwe Frank 2nd · Emeka 3rd (₦4,000)'},
-  {gw:4,awards:{14:18000,18:4000,19:10000},pos:{1:[14],2:[19],3:[18]},note:'Gege 1st · Paschal 2nd · Kel Lee 3rd (₦4,000)'},
-  {gw:5,awards:{13:14000,15:14000,19:4000},pos:{1:[13,15],2:[],3:[19]},note:'Ose & Emeka joint 1st (₦14,000 each) · Paschal 3rd (₦4,000)'},
-  {gw:6,awards:{1:5000,7:11000,15:22000},pos:{1:[15],2:[7],3:[1]},note:'Emeka 1st · Yusuf 2nd · Syb 3rd (₦5,000)'},
-  {gw:7,awards:{2:1666,3:11000,9:22000,12:1666,15:1666},pos:{1:[9],2:[3],3:[2,12,15]},note:'Hadassah 1st · William 2nd · Emmanuel & Joseph & Emeka joint 3rd (₦1,666 each)'},
-  {gw:8,awards:{10:22000,15:11000,18:5000},pos:{1:[10],2:[15],3:[18]},note:'Dafe 1st · Emeka 2nd · Kel Lee 3rd (₦5,000)'},
-  {gw:9,awards:{7:22000,15:11000,17:5000},pos:{1:[7],2:[15],3:[17]},note:'Yusuf 1st · Emeka 2nd · Ifeanyi 3rd (₦5,000)'},
-  {gw:10,awards:{3:22000,9:5000,10:11000},pos:{1:[3],2:[10],3:[9]},note:'William 1st · Dafe 2nd · Hadassah 3rd (₦5,000)'},
-  {gw:11,awards:{3:1666,10:11000,12:22000,13:1666,17:1666},pos:{1:[12],2:[10],3:[3,13,17]},note:'Joseph 1st · Dafe 2nd · William & Ose & Ifeanyi joint 3rd (₦1,666 each)'},
-  {gw:12,awards:{3:22000,5:11000,10:5000},pos:{1:[3],2:[5],3:[10]},note:'William 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
-  {gw:13,awards:{0:5000,15:22000,16:11000},pos:{1:[15],2:[16],3:[0]},note:'Emeka 1st · Koded City 2nd · Osahon 3rd (₦5,000)'},
-  {gw:14,awards:{2:22000,8:8000,16:8000},pos:{1:[2],2:[8,16],3:[]},note:'Emmanuel 1st · Eluigwe Frank & Koded City joint 2nd (₦8,000 each)'},
-  {gw:15,awards:{0:22000,9:11000,14:5000},pos:{1:[0],2:[9],3:[14]},note:'Osahon 1st · Hadassah 2nd · Gege 3rd (₦5,000)'},
-  {gw:16,awards:{2:2500,3:11000,4:24000,9:2500},pos:{1:[4],2:[3],3:[2,9]},note:'Hensalos 1st · William 2nd · Emmanuel & Hadassah joint 3rd (₦2,500 each)'},
-  {gw:17,awards:{2:17500,8:17500,10:5000},pos:{1:[2,8],2:[],3:[10]},note:'Emmanuel & Eluigwe Frank joint 1st (₦17,500 each) · Dafe 3rd (₦5,000)'},
-  {gw:18,awards:{1:24000,5:11000,13:5000},pos:{1:[1],2:[5],3:[13]},note:'Syb 1st · Kingz 2nd · Ose 3rd (₦5,000)'},
-  {gw:19,awards:{5:5000,10:24000,16:11000},pos:{1:[10],2:[16],3:[5]},note:'Dafe 1st · Koded City 2nd · Kingz 3rd (₦5,000)'},
-  {gw:20,awards:{0:2500,10:2500,14:11000,18:24000},pos:{1:[18],2:[14],3:[0,10]},note:'Kel Lee 1st · Gege 2nd · Osahon & Dafe joint 3rd (₦2,500 each)'},
-  {gw:21,awards:{1:5000,2:22000,3:11000},pos:{1:[2],2:[3],3:[1]},note:'Emmanuel 1st · William 2nd · Syb 3rd (₦5,000)'},
-  {gw:22,awards:{1:22000,7:11000,15:5000},pos:{1:[1],2:[7],3:[15]},note:'Syb 1st · Yusuf 2nd · Emeka 3rd (₦5,000)'},
-  {gw:23,awards:{2:2500,9:2500,16:22000,17:11000},pos:{1:[16],2:[17],3:[2,9]},note:'Koded City 1st · Ifeanyi 2nd · Emmanuel & Hadassah joint 3rd (₦2,500 each)'},
-  {gw:24,awards:{5:22000,9:5000,13:11000},pos:{1:[5],2:[13],3:[9]},note:'Kingz 1st · Ose 2nd · Hadassah 3rd (₦5,000)'},
-  {gw:25,awards:{5:11000,6:2500,13:2500,18:22000},pos:{1:[18],2:[5],3:[6,13]},note:'Kel Lee 1st · Kingz 2nd · AWB & Ose joint 3rd (₦2,500 each)'},
-  {gw:26,awards:{6:11000,7:22000,18:5000},pos:{1:[7],2:[6],3:[18]},note:'Yusuf 1st · AWB 2nd · Kel Lee 3rd (₦5,000)'},
-  {gw:27,awards:{2:11000,3:22000,10:2500,12:2500},pos:{1:[3],2:[2],3:[10,12]},note:'William 1st · Emmanuel 2nd · Dafe & Joseph joint 3rd (₦2,500 each)'},
-  {gw:28,awards:{1:22000,2:11000,8:5000},pos:{1:[1],2:[2],3:[8]},note:'Syb 1st · Emmanuel 2nd · Eluigwe Frank 3rd (₦5,000)'},
-  {gw:29,awards:{9:22000,16:8000,17:8000},pos:{1:[9],2:[16,17],3:[]},note:'Hadassah 1st · Koded City & Ifeanyi joint 2nd (₦8,000 each)'},
-  {gw:30,awards:{6:12666,8:12666,10:12666},pos:{1:[6,8,10],2:[],3:[]},note:'AWB & Eluigwe Frank & Dafe 3-way 1st (₦12,666 each)'},
-  {gw:31,awards:{6:8000,8:8000,10:22000},pos:{1:[10],2:[6,8],3:[]},note:'Dafe 1st · AWB & Eluigwe Frank joint 2nd (₦8,000 each)'},
-  {gw:32,awards:{2:11000,7:5000,17:22000},pos:{1:[17],2:[2],3:[7]},note:'Ifeanyi 1st · Emmanuel 2nd · Yusuf 3rd (₦5,000)'},
-  {gw:33,awards:{5:11000,10:5000,16:22000},pos:{1:[16],2:[5],3:[10]},note:'Koded City 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
-  {gw:34,awards:{1:5000,2:11000,14:22000},pos:{1:[14],2:[2],3:[1]},note:'Gege 1st · Emmanuel 2nd · Syb 3rd (₦5,000)'},
-  {gw:35,awards:{13:11000,14:22000,15:2500,18:2500},pos:{1:[14],2:[13],3:[15,18]},note:'Gege 1st · Ose 2nd · Emeka & Kel Lee joint 3rd (₦2,500 each)'},
-  {gw:36,awards:{2:22000,9:5000,12:11000},pos:{1:[2],2:[12],3:[9]},note:'Emmanuel 1st · Joseph 2nd · Hadassah 3rd (₦5,000)'},
-  {gw:37,awards:{10:2500,14:11000,15:2500,18:22000},pos:{1:[18],2:[14],3:[10,15]},note:'Kel Lee 1st · Gege 2nd · Dafe & Emeka joint 3rd (₦2,500 each)'},
-  {gw:38,awards:{10:5000,12:11000,18:22000},pos:{1:[18],2:[12],3:[10]},note:'Kel Lee 1st · Joseph 2nd · Dafe 3rd (₦5,000)'},
-];
-
-// Amount already paid to each player; accumulated - this = current outstanding balance
-const PAID_OUT=[
-   29500, // 0  Osahon
-   52334, // 1  Syb
-  134166, // 2  Emmanuel  (-1 GW7 tie correction)
-   56000, // 3  William   (-1 GW11 tie correction)
-   16000, // 4  Hensalos
-   53000, // 5  Kingz
-   34166, // 6  AWB       (-1 GW30 tie correction)
-   60000, // 7  Yusuf
-   61500, // 8  Eluigwe Frank (-1 GW30 tie correction)
-   64000, // 9  Hadassah
-   83000, // 10 Dafe      (-1 GW30 tie correction)
-       0, // 11 Dickson
-   37166, // 12 Joseph    (-1 GW7 tie correction)
-   52166, // 13 Ose       (-1 GW11 tie correction)
-   52000, // 14 Gege
-   94666, // 15 Emeka     (-1 GW7 tie correction)
-   82000, // 16 Koded City
-   25666, // 17 Ifeanyi   (-1 GW11 tie correction)
-  102500, // 18 Kel Lee
-   14000, // 19 Paschal
-];
+const PRESET=[]; // 2026/27 — populated week by week
 
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:PAID_OUT[i]||0,w1:0,w2:0,w3:0}));
-  const gameweeks=[];
-  PRESET.forEach(g=>{
-    Object.entries(g.awards).forEach(([idx,prize])=>{ players[parseInt(idx)].accumulated+=prize; });
-    (g.pos[1]||[]).forEach(i=>players[i].w1++);
-    (g.pos[2]||[]).forEach(i=>players[i].w2++);
-    (g.pos[3]||[]).forEach(i=>players[i].w3++);
-    gameweeks.push({...g});
-  });
-  const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
-  const cp={};
-  // All cycles fully paid (all historical)
-  CYCLES.forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
-  return {players,gameweeks,payouts,cyclePayments:cp,nextGWDate:null,nextSeasonDate:null};
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
+  return {players,gameweeks:[],payouts:[],cyclePayments:{},nextGWDate:null,nextSeasonDate:null};
 }
 
 // ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
