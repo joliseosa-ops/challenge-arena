@@ -786,13 +786,27 @@ function confirmReset(){
 }
 
 const TAB_COLORS={standings:'#6b21a8',achievements:'#f59e0b',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payment:'#0ea5e9',cycles:'#2563eb',admin:'#e11d48'};
+function seasonPotTotal(){
+  let total=0;
+  CYCLES.forEach((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const gwCount=(c.gw[1]-c.gw[0])+1;
+    const paid=c.players.filter(i=>{const t=cp[i];return t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');}).length;
+    total+=paid*gwCount*1000; // ₦1k per player per GW
+  });
+  return total;
+}
+
 function renderSeasonTab(){
   const fmt=n=>'₦'+n.toLocaleString();
-  document.getElementById('m-season-pot').textContent=fmt(0);
+  const pot=seasonPotTotal();
+  const remaining=pot; // payouts not yet implemented
+  document.getElementById('m-season-pot').textContent=fmt(pot);
   document.getElementById('m-season-paid').textContent=fmt(0);
-  document.getElementById('m-season-remaining').textContent=fmt(0);
-  document.getElementById('season-pot-body').innerHTML=
-    '<div class="empty">Season pot tracking begins when 2026/27 kicks off</div>';
+  document.getElementById('m-season-remaining').textContent=fmt(remaining);
+  document.getElementById('season-pot-body').innerHTML=pot>0
+    ?`<p style="font-size:13px;color:var(--muted);line-height:1.8">Season pot grows at ₦1,000 per player per gameweek.<br>Total accumulated so far: <strong style="color:var(--text)">${fmt(pot)}</strong></p>`
+    :'<div class="empty">No cycle payments recorded yet — pot starts at ₦0</div>';
 }
 
 function showTab(t){
