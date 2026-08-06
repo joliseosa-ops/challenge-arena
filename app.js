@@ -29,8 +29,9 @@ const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
 const ENTRY_MAP={}; // populated once players register for 2026/27 FPL Challenge
 
-// Carry-over from 2025/26 — unpaid winnings each player is owed
-const OPENING=[0,37666,44666,8000,5000];
+// Carry-over from 2025/26 — net balance after pre-paying cycle fees with winnings
+// Syb: 37,666 - 30,000 (cycles 1&2) = 7,666 | William: 44,666 - 30,000 = 14,666
+const OPENING=[0,7666,14666,8000,5000];
 
 const PRESET=[]; // 2026/27 — populated week by week
 
@@ -379,12 +380,11 @@ function renderStandings(){
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
     const bal=p.accumulated-p.paidOut+(p.carryOver||0);
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
-    const carryTag=(p.carryOver||0)>0?`<span style="font-size:10px;color:var(--caution);margin-left:4px">(+₦${(p.carryOver||0).toLocaleString()} c/f)</span>`:'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${p.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.teamName}</div>`:''}<div>${formGuide(p.i)}</div></div></div></td>
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
-      <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span>${carryTag}</td>
+      <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
     </tr>`;
