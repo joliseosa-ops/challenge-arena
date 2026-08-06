@@ -1,19 +1,15 @@
-const KEY='challenge_arena_v16';
-const WEEKLY_RATE=2000;  // ₦2k per player per GW → weekly prize pool
-const SEASON_RATE=1000;  // ₦1k per player per GW → season prize pool
-const FPL_LEAGUE_ID=318;
+const PRIZE1=22000,PRIZE2=11000,PRIZE3=5000;
+const KEY='challenge_arena_v14';
 
-// 2025/26 season — 5 GW cycles at ₦15k/player (₦10k weekly + ₦5k season)
-// Last cycle is 3 GWs at ₦9k/player (₦6k weekly + ₦3k season)
+// 7 payment cycles reflecting actual manager counts and GW ranges
 const CYCLES=[
-  {gw:[1,5],   fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[6,10],  fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[11,15], fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[16,20], fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[21,25], fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[26,30], fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[31,35], fee:15000, weeklyFee:10000, seasonFee:5000},
-  {gw:[36,38], fee:9000,  weeklyFee:6000,  seasonFee:3000},
+  {gw:[1,5],   players:[0,1,2,4,5,8,9,10,12,13,14,15,16,17,18,19],                      fee:10000}, // 16 players
+  {gw:[6,10],  players:[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19],               fee:10000}, // 19 players (+ William, Yusuf, Dickson)
+  {gw:[11,15], players:[0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19],               fee:10000}, // 19 players
+  {gw:[16,20], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19],             fee:10000}, // 20 players (+ AWB)
+  {gw:[21,25], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players (Paschal left)
+  {gw:[26,30], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:10000}, // 19 players
+  {gw:[31,38], players:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],               fee:16000}, // 19 players, 8 GWs
 ];
 
 const INIT_PLAYERS=[
@@ -57,11 +53,75 @@ const ENTRY_MAP={
   141573:15, 253699:16, 420591:17, 278195:18, 244443:19,
 };
 
-// Carry-over from 2024/25: accumulated - paid_out for each player
-const OPENING=[0,37666,0,44666,8000,25000,0,11000,9666,11000,47166,0,11000,11000,55000,5000,0,22000,22000,0];
-const PRESET=[]; // 2025/26 — populated week by week
+const OPENING=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+const PRESET=[
+  {gw:1,awards:{1:7000,5:7000,14:18000},pos:{1:[14],2:[1,5],3:[]},note:'Gege 1st · Syb & Kingz joint 2nd (₦7,000 each)'},
+  {gw:2,awards:{8:10000,13:18000,15:4000},pos:{1:[13],2:[8],3:[15]},note:'Ose 1st · Eluigwe Frank 2nd · Emeka 3rd (₦4,000)'},
+  {gw:3,awards:{8:10000,15:4000,18:18000},pos:{1:[18],2:[8],3:[15]},note:'Kel Lee 1st · Eluigwe Frank 2nd · Emeka 3rd (₦4,000)'},
+  {gw:4,awards:{14:18000,18:4000,19:10000},pos:{1:[14],2:[19],3:[18]},note:'Gege 1st · Paschal 2nd · Kel Lee 3rd (₦4,000)'},
+  {gw:5,awards:{13:14000,15:14000,19:4000},pos:{1:[13,15],2:[],3:[19]},note:'Ose & Emeka joint 1st (₦14,000 each) · Paschal 3rd (₦4,000)'},
+  {gw:6,awards:{1:5000,7:11000,15:22000},pos:{1:[15],2:[7],3:[1]},note:'Emeka 1st · Yusuf 2nd · Syb 3rd (₦5,000)'},
+  {gw:7,awards:{2:1666,3:11000,9:22000,12:1666,15:1666},pos:{1:[9],2:[3],3:[2,12,15]},note:'Hadassah 1st · William 2nd · Emmanuel & Joseph & Emeka joint 3rd (₦1,666 each)'},
+  {gw:8,awards:{10:22000,15:11000,18:5000},pos:{1:[10],2:[15],3:[18]},note:'Dafe 1st · Emeka 2nd · Kel Lee 3rd (₦5,000)'},
+  {gw:9,awards:{7:22000,15:11000,17:5000},pos:{1:[7],2:[15],3:[17]},note:'Yusuf 1st · Emeka 2nd · Ifeanyi 3rd (₦5,000)'},
+  {gw:10,awards:{3:22000,9:5000,10:11000},pos:{1:[3],2:[10],3:[9]},note:'William 1st · Dafe 2nd · Hadassah 3rd (₦5,000)'},
+  {gw:11,awards:{3:1666,10:11000,12:22000,13:1666,17:1666},pos:{1:[12],2:[10],3:[3,13,17]},note:'Joseph 1st · Dafe 2nd · William & Ose & Ifeanyi joint 3rd (₦1,666 each)'},
+  {gw:12,awards:{3:22000,5:11000,10:5000},pos:{1:[3],2:[5],3:[10]},note:'William 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
+  {gw:13,awards:{0:5000,15:22000,16:11000},pos:{1:[15],2:[16],3:[0]},note:'Emeka 1st · Koded City 2nd · Osahon 3rd (₦5,000)'},
+  {gw:14,awards:{2:22000,8:8000,16:8000},pos:{1:[2],2:[8,16],3:[]},note:'Emmanuel 1st · Eluigwe Frank & Koded City joint 2nd (₦8,000 each)'},
+  {gw:15,awards:{0:22000,9:11000,14:5000},pos:{1:[0],2:[9],3:[14]},note:'Osahon 1st · Hadassah 2nd · Gege 3rd (₦5,000)'},
+  {gw:16,awards:{2:2500,3:11000,4:24000,9:2500},pos:{1:[4],2:[3],3:[2,9]},note:'Hensalos 1st · William 2nd · Emmanuel & Hadassah joint 3rd (₦2,500 each)'},
+  {gw:17,awards:{2:17500,8:17500,10:5000},pos:{1:[2,8],2:[],3:[10]},note:'Emmanuel & Eluigwe Frank joint 1st (₦17,500 each) · Dafe 3rd (₦5,000)'},
+  {gw:18,awards:{1:24000,5:11000,13:5000},pos:{1:[1],2:[5],3:[13]},note:'Syb 1st · Kingz 2nd · Ose 3rd (₦5,000)'},
+  {gw:19,awards:{5:5000,10:24000,16:11000},pos:{1:[10],2:[16],3:[5]},note:'Dafe 1st · Koded City 2nd · Kingz 3rd (₦5,000)'},
+  {gw:20,awards:{0:2500,10:2500,14:11000,18:24000},pos:{1:[18],2:[14],3:[0,10]},note:'Kel Lee 1st · Gege 2nd · Osahon & Dafe joint 3rd (₦2,500 each)'},
+  {gw:21,awards:{1:5000,2:22000,3:11000},pos:{1:[2],2:[3],3:[1]},note:'Emmanuel 1st · William 2nd · Syb 3rd (₦5,000)'},
+  {gw:22,awards:{1:22000,7:11000,15:5000},pos:{1:[1],2:[7],3:[15]},note:'Syb 1st · Yusuf 2nd · Emeka 3rd (₦5,000)'},
+  {gw:23,awards:{2:2500,9:2500,16:22000,17:11000},pos:{1:[16],2:[17],3:[2,9]},note:'Koded City 1st · Ifeanyi 2nd · Emmanuel & Hadassah joint 3rd (₦2,500 each)'},
+  {gw:24,awards:{5:22000,9:5000,13:11000},pos:{1:[5],2:[13],3:[9]},note:'Kingz 1st · Ose 2nd · Hadassah 3rd (₦5,000)'},
+  {gw:25,awards:{5:11000,6:2500,13:2500,18:22000},pos:{1:[18],2:[5],3:[6,13]},note:'Kel Lee 1st · Kingz 2nd · AWB & Ose joint 3rd (₦2,500 each)'},
+  {gw:26,awards:{6:11000,7:22000,18:5000},pos:{1:[7],2:[6],3:[18]},note:'Yusuf 1st · AWB 2nd · Kel Lee 3rd (₦5,000)'},
+  {gw:27,awards:{2:11000,3:22000,10:2500,12:2500},pos:{1:[3],2:[2],3:[10,12]},note:'William 1st · Emmanuel 2nd · Dafe & Joseph joint 3rd (₦2,500 each)'},
+  {gw:28,awards:{1:22000,2:11000,8:5000},pos:{1:[1],2:[2],3:[8]},note:'Syb 1st · Emmanuel 2nd · Eluigwe Frank 3rd (₦5,000)'},
+  {gw:29,awards:{9:22000,16:8000,17:8000},pos:{1:[9],2:[16,17],3:[]},note:'Hadassah 1st · Koded City & Ifeanyi joint 2nd (₦8,000 each)'},
+  {gw:30,awards:{6:12666,8:12666,10:12666},pos:{1:[6,8,10],2:[],3:[]},note:'AWB & Eluigwe Frank & Dafe 3-way 1st (₦12,666 each)'},
+  {gw:31,awards:{6:8000,8:8000,10:22000},pos:{1:[10],2:[6,8],3:[]},note:'Dafe 1st · AWB & Eluigwe Frank joint 2nd (₦8,000 each)'},
+  {gw:32,awards:{2:11000,7:5000,17:22000},pos:{1:[17],2:[2],3:[7]},note:'Ifeanyi 1st · Emmanuel 2nd · Yusuf 3rd (₦5,000)'},
+  {gw:33,awards:{5:11000,10:5000,16:22000},pos:{1:[16],2:[5],3:[10]},note:'Koded City 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
+  {gw:34,awards:{1:5000,2:11000,14:22000},pos:{1:[14],2:[2],3:[1]},note:'Gege 1st · Emmanuel 2nd · Syb 3rd (₦5,000)'},
+  {gw:35,awards:{13:11000,14:22000,15:2500,18:2500},pos:{1:[14],2:[13],3:[15,18]},note:'Gege 1st · Ose 2nd · Emeka & Kel Lee joint 3rd (₦2,500 each)'},
+  {gw:36,awards:{2:22000,9:5000,12:11000},pos:{1:[2],2:[12],3:[9]},note:'Emmanuel 1st · Joseph 2nd · Hadassah 3rd (₦5,000)'},
+  {gw:37,awards:{10:2500,14:11000,15:2500,18:22000},pos:{1:[18],2:[14],3:[10,15]},note:'Kel Lee 1st · Gege 2nd · Dafe & Emeka joint 3rd (₦2,500 each)'},
+  {gw:38,awards:{10:5000,12:11000,18:22000},pos:{1:[18],2:[12],3:[10]},note:'Kel Lee 1st · Joseph 2nd · Dafe 3rd (₦5,000)'},
+];
+
+// Amount already paid to each player; accumulated - this = current outstanding balance
+const PAID_OUT=[
+   29500, // 0  Osahon
+   52334, // 1  Syb
+  134166, // 2  Emmanuel  (-1 GW7 tie correction)
+   56000, // 3  William   (-1 GW11 tie correction)
+   16000, // 4  Hensalos
+   53000, // 5  Kingz
+   34166, // 6  AWB       (-1 GW30 tie correction)
+   60000, // 7  Yusuf
+   61500, // 8  Eluigwe Frank (-1 GW30 tie correction)
+   64000, // 9  Hadassah
+   83000, // 10 Dafe      (-1 GW30 tie correction)
+       0, // 11 Dickson
+   37166, // 12 Joseph    (-1 GW7 tie correction)
+   52166, // 13 Ose       (-1 GW11 tie correction)
+   52000, // 14 Gege
+   94666, // 15 Emeka     (-1 GW7 tie correction)
+   82000, // 16 Koded City
+   25666, // 17 Ifeanyi   (-1 GW11 tie correction)
+  102500, // 18 Kel Lee
+   14000, // 19 Paschal
+];
+
 function buildDefault(){
-  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:0,w1:0,w2:0,w3:0}));
+  const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:OPENING[i],paidOut:PAID_OUT[i]||0,w1:0,w2:0,w3:0}));
   const gameweeks=[];
   PRESET.forEach(g=>{
     Object.entries(g.awards).forEach(([idx,prize])=>{ players[parseInt(idx)].accumulated+=prize; });
@@ -70,7 +130,11 @@ function buildDefault(){
     (g.pos[3]||[]).forEach(i=>players[i].w3++);
     gameweeks.push({...g});
   });
-  return {players,gameweeks,payouts:[],cyclePayments:{},seasonPayouts:[],fplLeagueData:[],nextGWDate:null,nextSeasonDate:null};
+  const payouts=players.filter(p=>p.paidOut>0).map(p=>({player:p.name,amount:p.paidOut,gw:37}));
+  const cp={};
+  // All cycles fully paid (all historical)
+  CYCLES.forEach((c,idx)=>{ cp[idx]=Object.fromEntries(c.players.map(i=>[i,true])); });
+  return {players,gameweeks,payouts,cyclePayments:cp,nextGWDate:null,nextSeasonDate:null};
 }
 
 // ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
@@ -120,8 +184,6 @@ let isAdmin=!!sessionStorage.getItem('ca_admin');
 let pendingTab=null;
 
 let state=load();
-if(!state.seasonPayouts) state.seasonPayouts=[];
-if(!state.fplLeagueData) state.fplLeagueData=[];
 let activeCycleIdx=null;
 let currentSort='earnings';
 
@@ -149,17 +211,9 @@ function renderPointsGrid(){
 
 function getSlots(pre){ return ['a','b','c'].map(s=>document.getElementById(pre+s)?.value).filter(v=>v!==''); }
 
-function cyclePlayers(c){ return c.players||state.players.map((_,i)=>i); }
-
-function weeklyPrizes(){
-  const pot=state.players.length*WEEKLY_RATE;
-  return {p1:Math.floor(pot*0.50),p2:Math.floor(pot*0.30),p3:Math.floor(pot*0.20)};
-}
-
 function calcPrizes(){
   const s1=getSlots('p1'),s2=getSlots('p2'),s3=getSlots('p3');
   if(!s1.length) return {awards:{},lines:[],note:'',positions:{1:[],2:[],3:[]}};
-  const {p1,p2,p3}=weeklyPrizes();
   const awards={};
   const lines=[];
   const notes=[];
@@ -167,24 +221,24 @@ function calcPrizes(){
   const add=(idxs,pool)=>{ const sh=Math.floor(pool/idxs.length); idxs.forEach(i=>awards[i]=(awards[i]||0)+sh); return sh; };
 
   if(s1.length===3){
-    const sh=add(s1,p1+p2+p3);
+    const sh=add(s1,PRIZE1+PRIZE2+PRIZE3);
     lines.push(`3-way 1st: ${s1.map(nm).join(', ')} → ₦${sh.toLocaleString()} each`);
     notes.push(`${s1.map(nm).join(', ')} 3-way 1st`);
   } else if(s1.length===2){
-    const sh=add(s1,p1+p2);
+    const sh=add(s1,PRIZE1+PRIZE2);
     lines.push(`Joint 1st: ${s1.map(nm).join(' & ')} → ₦${sh.toLocaleString()} each`);
     notes.push(`${s1.map(nm).join(' & ')} joint 1st`);
-    if(s3.length){ const sh3=add(s3,p3); lines.push(`3rd: ${s3.map(nm).join(' & ')} → ₦${sh3.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} 3rd`); }
+    if(s3.length){ const sh3=add(s3,PRIZE3); lines.push(`3rd: ${s3.map(nm).join(' & ')} → ₦${sh3.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} 3rd`); }
   } else {
-    add(s1,p1); lines.push(`1st: ${nm(s1[0])} → ₦${p1.toLocaleString()}`); notes.push(`${nm(s1[0])} 1st`);
+    add(s1,PRIZE1); lines.push(`1st: ${nm(s1[0])} → ₦${PRIZE1.toLocaleString()}`); notes.push(`${nm(s1[0])} 1st`);
     if(s2.length>=2){
-      const pool=s3.length?p2+p3:p2;
+      const pool=s3.length?PRIZE2+PRIZE3:PRIZE2;
       const sh=add(s2,pool);
       lines.push(`Joint 2nd: ${s2.map(nm).join(' & ')} → ₦${sh.toLocaleString()} each`);
       notes.push(`${s2.map(nm).join(' & ')} joint 2nd`);
     } else if(s2.length===1){
-      add(s2,p2); lines.push(`2nd: ${nm(s2[0])} → ₦${p2.toLocaleString()}`); notes.push(`${nm(s2[0])} 2nd`);
-      if(s3.length){ const sh=add(s3,p3); lines.push(`${s3.length>1?'Joint ':''}3rd: ${s3.map(nm).join(' & ')} → ₦${sh.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} ${s3.length>1?'joint ':''}3rd`); }
+      add(s2,PRIZE2); lines.push(`2nd: ${nm(s2[0])} → ₦${PRIZE2.toLocaleString()}`); notes.push(`${nm(s2[0])} 2nd`);
+      if(s3.length){ const sh=add(s3,PRIZE3); lines.push(`${s3.length>1?'Joint ':''}3rd: ${s3.map(nm).join(' & ')} → ₦${sh.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} ${s3.length>1?'joint ':''}3rd`); }
     }
   }
   const positions={1:s1.map(Number),2:s2.map(Number),3:s3.map(Number)};
@@ -416,7 +470,6 @@ function renderStandings(){
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
-  const mwp=document.getElementById('m-weekly-pot'); if(mwp) mwp.textContent='₦'+(state.players.length*WEEKLY_RATE).toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
@@ -483,120 +536,6 @@ function reversePayout(idx){
   save(); renderPayoutLog(); updatePayoutInfo(); renderStandings();
 }
 
-// ── Season prize helpers ──────────────────────────────────────────────────────
-function seasonPotTotal(){
-  // Sum season contributions from all paid cycle entries
-  let total=0;
-  CYCLES.forEach((c,idx)=>{
-    const paid=state.cyclePayments[idx]||{};
-    const count=Object.values(paid).filter(Boolean).length;
-    total+=count*(c.seasonFee||0);
-  });
-  return total;
-}
-
-function seasonPaidOut(){
-  return (state.seasonPayouts||[]).reduce((s,p)=>s+p.amount,0);
-}
-
-function renderSeasonPotMetrics(){
-  const pot=seasonPotTotal();
-  const paid=seasonPaidOut();
-  const rem=Math.max(0,pot-paid);
-  const fmt=n=>'₦'+n.toLocaleString();
-  const el=id=>document.getElementById(id);
-  if(el('m-season-pot')) el('m-season-pot').textContent=fmt(pot);
-  if(el('m-season-paid')) el('m-season-paid').textContent=fmt(paid);
-  if(el('m-season-remaining')) el('m-season-remaining').textContent=fmt(rem);
-}
-
-async function fetchSeasonStandings(){
-  const el=document.getElementById('season-leaderboard'); if(!el) return;
-  el.innerHTML='<div class="empty">Fetching FPL data…</div>';
-  try{
-    const url=`${PROXY}https://fplchallenge.premierleague.com/api/leagues-classic/${FPL_LEAGUE_ID}/standings/`;
-    const r=await fetch(url);
-    if(!r.ok) throw new Error(r.status);
-    const data=await r.json();
-    const results=data?.standings?.results||[];
-    if(!results.length){ el.innerHTML='<div class="empty">No players in league yet</div>'; return; }
-    state.fplLeagueData=results;
-    save();
-    renderSeasonLeaderboard();
-  }catch(e){
-    el.innerHTML=`<div class="empty">Could not fetch FPL data — check connection</div>`;
-  }
-}
-
-function renderSeasonLeaderboard(){
-  const el=document.getElementById('season-leaderboard'); if(!el) return;
-  const data=state.fplLeagueData||[];
-  if(!data.length){ el.innerHTML='<div class="empty">No data yet — click Refresh</div>'; return; }
-  const sorted=[...data].sort((a,b)=>b.total-a.total);
-  const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
-  const rL=r=>r===0?'🥇':r===1?'🥈':r===2?'🥉':`#${r+1}`;
-  el.innerHTML=`<div class="tbl-wrap"><table>
-    <thead><tr><th>#</th><th>Manager</th><th>Team</th><th>GW</th><th>Total</th></tr></thead>
-    <tbody>${sorted.map((p,i)=>`
-      <tr class="${i<3?'podium-'+(i+1):''}">
-        <td><span class="${rC(i)}">${rL(i)}</span></td>
-        <td style="font-weight:500">${p.player_name}</td>
-        <td style="color:var(--muted);font-size:12px">${p.entry_name}</td>
-        <td><span class="mono">${p.event_total||0}</span></td>
-        <td><span class="mono" style="font-weight:700">${p.total}</span></td>
-      </tr>`).join('')}
-    </tbody></table></div>`;
-}
-
-function renderSeasonPayoutsLog(){
-  const el=document.getElementById('season-payouts-log'); if(!el) return;
-  const pays=state.seasonPayouts||[];
-  if(!pays.length){ el.innerHTML='<div class="empty">No season payouts yet</div>'; return; }
-  el.innerHTML=pays.map((p,i)=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-weight:600;font-size:14px">${p.player}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${p.type==='mid-season'?'Mid-season':'End of season'}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="bal-pos">₦${p.amount.toLocaleString()}</span>
-        ${isAdmin?`<button class="btn btn-danger" style="font-size:11px;padding:4px 8px;height:28px" onclick="reverseSeasonPayout(${i})">↩</button>`:''}
-      </div>
-    </div>`).join('');
-}
-
-function renderSeasonTab(){
-  renderSeasonPotMetrics();
-  renderSeasonLeaderboard();
-  renderSeasonPayoutsLog();
-}
-
-function recordSeasonPayout(){
-  const type=document.getElementById('season-payout-type')?.value;
-  const playerIdx=document.getElementById('season-payout-player')?.value;
-  const amount=parseInt(document.getElementById('season-payout-amount')?.value||0);
-  if(!playerIdx||!amount){ alert('Select a player and enter an amount'); return; }
-  const player=state.players[parseInt(playerIdx)];
-  if(!confirm(`Record ₦${amount.toLocaleString()} ${type} payout to ${player.name}?`)) return;
-  if(!state.seasonPayouts) state.seasonPayouts=[];
-  state.seasonPayouts.push({player:player.name,amount,type});
-  save(); renderSeasonTab(); renderSeasonPayoutsLog();
-  document.getElementById('season-payout-amount').value='';
-}
-
-function reverseSeasonPayout(idx){
-  const p=state.seasonPayouts[idx];
-  if(!confirm(`Reverse ₦${p.amount.toLocaleString()} payout to ${p.player}?`)) return;
-  state.seasonPayouts.splice(idx,1);
-  save(); renderSeasonTab();
-}
-
-function populateSeasonPayoutSelect(){
-  const el=document.getElementById('season-payout-player'); if(!el) return;
-  el.innerHTML='<option value="">— Select player —</option>';
-  state.players.forEach((p,i)=>el.innerHTML+=`<option value="${i}">${p.name}</option>`);
-}
-
 function renderPaymentTab(){
   const el=document.getElementById('payment-cycle-list'); if(!el) return;
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
@@ -604,10 +543,10 @@ function renderPaymentTab(){
   el.innerHTML=CYCLES.map((c,idx)=>{
     const cp=state.cyclePayments[idx]||{};
     const label=`Cycle ${idx+1} fee`;
-    const paidCount=cyclePlayers(c).filter(i=>{const t=cp[i];return t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');}).length;
-    const allPaid=paidCount===cyclePlayers(c).length;
+    const paidCount=c.players.filter(i=>{const t=cp[i];return t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');}).length;
+    const allPaid=paidCount===c.players.length;
     const isCur=idx===curCycle;
-    const rows=cyclePlayers(c).map(i=>{
+    const rows=c.players.map(i=>{
       const p=state.players[i]; const type=cp[i];
       const isCash=type===true||type==='cash'; const isWin=type==='winnings';
       const isPartial=type==='partial'; const isSettled=type==='settled';
@@ -635,7 +574,7 @@ function renderPaymentTab(){
       <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.chev').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
         <div>
           <div style="font-size:12px;font-weight:700;color:${isCur?'var(--accent)':'var(--fpl-dark)'};letter-spacing:.04em;text-transform:uppercase">${isCur?'▶ ':''}Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}</div>
-          <div style="font-size:12px;color:${allPaid?'var(--green)':'var(--muted)'};margin-top:2px">${allPaid?'All settled':paidCount+'/'+cyclePlayers(c).length+' paid'}</div>
+          <div style="font-size:12px;color:${allPaid?'var(--green)':'var(--muted)'};margin-top:2px">${allPaid?'All settled':paidCount+'/'+c.players.length+' paid'}</div>
         </div>
         <span class="chev" style="font-size:16px;color:var(--muted)">${isCur?'▾':'▸'}</span>
       </div>
@@ -649,7 +588,7 @@ function renderCycleOwingTable(cycleIdx){
   const c=CYCLES[cycleIdx];
   const cp=state.cyclePayments[cycleIdx]||{};
   const label=`Cycle ${cycleIdx+1} fee`;
-  const rows=cyclePlayers(c).map(i=>{
+  const rows=c.players.map(i=>{
     const p=state.players[i];
     const type=cp[i];
     const isCash=type===true||type==='cash';
@@ -704,14 +643,14 @@ function renderPayments(){
   renderCycleOwingTable(curCycle);
   document.getElementById('cycle-grid').innerHTML=CYCLES.map((c,i)=>{
     const cp=state.cyclePayments[i]||{};
-    const paid=cyclePlayers(c).filter(j=>cp[j]).length;
-    const pct=Math.round((paid/cyclePlayers(c).length)*100);
+    const paid=c.players.filter(j=>cp[j]).length;
+    const pct=Math.round((paid/c.players.length)*100);
     const isCur=i===curCycle;
     return `<div class="cycle-card" style="${isCur?'border-color:var(--accent);border-width:2px':''}">
       <div style="font-size:11px;font-weight:700;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
       <div style="font-size:11px;color:var(--dim);font-family:'JetBrains Mono','Fira Code',monospace;margin-bottom:3px">GW${c.gw[0]}–${c.gw[1]}</div>
       <div style="font-size:10px;color:var(--dim);margin-bottom:6px">₦${c.fee.toLocaleString()}</div>
-      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${cyclePlayers(c).length}</span></div>
+      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${c.players.length}</span></div>
       <div class="cycle-bar"><div class="cycle-bar-fill" style="width:${pct}%"></div></div>
       <button class="btn btn-ghost" style="padding:6px 10px;font-size:.8rem;width:100%;margin-top:4px;min-height:36px" onclick="openCycleModal(${i})">Manage</button>
     </div>`;
@@ -723,7 +662,7 @@ function openCycleModal(idx){
   const c=CYCLES[idx];
   document.getElementById('modal-title').textContent=`Cycle ${idx+1} — GW${c.gw[0]}–${c.gw[1]} — ₦${c.fee.toLocaleString()}`;
   const cp=state.cyclePayments[idx]||{};
-  document.getElementById('modal-checklist').innerHTML=cyclePlayers(c).map(i=>{
+  document.getElementById('modal-checklist').innerHTML=c.players.map(i=>{
     const p=state.players[i];
     const bal=p.accumulated-p.paidOut;
     const type=cp[i];
@@ -738,7 +677,7 @@ function openCycleModal(idx){
     const cashOwed=c.fee-ownOffset;
     const benefactorName=isCo?state.players[type.by]?.name:'';
     const shortfall=cashOwed;
-    const coverOptions=cyclePlayers(c).filter(j=>j!==i).map(j=>{
+    const coverOptions=c.players.filter(j=>j!==i).map(j=>{
       const q=state.players[j]; const qbal=q.accumulated-q.paidOut;
       return `<option value="${j}" ${isCo&&type.by===j?'selected':''} ${qbal<shortfall?'disabled':''}>${q.name} (₦${qbal.toLocaleString()})</option>`;
     }).join('');
@@ -782,7 +721,7 @@ function saveCycle(){
   const c=CYCLES[activeCycleIdx];
   const prevCP=state.cyclePayments[activeCycleIdx]||{};
   const newCP={};
-  cyclePlayers(c).forEach(i=>{
+  c.players.forEach(i=>{
     const winEl=document.getElementById('cpw'+i);
     const partialEl=document.getElementById('cppw'+i);
     const cashEl=document.getElementById('cp'+i);
@@ -796,7 +735,7 @@ function saveCycle(){
       else newCP[i]='partial';
     } else if(cashEl?.checked) newCP[i]='cash';
   });
-  cyclePlayers(c).forEach(i=>{
+  c.players.forEach(i=>{
     const prev=prevCP[i];
     const next=newCP[i];
     const prevIsCo=typeof prev==='object'&&prev?.type==='co-offset';
@@ -936,17 +875,16 @@ function confirmDeleteLastGW(){
 function confirmReset(){
   if(!confirm('Reset all data for a new season? Player names are kept but all results, prizes and payments will be cleared.')) return;
   state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,w1:0,w2:0,w3:0}));
-  state.gameweeks=[]; state.payouts=[]; state.cyclePayments={}; state.seasonPayouts=[]; state.fplLeagueData=[];
+  state.gameweeks=[]; state.payouts=[]; state.cyclePayments={};
   save(); renderStandings(); renderAdminPlayers(); renderHistory();
   alert('Season reset. Ready for a new season!');
 }
 
-const TAB_COLORS={standings:'#6b21a8',season:'#f59e0b',achievements:'#f59e0b',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payment:'#0ea5e9',cycles:'#2563eb',admin:'#e11d48'};
+const TAB_COLORS={standings:'#6b21a8',achievements:'#f59e0b',history:'#0d9488',gameweek:'#d97706',payout:'#16a34a',payment:'#0ea5e9',cycles:'#2563eb',admin:'#e11d48'};
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   if(t==='payment'){ renderPaymentTab(); }
   if(t==='achievements'){ renderAchievements(); }
-  if(t==='season'){ renderSeasonTab(); if(!(state.fplLeagueData||[]).length) fetchSeasonStandings(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
@@ -956,7 +894,7 @@ function showTab(t){
   if(t==='cycles') renderPayments();
   if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); populateSeasonPayoutSelect(); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
 }
 
 function requireAdmin(tab){
@@ -1006,7 +944,7 @@ function renderSeasonRecap(){
   el.style.display='';
   const totalPaidOut=state.players.reduce((s,p)=>s+p.paidOut,0);
   const totalAccumulated=state.players.reduce((s,p)=>s+p.accumulated,0);
-  const totalFees=CYCLES.reduce((s,c,idx)=>{ const cp=state.cyclePayments[idx]||{}; return s+cyclePlayers(c).filter(i=>cp[i]).length*c.fee; },0);
+  const totalFees=CYCLES.reduce((s,c,idx)=>{ const cp=state.cyclePayments[idx]||{}; return s+c.players.filter(i=>cp[i]).length*c.fee; },0);
   const surplus=totalFees-totalAccumulated;
   const totalPrizes=totalPaidOut+Math.max(0,surplus);
   let bigWin={player:'',amount:0,gw:0};
@@ -1283,7 +1221,7 @@ function shareDebtReminder(cycleIdx){
   const c=CYCLES[cycleIdx];
   const cp=state.cyclePayments[cycleIdx]||{};
   const label=`Cycle ${cycleIdx+1} fee`;
-  const debtors=cyclePlayers(c).filter(i=>{
+  const debtors=c.players.filter(i=>{
     const t=cp[i];
     return !(t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset'));
   }).map(i=>{
@@ -1301,7 +1239,7 @@ function renderDebtTracker(){
   const el=document.getElementById('debt-tracker'); if(!el) return;
   const debtors=CYCLES.map((c,ci)=>{
     const cp=state.cyclePayments[ci]||{};
-    const unpaid=cyclePlayers(c).filter(i=>!cp[i]).map(i=>state.players[i]?.name||'?');
+    const unpaid=c.players.filter(i=>!cp[i]).map(i=>state.players[i]?.name||'?');
     return unpaid.length?{cycle:ci+1,gw:`GW${c.gw[0]}–${c.gw[1]}`,fee:c.fee,unpaid}:null;
   }).filter(Boolean);
   if(!debtors.length){ el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div><div style="font-size:13px;color:var(--green);font-weight:500">All cycle fees accounted for.</div></div>`; return; }

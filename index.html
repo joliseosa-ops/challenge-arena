@@ -49,7 +49,6 @@
 
   <div class="tabs">
     <button class="tab tab-standings active" onclick="showTab('standings')">Standings</button>
-    <button class="tab tab-season" onclick="showTab('season')">Season</button>
     <button class="tab tab-achievements" onclick="showTab('achievements')">Achievements</button>
     <button class="tab tab-history" onclick="showTab('history')">History</button>
     <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
@@ -71,7 +70,7 @@
     <div id="overall-view">
       <div class="metrics">
         <div class="metric"><div class="metric-label">Current GW</div><div class="metric-val accent" id="m-gw">37</div></div>
-        <div class="metric"><div class="metric-label">Weekly pot</div><div class="metric-val" id="m-weekly-pot">—</div></div>
+        <div class="metric"><div class="metric-label">Weekly pot</div><div class="metric-val">₦38,000</div></div>
         <div class="metric"><div class="metric-label">Total players</div><div class="metric-val" id="m-players">—</div></div>
         <div class="metric"><div class="metric-label">Next GW Deadline</div><div class="metric-val" id="m-nextgw" style="color:var(--dim);font-size:clamp(12px,3.5vw,18px)">—</div></div>
       </div>
@@ -120,26 +119,6 @@
         <div class="field" style="margin:0"><label>Gameweek</label><select id="weekly-gw-sel" onchange="loadWeeklyGW()"><option value="">— select a gameweek —</option></select></div>
       </div>
       <div id="weekly-content"><div class="empty">select a gameweek above</div></div>
-    </div>
-  </div>
-
-  <!-- SEASON LEAGUE -->
-  <div id="sec-season" class="section">
-    <div class="metrics" style="margin-bottom:1.5rem">
-      <div class="metric" style="border-top-color:#f59e0b"><div class="metric-label">Season Pot</div><div class="metric-val" id="m-season-pot">—</div></div>
-      <div class="metric" style="border-top-color:#16a34a"><div class="metric-label">Paid Out</div><div class="metric-val" id="m-season-paid">—</div></div>
-      <div class="metric" style="border-top-color:#0ea5e9"><div class="metric-label">Remaining</div><div class="metric-val" id="m-season-remaining">—</div></div>
-    </div>
-    <div class="card" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
-        <div class="card-title" style="margin-bottom:0;border-left-color:#f59e0b">FPL POINTS LEADERBOARD</div>
-        <button class="btn btn-ghost" style="font-size:12px;padding:6px 10px" onclick="fetchSeasonStandings()">↻ Refresh</button>
-      </div>
-      <div id="season-leaderboard"><div class="empty">Loading…</div></div>
-    </div>
-    <div class="card" id="season-payouts-card">
-      <div class="card-title" style="border-left-color:#16a34a">SEASON PAYOUTS</div>
-      <div id="season-payouts-log"><div class="empty">No season payouts yet</div></div>
     </div>
   </div>
 
@@ -265,19 +244,6 @@
     <div class="card">
       <div class="card-title">Player list</div>
       <div id="admin-player-list"></div>
-    </div>
-    <div class="card">
-      <div class="card-title" style="border-left-color:#f59e0b">Record season payout</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Log a mid-season or end-of-season prize payment.</p>
-      <div class="field"><label>Type</label>
-        <select id="season-payout-type">
-          <option value="mid-season">Mid-season (GW20)</option>
-          <option value="end-season">End of season (GW38)</option>
-        </select>
-      </div>
-      <div class="field"><label>Player</label><select id="season-payout-player"></select></div>
-      <div class="field"><label>Amount (₦)</label><input type="number" id="season-payout-amount" placeholder="e.g. 150000" min="0"></div>
-      <button class="btn" style="background:#f59e0b;color:#fff" onclick="recordSeasonPayout()">Record Season Payout</button>
     </div>
     <div class="card">
       <div class="card-title">Next GW deadline</div>
