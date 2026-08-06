@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2025/26 Season Archive — Challenge Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden}
+body{background:#f4f1f8;color:#262626;font-family:'Inter',system-ui,sans-serif;min-height:100vh;font-size:14px;line-height:1.5}
+.mono{font-family:'JetBrains Mono','Fira Code',monospace}
+
+header{background:linear-gradient(135deg,#37003c 0%,#6b21a8 100%);padding:1.25rem 1.5rem;border-bottom:3px solid #00ff87}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.logo-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.01em}
+.logo-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
+.archive-badge{font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;color:#00ff87;background:rgba(255,255,255,.1);padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2);white-space:nowrap}
+
+.shell{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:2rem}
+.metric{background:#fff;border:1px solid #e5e5e5;border-top:3px solid #6b21a8;border-radius:8px;padding:1rem;box-shadow:0 1px 4px rgba(55,0,60,.06)}
+.metric-label{font-size:11px;font-weight:600;color:#737373;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.metric-val{font-family:'JetBrains Mono','Fira Code',monospace;font-size:20px;font-weight:700;color:#37003c}
+
+.tabs{display:flex;gap:2px;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:8px;padding:3px;margin-bottom:1.75rem;overflow-x:auto}
+.tab{padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:rgba(255,255,255,.62);border-radius:5px;white-space:nowrap;transition:color 150ms,background 150ms}
+.tab:hover{color:#fff;background:rgba(255,255,255,.12)}
+.tab.active{background:rgba(255,255,255,.2);color:#fff;box-shadow:inset 0 -2px 0 #00ff87}
+
+.section{display:none}.section.active{display:block}
+
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:12px;font-weight:700;color:#37003c;margin-bottom:1rem;letter-spacing:.06em;text-transform:uppercase;border-left:3px solid #6b21a8;padding-left:8px}
+
+.tbl-wrap{overflow-x:auto;overscroll-behavior-x:contain}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11px;font-weight:700;color:#fff;text-align:left;padding:10px 12px;background:#37003c;border-bottom:2px solid #00ff87;border-right:1px solid rgba(255,255,255,.1);white-space:nowrap;letter-spacing:.04em;text-transform:uppercase}
+th:last-child{border-right:none}
+td{padding:12px;border-bottom:1px solid #e5e5e5;border-right:1px solid #e5e5e5;color:#262626;vertical-align:middle}
+td:last-child{border-right:none}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f3e8ff}
+
+tr.podium-1 td{background:rgba(180,83,9,.07)}
+tr.podium-1 td:first-child{border-left:4px solid #f59e0b}
+tr.podium-2 td{background:rgba(75,85,99,.06)}
+tr.podium-2 td:first-child{border-left:4px solid #9ca3af}
+tr.podium-3 td{background:rgba(146,64,14,.07)}
+tr.podium-3 td:first-child{border-left:4px solid #cd7c3c}
+
+.rank-1{color:#b45309;font-family:'JetBrains Mono','Fira Code',monospace;font-weight:800;font-size:14px}
+.rank-2{color:#4b5563;font-family:'JetBrains Mono','Fira Code',monospace;font-weight:700;font-size:13px}
+.rank-3{color:#92400e;font-family:'JetBrains Mono','Fira Code',monospace;font-weight:700;font-size:13px}
+.rank-n{color:#a3a3a3;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px}
+
+.init{width:30px;height:30px;border-radius:9999px;background:linear-gradient(135deg,#37003c,#6b21a8);display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono','Fira Code',monospace;font-size:10px;color:#fff;flex-shrink:0;font-weight:600}
+
+.w1,.w2,.w3{font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px;font-weight:700;min-width:22px;text-align:center;padding:2px 6px;border-radius:4px;display:inline-block}
+.w1{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.w2{background:#f1f5f9;color:#334155;border:1px solid #cbd5e1}
+.w3{background:#fff7ed;color:#7c4f1a;border:1px solid #fed7aa}
+
+.bal-pos{font-family:'JetBrains Mono','Fira Code',monospace;color:#16a34a;font-weight:600}
+.bal-zero{font-family:'JetBrains Mono','Fira Code',monospace;color:#a3a3a3}
+.earned{font-family:'JetBrains Mono','Fira Code',monospace;font-weight:700;color:#37003c}
+
+.gw-item{display:flex;gap:1rem;padding:10px 0;border-bottom:1px solid #e5e5e5;align-items:flex-start}
+.gw-item:last-child{border-bottom:none}
+.gw-num{font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px;color:#6b21a8;font-weight:600;white-space:nowrap;margin-top:2px;min-width:46px}
+.gw-note{color:#737373;font-size:13px;line-height:1.6}
+.gw-prizes{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.prize-chip{font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;padding:2px 7px;border-radius:4px;border:1px solid #e5e5e5;background:#f5f5f5;color:#262626;white-space:nowrap}
+.prize-chip.gold{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.prize-chip.silver{background:#f1f5f9;border-color:#cbd5e1;color:#334155}
+.prize-chip.bronze{background:#fff7ed;border-color:#fed7aa;color:#7c4f1a}
+
+footer{text-align:center;padding:2rem 1rem;color:#a3a3a3;font-size:12px;border-top:1px solid #e5e5e5;margin-top:2rem}
+
+@media(max-width:600px){
+  .shell{padding:1.25rem 1rem}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric-val{font-size:16px}
+  table{font-size:13px}
+  th{padding:8px 6px;font-size:10px}
+  td{padding:8px 6px}
+  .init{width:24px;height:24px;font-size:.6rem}
+  .gw-item{gap:.5rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo-name">Challenge Arena</div>
+      <div class="logo-sub">2025/26 FPL Challenge Season</div>
+    </div>
+    <div class="archive-badge">SEASON ARCHIVE</div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('standings')">Final Standings</button>
+    <button class="tab" onclick="showTab('medals')">Medal Table</button>
+    <button class="tab" onclick="showTab('gwlog')">GW Log</button>
+  </div>
+
+  <div id="sec-standings" class="section active">
+    <div class="card">
+      <div class="card-title">Final Standings — Total Earnings</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Player</th><th>🥇</th><th>🥈</th><th>🥉</th><th>Total Earned</th><th>Paid Out</th><th>In Bank</th></tr></thead>
+        <tbody id="standings-body"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div id="sec-medals" class="section">
+    <div class="card">
+      <div class="card-title">Medal Table</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Player</th><th>🥇 Gold</th><th>🥈 Silver</th><th>🥉 Bronze</th><th>Total Medals</th></tr></thead>
+        <tbody id="medals-body"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div id="sec-gwlog" class="section">
+    <div class="card">
+      <div class="card-title">Gameweek by Gameweek</div>
+      <div id="gw-log"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Challenge Arena · 2025/26 Season Archive · 38 Gameweeks</footer>
+
+<script>
+const NAMES=['Osahon','Syb','Emmanuel','William','Hensalos','Kingz','AWB','Yusuf','Eluigwe Frank','Hadassah','Dafe','Dickson','Joseph','Ose','Gege','Emeka','Koded City','Ifeanyi','Kel Lee','Paschal'];
+const TEAMS=['No more Benin People','Mascotas','Emmanwachi','Kop Fc','SosmanFC','KINGZ','FPL Farm','Gesuke Wolves','HaCunha Mateta','H.S.g','Okan fc','Ogwaligho FC','Jaggo','Wegoagain FC','metabolites 2','Ross FC','Kode Fc','Ghg','Sure Beans','You Kante Compete'];
+const PAID_OUT=[29500,52334,134166,56000,16000,53000,34166,60000,61500,64000,83000,0,37166,52166,52000,94666,82000,25666,102500,14000];
+const PRESET=[
+  {gw:1, awards:{1:7000,5:7000,14:18000},  pos:{1:[14],2:[1,5],3:[]},         note:'Gege 1st · Syb & Kingz joint 2nd (₦7,000 each)'},
+  {gw:2, awards:{8:10000,13:18000,15:4000}, pos:{1:[13],2:[8],3:[15]},         note:'Ose 1st · Eluigwe Frank 2nd · Emeka 3rd (₦4,000)'},
+  {gw:3, awards:{8:10000,15:4000,18:18000}, pos:{1:[18],2:[8],3:[15]},         note:'Kel Lee 1st · Eluigwe Frank 2nd · Emeka 3rd (₦4,000)'},
+  {gw:4, awards:{14:18000,18:4000,19:10000},pos:{1:[14],2:[19],3:[18]},        note:'Gege 1st · Paschal 2nd · Kel Lee 3rd (₦4,000)'},
+  {gw:5, awards:{13:14000,15:14000,19:4000},pos:{1:[13,15],2:[],3:[19]},       note:'Ose & Emeka joint 1st (₦14,000 each) · Paschal 3rd (₦4,000)'},
+  {gw:6, awards:{1:5000,7:11000,15:22000},  pos:{1:[15],2:[7],3:[1]},          note:'Emeka 1st · Yusuf 2nd · Syb 3rd (₦5,000)'},
+  {gw:7, awards:{2:1666,3:11000,9:22000,12:1666,15:1666},pos:{1:[9],2:[3],3:[2,12,15]},note:'Hadassah 1st · William 2nd · Emmanuel & Joseph & Emeka joint 3rd (₦1,666 each)'},
+  {gw:8, awards:{10:22000,15:11000,18:5000},pos:{1:[10],2:[15],3:[18]},        note:'Dafe 1st · Emeka 2nd · Kel Lee 3rd (₦5,000)'},
+  {gw:9, awards:{7:22000,15:11000,17:5000}, pos:{1:[7],2:[15],3:[17]},         note:'Yusuf 1st · Emeka 2nd · Ifeanyi 3rd (₦5,000)'},
+  {gw:10,awards:{3:22000,9:5000,10:11000},  pos:{1:[3],2:[10],3:[9]},          note:'William 1st · Dafe 2nd · Hadassah 3rd (₦5,000)'},
+  {gw:11,awards:{3:1666,10:11000,12:22000,13:1666,17:1666},pos:{1:[12],2:[10],3:[3,13,17]},note:'Joseph 1st · Dafe 2nd · William & Ose & Ifeanyi joint 3rd (₦1,666 each)'},
+  {gw:12,awards:{3:22000,5:11000,10:5000},  pos:{1:[3],2:[5],3:[10]},          note:'William 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
+  {gw:13,awards:{0:5000,15:22000,16:11000}, pos:{1:[15],2:[16],3:[0]},         note:'Emeka 1st · Koded City 2nd · Osahon 3rd (₦5,000)'},
+  {gw:14,awards:{2:22000,8:8000,16:8000},   pos:{1:[2],2:[8,16],3:[]},         note:'Emmanuel 1st · Eluigwe Frank & Koded City joint 2nd (₦8,000 each)'},
+  {gw:15,awards:{0:22000,9:11000,14:5000},  pos:{1:[0],2:[9],3:[14]},          note:'Osahon 1st · Hadassah 2nd · Gege 3rd (₦5,000)'},
+  {gw:16,awards:{2:2500,3:11000,4:24000,9:2500},pos:{1:[4],2:[3],3:[2,9]},    note:'Hensalos 1st · William 2nd · Emmanuel & Hadassah joint 3rd (₦2,500 each)'},
+  {gw:17,awards:{2:17500,8:17500,10:5000},  pos:{1:[2,8],2:[],3:[10]},         note:'Emmanuel & Eluigwe Frank joint 1st (₦17,500 each) · Dafe 3rd (₦5,000)'},
+  {gw:18,awards:{1:24000,5:11000,13:5000},  pos:{1:[1],2:[5],3:[13]},          note:'Syb 1st · Kingz 2nd · Ose 3rd (₦5,000)'},
+  {gw:19,awards:{5:5000,10:24000,16:11000}, pos:{1:[10],2:[16],3:[5]},         note:'Dafe 1st · Koded City 2nd · Kingz 3rd (₦5,000)'},
+  {gw:20,awards:{0:2500,10:2500,14:11000,18:24000},pos:{1:[18],2:[14],3:[0,10]},note:'Kel Lee 1st · Gege 2nd · Osahon & Dafe joint 3rd (₦2,500 each)'},
+  {gw:21,awards:{1:5000,2:22000,3:11000},   pos:{1:[2],2:[3],3:[1]},           note:'Emmanuel 1st · William 2nd · Syb 3rd (₦5,000)'},
+  {gw:22,awards:{1:22000,7:11000,15:5000},  pos:{1:[1],2:[7],3:[15]},          note:'Syb 1st · Yusuf 2nd · Emeka 3rd (₦5,000)'},
+  {gw:23,awards:{2:2500,9:2500,16:22000,17:11000},pos:{1:[16],2:[17],3:[2,9]},note:'Koded City 1st · Ifeanyi 2nd · Emmanuel & Hadassah joint 3rd (₦2,500 each)'},
+  {gw:24,awards:{5:22000,9:5000,13:11000},  pos:{1:[5],2:[13],3:[9]},          note:'Kingz 1st · Ose 2nd · Hadassah 3rd (₦5,000)'},
+  {gw:25,awards:{5:11000,6:2500,13:2500,18:22000},pos:{1:[18],2:[5],3:[6,13]},note:'Kel Lee 1st · Kingz 2nd · AWB & Ose joint 3rd (₦2,500 each)'},
+  {gw:26,awards:{6:11000,7:22000,18:5000},  pos:{1:[7],2:[6],3:[18]},          note:'Yusuf 1st · AWB 2nd · Kel Lee 3rd (₦5,000)'},
+  {gw:27,awards:{2:11000,3:22000,10:2500,12:2500},pos:{1:[3],2:[2],3:[10,12]},note:'William 1st · Emmanuel 2nd · Dafe & Joseph joint 3rd (₦2,500 each)'},
+  {gw:28,awards:{1:22000,2:11000,8:5000},   pos:{1:[1],2:[2],3:[8]},           note:'Syb 1st · Emmanuel 2nd · Eluigwe Frank 3rd (₦5,000)'},
+  {gw:29,awards:{9:22000,16:8000,17:8000},  pos:{1:[9],2:[16,17],3:[]},        note:'Hadassah 1st · Koded City & Ifeanyi joint 2nd (₦8,000 each)'},
+  {gw:30,awards:{6:12666,8:12666,10:12666}, pos:{1:[6,8,10],2:[],3:[]},        note:'AWB & Eluigwe Frank & Dafe 3-way 1st (₦12,666 each)'},
+  {gw:31,awards:{6:8000,8:8000,10:22000},   pos:{1:[10],2:[6,8],3:[]},         note:'Dafe 1st · AWB & Eluigwe Frank joint 2nd (₦8,000 each)'},
+  {gw:32,awards:{2:11000,7:5000,17:22000},  pos:{1:[17],2:[2],3:[7]},          note:'Ifeanyi 1st · Emmanuel 2nd · Yusuf 3rd (₦5,000)'},
+  {gw:33,awards:{5:11000,10:5000,16:22000}, pos:{1:[16],2:[5],3:[10]},         note:'Koded City 1st · Kingz 2nd · Dafe 3rd (₦5,000)'},
+  {gw:34,awards:{1:5000,2:11000,14:22000},  pos:{1:[14],2:[2],3:[1]},          note:'Gege 1st · Emmanuel 2nd · Syb 3rd (₦5,000)'},
+  {gw:35,awards:{13:11000,14:22000,15:2500,18:2500},pos:{1:[14],2:[13],3:[15,18]},note:'Gege 1st · Ose 2nd · Emeka & Kel Lee joint 3rd (₦2,500 each)'},
+  {gw:36,awards:{2:22000,9:5000,12:11000},  pos:{1:[2],2:[12],3:[9]},          note:'Emmanuel 1st · Joseph 2nd · Hadassah 3rd (₦5,000)'},
+  {gw:37,awards:{10:2500,14:11000,15:2500,18:22000},pos:{1:[18],2:[14],3:[10,15]},note:'Kel Lee 1st · Gege 2nd · Dafe & Emeka joint 3rd (₦2,500 each)'},
+  {gw:38,awards:{10:5000,12:11000,18:22000},pos:{1:[18],2:[12],3:[10]},        note:'Kel Lee 1st · Joseph 2nd · Dafe 3rd (₦5,000)'},
+];
+
+// Compute stats
+const acc=new Array(20).fill(0), w1=new Array(20).fill(0), w2=new Array(20).fill(0), w3=new Array(20).fill(0);
+PRESET.forEach(g=>{
+  Object.entries(g.awards).forEach(([i,v])=>acc[+i]+=v);
+  (g.pos[1]||[]).forEach(i=>w1[i]++);
+  (g.pos[2]||[]).forEach(i=>w2[i]++);
+  (g.pos[3]||[]).forEach(i=>w3[i]++);
+});
+
+const fmt=n=>'₦'+n.toLocaleString();
+const ini=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+// Metrics
+const totalDistributed=acc.reduce((s,v)=>s+v,0);
+const totalPaid=PAID_OUT.reduce((s,v)=>s+v,0);
+const outstanding=totalDistributed-totalPaid;
+document.getElementById('metrics').innerHTML=`
+  <div class="metric"><div class="metric-label">Prize Pool Distributed</div><div class="metric-val">${fmt(totalDistributed)}</div></div>
+  <div class="metric"><div class="metric-label">Total Paid Out</div><div class="metric-val">${fmt(totalPaid)}</div></div>
+  <div class="metric" style="border-top-color:#dc2626"><div class="metric-label">Still Outstanding</div><div class="metric-val" style="color:#dc2626">${fmt(outstanding)}</div></div>
+  <div class="metric" style="border-top-color:#0d9488"><div class="metric-label">Gameweeks Played</div><div class="metric-val">38</div></div>
+`;
+
+// Standings tab
+const players=NAMES.map((_,i)=>({i,name:NAMES[i],team:TEAMS[i],acc:acc[i],paid:PAID_OUT[i],bal:acc[i]-PAID_OUT[i],w1:w1[i],w2:w2[i],w3:w3[i]}));
+const byEarnings=[...players].sort((a,b)=>b.acc-a.acc);
+document.getElementById('standings-body').innerHTML=byEarnings.map((p,rank)=>{
+  const cls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
+  const rankEl=rank===0?`<span class="rank-1">#1</span>`:rank===1?`<span class="rank-2">#2</span>`:rank===2?`<span class="rank-3">#3</span>`:`<span class="rank-n">#${rank+1}</span>`;
+  const balEl=p.bal>0?`<span class="bal-pos">${fmt(p.bal)}</span>`:`<span class="bal-zero">—</span>`;
+  return `<tr class="${cls}">
+    <td>${rankEl}</td>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="init">${ini(p.name)}</div><div><div style="font-weight:600">${p.name}</div><div style="font-size:12px;color:#737373">${p.team}</div></div></div></td>
+    <td><span class="w1">${p.w1}</span></td>
+    <td><span class="w2">${p.w2}</span></td>
+    <td><span class="w3">${p.w3}</span></td>
+    <td><span class="earned">${fmt(p.acc)}</span></td>
+    <td style="color:#737373;font-family:'JetBrains Mono','Fira Code',monospace">${fmt(p.paid)}</td>
+    <td>${balEl}</td>
+  </tr>`;
+}).join('');
+
+// Medal table
+const byMedals=[...players].sort((a,b)=>b.w1-a.w1||b.w2-a.w2||b.w3-a.w3||b.acc-a.acc);
+document.getElementById('medals-body').innerHTML=byMedals.map((p,rank)=>{
+  const cls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
+  const rankEl=rank===0?`<span class="rank-1">#1</span>`:rank===1?`<span class="rank-2">#2</span>`:rank===2?`<span class="rank-3">#3</span>`:`<span class="rank-n">#${rank+1}</span>`;
+  const total=p.w1+p.w2+p.w3;
+  return `<tr class="${cls}">
+    <td>${rankEl}</td>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="init">${ini(p.name)}</div><div><div style="font-weight:600">${p.name}</div><div style="font-size:12px;color:#737373">${p.team}</div></div></div></td>
+    <td><span class="w1">${p.w1}</span></td>
+    <td><span class="w2">${p.w2}</span></td>
+    <td><span class="w3">${p.w3}</span></td>
+    <td><span style="font-family:'JetBrains Mono','Fira Code',monospace;font-weight:600">${total}</span></td>
+  </tr>`;
+}).join('');
+
+// GW log
+document.getElementById('gw-log').innerHTML=PRESET.map(g=>{
+  const chips=Object.entries(g.awards).map(([idx,v])=>{
+    const pos=(g.pos[1]||[]).includes(+idx)?'gold':(g.pos[2]||[]).includes(+idx)?'silver':(g.pos[3]||[]).includes(+idx)?'bronze':'';
+    return `<span class="prize-chip ${pos}">${NAMES[+idx]} ${fmt(v)}</span>`;
+  }).join('');
+  const gwTotal=Object.values(g.awards).reduce((s,v)=>s+v,0);
+  return `<div class="gw-item">
+    <div class="gw-num">GW ${g.gw}</div>
+    <div>
+      <div class="gw-note">${g.note}</div>
+      <div class="gw-prizes">${chips}<span class="prize-chip" style="color:#6b21a8;border-color:#c4b5fd;background:#f3e8ff">Pool ${fmt(gwTotal)}</span></div>
+    </div>
+  </div>`;
+}).join('');
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
+  document.getElementById('sec-'+t).classList.add('active');
+}
+</script>
+</body>
+</html>
