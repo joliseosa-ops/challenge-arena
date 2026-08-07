@@ -1,5 +1,5 @@
 const PRIZE1=5000,PRIZE2=3000,PRIZE3=2000; // 5-player pool: 5×₦2k=₦10k (50/30/20%)
-const KEY='challenge_arena_v19';
+const KEY='challenge_arena_v20';
 
 // 2026/27 season — 8 cycles, players updated as they join
 const CYCLES=[
@@ -29,9 +29,9 @@ const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
 const ENTRY_MAP={}; // populated once players register for 2026/27 FPL Challenge
 
-// Carry-over from 2025/26 — net balance after pre-paying cycle fees with winnings
-// Syb: 37,666 - 30,000 (cycles 1&2) = 7,666 | William: 44,666 - 30,000 = 14,666
-const OPENING=[0,7666,14666,8000,5000];
+// Carry-over from 2025/26 — raw outstanding balance owed to each player
+// Cycle fees for this season are deducted as they are recorded in the Cycles tab
+const OPENING=[0,37666,44666,8000,5000];
 
 const PRESET=[]; // 2026/27 — populated week by week
 
@@ -554,7 +554,7 @@ function openCycleModal(idx){
   const cp=state.cyclePayments[idx]||{};
   document.getElementById('modal-checklist').innerHTML=c.players.map(i=>{
     const p=state.players[i];
-    const bal=p.accumulated-p.paidOut;
+    const bal=p.accumulated+(p.carryOver||0)-p.paidOut;
     const type=cp[i];
     const isCash=type===true||type==='cash';
     const isWin=type==='winnings';
@@ -568,7 +568,7 @@ function openCycleModal(idx){
     const benefactorName=isCo?state.players[type.by]?.name:'';
     const shortfall=cashOwed;
     const coverOptions=c.players.filter(j=>j!==i).map(j=>{
-      const q=state.players[j]; const qbal=q.accumulated-q.paidOut;
+      const q=state.players[j]; const qbal=q.accumulated+(q.carryOver||0)-q.paidOut;
       return `<option value="${j}" ${isCo&&type.by===j?'selected':''} ${qbal<shortfall?'disabled':''}>${q.name} (₦${qbal.toLocaleString()})</option>`;
     }).join('');
     const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ ₦${ownOffset.toLocaleString()} own + ₦${cashOwed.toLocaleString()} by ${benefactorName}`:'—';
@@ -620,7 +620,7 @@ function saveCycle(){
     if(winEl?.checked) newCP[i]='winnings';
     else if(partialEl?.checked){
       const byIdx=coEl&&coEl.value!==''?parseInt(coEl.value):null;
-      if(byIdx!==null&&!isNaN(byIdx)) newCP[i]={type:'co-offset',own:state.players[i].accumulated-state.players[i].paidOut,by:byIdx};
+      if(byIdx!==null&&!isNaN(byIdx)) newCP[i]={type:'co-offset',own:state.players[i].accumulated+(state.players[i].carryOver||0)-state.players[i].paidOut,by:byIdx};
       else if(srEl?.checked) newCP[i]='settled';
       else newCP[i]='partial';
     } else if(cashEl?.checked) newCP[i]='cash';
@@ -649,11 +649,11 @@ function saveCycle(){
     if(next==='winnings'){ p.paidOut+=c.fee; state.payouts.push({player:p.name,amount:c.fee,gw:label}); }
     else if(next==='partial'||next==='settled'){
       // 'settled' = partial offset already applied + cash received; paidOut change is same as partial
-      const off=p.accumulated-p.paidOut; if(off>0){ p.paidOut+=off; state.payouts.push({player:p.name,amount:off,gw:label}); }
+      const off=p.accumulated+(p.carryOver||0)-p.paidOut; if(off>0){ p.paidOut+=off; state.payouts.push({player:p.name,amount:off,gw:label}); }
     }
     else if(nextIsCo){
       // Compute own contribution from actual balance AFTER undo (fixes 0-value bug when transitioning from partial)
-      const actualOwn=p.accumulated-p.paidOut;
+      const actualOwn=p.accumulated+(p.carryOver||0)-p.paidOut;
       const shortfall=c.fee-actualOwn; const ben=state.players[next.by];
       if(actualOwn>0){ p.paidOut+=actualOwn; state.payouts.push({player:p.name,amount:actualOwn,gw:label}); }
       if(ben&&shortfall>0){ ben.paidOut+=shortfall; state.payouts.push({player:ben.name,amount:shortfall,gw:`${label} (on behalf of ${p.name})`}); }
