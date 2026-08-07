@@ -35,6 +35,9 @@ const OPENING=[0,37666,44666,8000,5000];
 
 const PRESET=[]; // 2026/27 — populated week by week
 
+// GW1 deadline: 2pm Lagos time (WAT=UTC+1) on 21 Aug 2026, 1hr before 3pm kickoff
+const GW1_DEADLINE='2026-08-21T13:00:00.000Z';
+
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0}));
   return {players,gameweeks:[],payouts:[],cyclePayments:{},nextGWDate:null,nextSeasonDate:null};
@@ -354,7 +357,7 @@ function renderStandings(){
     return b.accumulated-a.accumulated; // earnings this season only
   });
 
-  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
+  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:1;
   document.getElementById('m-gw').textContent=lastGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
@@ -522,7 +525,7 @@ function renderCycleOwingTable(cycleIdx){
 }
 
 function renderPayments(){
-  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37;
+  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:1;
   const curCycle=Math.min(Math.floor((lastGW-1)/5),CYCLES.length-1);
   const curData=CYCLES[curCycle];
   const curCP=state.cyclePayments[curCycle]||{};
@@ -684,7 +687,7 @@ function setNextGWDate(val){
 }
 
 function gwCountdownText(){
-  const d=state.nextGWDate;
+  const d=state.nextGWDate||GW1_DEADLINE;
   if(!d) return '—';
   const ms=new Date(d)-new Date();
   if(ms<=0) return 'LIVE';
