@@ -1,5 +1,5 @@
 const PRIZE1=5000,PRIZE2=3000,PRIZE3=2000; // 5-player pool: 5×₦2k=₦10k (50/30/20%)
-const KEY='challenge_arena_v18';
+const KEY='challenge_arena_v19';
 
 // 2026/27 season — 8 cycles, players updated as they join
 const CYCLES=[
@@ -764,7 +764,7 @@ function confirmDeleteLastGW(){
 
 function confirmReset(){
   if(!confirm('Reset all data for a new season? Player names are kept but all results, prizes and payments will be cleared.')) return;
-  state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,w1:0,w2:0,w3:0}));
+  state.players=state.players.map(p=>({name:p.name,teamName:p.teamName||'',accumulated:0,paidOut:0,carryOver:p.carryOver||0,w1:0,w2:0,w3:0}));
   state.gameweeks=[]; state.payouts=[]; state.cyclePayments={};
   save(); renderStandings(); renderAdminPlayers(); renderHistory();
   alert('Season reset. Ready for a new season!');
