@@ -35,8 +35,8 @@ const OPENING=[0,37666,44666,8000,5000];
 
 const PRESET=[]; // 2026/27 — populated week by week
 
-// GW1 deadline: 2pm Lagos time (WAT=UTC+1) on 21 Aug 2026, 1hr before 3pm kickoff
-const GW1_DEADLINE='2026-08-21T13:00:00.000Z';
+// GW1 deadline: 2pm Toronto time (EDT=UTC-4) on 21 Aug 2026, 1hr before 3pm kickoff
+const GW1_DEADLINE='2026-08-21T18:00:00.000Z';
 
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0}));
