@@ -28,8 +28,8 @@ const TEAM_NAMES=[
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
 const ENTRY_MAP={
-  2:4893, // William
-}; // add others as players register for 2026/27
+  4893:2, // William (entryId → playerIdx)
+}; // add others as players register: {entryId: playerIdx}
 
 // Carry-over from 2025/26 — raw outstanding balance owed to each player
 // Cycle fees for this season are deducted as they are recorded in the Cycles tab
@@ -151,7 +151,7 @@ function updatePreview(){
 async function fetchLatestGW(){
   const btn=document.getElementById('fetch-gw-btn');
   const status=document.getElementById('fetch-gw-status');
-  const targetGW=(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:37)+1;
+  const targetGW=(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0)+1;
   btn.disabled=true; status.textContent=`Fetching GW${targetGW}…`;
 
   try{
