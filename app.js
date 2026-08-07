@@ -27,7 +27,9 @@ const TEAM_NAMES=[
 
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
-const ENTRY_MAP={}; // populated once players register for 2026/27 FPL Challenge
+const ENTRY_MAP={
+  2:4893, // William
+}; // add others as players register for 2026/27
 
 // Carry-over from 2025/26 — raw outstanding balance owed to each player
 // Cycle fees for this season are deducted as they are recorded in the Cycles tab
