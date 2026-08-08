@@ -1204,26 +1204,20 @@ async function syncFromFPL(){
   const status=document.getElementById('sync-fpl-status');
   btn.disabled=true; status.textContent='Fetching from FPL…';
   try{
-    const results=await Promise.all(
-      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`${PROXY}${FPL_BASE}/entry/${entryId}/`)
-          .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
-          .then(d=>({ playerIdx, name:(d.player_first_name+' '+d.player_last_name).trim(), teamName:d.name||d.entry_name||'' }))
-          .catch(()=>null)
-      )
-    );
+    const data=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
+    const rows=data.standings?.results||[];
     let updated=0;
-    results.forEach(r=>{
-      if(!r) return;
-      const p=state.players[r.playerIdx]; if(!p) return;
-      p.name=r.name||p.name;
-      p.teamName=r.teamName||p.teamName;
+    rows.forEach(r=>{
+      const playerIdx=ENTRY_MAP[r.entry];
+      if(playerIdx===undefined) return;
+      const p=state.players[playerIdx]; if(!p) return;
+      if(r.entry_name) p.teamName=r.entry_name;
       updated++;
     });
     save(); renderAdminPlayers(); populateSelects(); renderStandings();
-    status.textContent=`Updated ${updated} players`;
+    status.textContent=updated?`Updated ${updated} player(s)`:'No matching entries found';
   } catch(err){
-    status.textContent=`Failed: ${err.message}`;
+    status.textContent=`Failed: ${err}`;
   }
   btn.disabled=false;
 }
