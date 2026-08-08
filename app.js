@@ -694,9 +694,10 @@ function renderSeasonTab(){
     </div>`;
   }).filter(Boolean);
 
+  const totalRow=`<div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--border)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total</span><span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text)">${fmt(pot)}</span></div>`;
   document.getElementById('season-pot-body').innerHTML=rows.length
-    ?rows.join('')+`<div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--border)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total</span><span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text)">${fmt(pot)}</span></div>`
-    :'<div class="empty">No cycle payments recorded yet</div>';
+    ? rows.join('')+totalRow
+    : '<div class="empty">No cycle payments recorded yet</div>';
 }
 
 function showTab(t){
