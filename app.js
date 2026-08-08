@@ -18,7 +18,7 @@ const INIT_PLAYERS=['Osahon','Syb','William','Hensalos','Emeka'];
 // idx: 0=Osahon, 1=Syb, 2=William, 3=Hensalos, 4=Emeka
 
 const TEAM_NAMES=[
-  'No more Benin People', // 0  Osahon
+  'Mainoo Business',      // 0  Osahon
   'Mascotas',             // 1  Syb
   'Kop Fc',               // 2  William
   'SosmanFC',             // 3  Hensalos
@@ -28,8 +28,12 @@ const TEAM_NAMES=[
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
 const ENTRY_MAP={
-  4893:2, // William (entryId → playerIdx)
-}; // add others as players register: {entryId: playerIdx}
+   642:0, // Osahon
+  4893:2, // William
+  // 6255: Esther E — add when joined to app
+  // 9764: Christopher Oris — add when joined to app
+  // add others as players register: {entryId: playerIdx}
+};
 
 // Carry-over from 2025/26 — raw outstanding balance owed to each player
 // Cycle fees for this season are deducted as they are recorded in the Cycles tab
