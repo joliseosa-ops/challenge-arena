@@ -266,7 +266,6 @@ function renderStandings(){
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   const mwp=document.getElementById('m-weekly-pot'); if(mwp) mwp.textContent='₦'+(PRIZE1+PRIZE2+PRIZE3).toLocaleString();
-  const msph=document.getElementById('m-season-pot-home'); if(msph) msph.textContent='₦'+seasonPotTotal().toLocaleString();
   const totalDisbursed=state.players.reduce((s,p)=>s+p.paidOut,0);
   const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+totalDisbursed.toLocaleString();
   updateGWCountdown();
