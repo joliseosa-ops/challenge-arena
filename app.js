@@ -791,16 +791,46 @@ function seasonPotTotal(){
   return total;
 }
 
+const FPL_LEAGUE_ID=318;
+
+async function fetchFPLLeague(){
+  const el=document.getElementById('fpl-league-body');
+  const btn=document.getElementById('fpl-league-refresh');
+  if(btn) btn.disabled=true;
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const url=`${FPL_BASE}/leagues-classic/${FPL_LEAGUE_ID}/standings/`;
+    const res=await fetch(`${PROXY}${url}`).then(r=>r.ok?r.json():Promise.reject(r.status));
+    const rows=res.standings?.results||[];
+    if(!rows.length){ el.innerHTML='<div class="empty">No standings yet</div>'; return; }
+    el.innerHTML=`<div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW</th><th>Total</th></tr></thead>
+      <tbody>${rows.map((r,i)=>`<tr>
+        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
+        <td style="font-weight:500">${r.player_name}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
+        <td style="font-family:'JetBrains Mono',monospace">${r.event_total}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-weight:600">${r.total}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }catch(e){
+    el.innerHTML=`<div class="empty">Could not load — ${e}</div>`;
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='↻ Refresh'; }
+  }
+}
+
 function renderSeasonTab(){
   const fmt=n=>'₦'+n.toLocaleString();
   const pot=seasonPotTotal();
-  const remaining=pot; // payouts not yet implemented
+  const remaining=pot;
   document.getElementById('m-season-pot').textContent=fmt(pot);
   document.getElementById('m-season-paid').textContent=fmt(0);
   document.getElementById('m-season-remaining').textContent=fmt(remaining);
   document.getElementById('season-pot-body').innerHTML=pot>0
     ?`<p style="font-size:13px;color:var(--muted);line-height:1.8">Season pot grows at ₦1,000 per player per gameweek.<br>Total accumulated so far: <strong style="color:var(--text)">${fmt(pot)}</strong></p>`
     :'<div class="empty">No cycle payments recorded yet — pot starts at ₦0</div>';
+  fetchFPLLeague();
 }
 
 function showTab(t){
