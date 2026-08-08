@@ -1,5 +1,5 @@
 const PRIZE1=7000,PRIZE2=4200,PRIZE3=2800; // 7-player pool: 7×₦2k=₦14k (50/30/20%)
-const KEY='challenge_arena_v20';
+const KEY='challenge_arena_v21';
 
 // 2026/27 season — 8 cycles, all 7 players
 const CYCLES=[
@@ -82,11 +82,7 @@ let isAdmin=!!sessionStorage.getItem('ca_admin');
 let pendingTab=null;
 
 let state=load();
-state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });
-// Add any new players from INIT_PLAYERS not yet in state
-INIT_PLAYERS.forEach((name,i)=>{
-  if(!state.players[i]) state.players.push({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0});
-});
+applyMigrations();
 let activeCycleIdx=null;
 let currentSort='earnings';
 
@@ -746,11 +742,19 @@ function closePinModal(){
 populateSelects();
 renderStandings();
 
+function applyMigrations(){
+  state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });
+  INIT_PLAYERS.forEach((name,i)=>{
+    if(!state.players[i]) state.players.push({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0});
+  });
+}
+
 // Load from cloud and re-render if newer data is available
 (async()=>{
   const cloud=await loadFromCloud();
   if(cloud){
     state=cloud;
+    applyMigrations();
     try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
     populateSelects(); renderStandings();
   } else {
