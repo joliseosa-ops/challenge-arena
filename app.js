@@ -671,13 +671,31 @@ async function fetchFPLLeague(){
 function renderSeasonTab(){
   const fmt=n=>'₦'+n.toLocaleString();
   const pot=seasonPotTotal();
-  const remaining=pot;
   document.getElementById('m-season-pot').textContent=fmt(pot);
   document.getElementById('m-season-paid').textContent=fmt(0);
-  document.getElementById('m-season-remaining').textContent=fmt(remaining);
-  document.getElementById('season-pot-body').innerHTML=pot>0
-    ?`<p style="font-size:13px;color:var(--muted);line-height:1.8">Season pot grows at ₦1,000 per player per gameweek.<br>Total accumulated so far: <strong style="color:var(--text)">${fmt(pot)}</strong></p>`
-    :'<div class="empty">No cycle payments recorded yet — pot starts at ₦0</div>';
+  document.getElementById('m-season-remaining').textContent=fmt(pot);
+
+  const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
+
+  const rows=CYCLES.map((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const gwCount=(c.gw[1]-c.gw[0])+1;
+    const paidPlayers=c.players.filter(i=>isPaid(cp[i]));
+    if(!paidPlayers.length) return null;
+    const contribution=paidPlayers.length*gwCount*1000;
+    const names=paidPlayers.map(i=>state.players[i]?.name||'?').join(', ');
+    return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text)">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${names}</div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--green);white-space:nowrap">${fmt(contribution)}</span>
+    </div>`;
+  }).filter(Boolean);
+
+  document.getElementById('season-pot-body').innerHTML=rows.length
+    ?rows.join('')+'<div style="display:flex;justify-content:space-between;padding-top:10px"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total</span><span style="font-family:\'JetBrains Mono\',monospace;font-size:14px;font-weight:700;color:var(--text)">${fmt(pot)}</span></div>'
+    :'<div class="empty">No cycle payments recorded yet</div>';
 }
 
 function showTab(t){
@@ -1064,17 +1082,26 @@ async function syncFromFPL(){
       if(playerIdx===undefined) return;
       const p=state.players[playerIdx]; if(!p) return;
       if(r.entry_name) p.teamName=r.entry_name;
-      // Being in the league = paid — mark current cycle if not already recorded
+      // Being in the league = paid — mark current cycle, or upgrade cash→winnings
       const cp=state.cyclePayments[curCycleIdx];
+      const alreadyWinnings=cp[playerIdx]==='winnings';
+      const alreadyCash=cp[playerIdx]==='cash'||cp[playerIdx]===true;
+      const bal=p.accumulated+(p.carryOver||0)-p.paidOut;
       if(!cp[playerIdx]){
-        const bal=p.accumulated+(p.carryOver||0)-p.paidOut;
         if(bal>=cycle.fee){
-          // has enough balance — deduct from it
           cp[playerIdx]='winnings';
           p.paidOut+=cycle.fee;
           state.payouts.push({player:p.name,amount:cycle.fee,gw:label});
         } else {
           cp[playerIdx]='cash';
+        }
+      } else if(alreadyCash&&bal+cycle.fee>=cycle.fee){
+        // was marked cash but has balance — upgrade to winnings
+        const freshBal=p.accumulated+(p.carryOver||0)-p.paidOut;
+        if(freshBal>=cycle.fee){
+          cp[playerIdx]='winnings';
+          p.paidOut+=cycle.fee;
+          state.payouts.push({player:p.name,amount:cycle.fee,gw:label});
         }
       }
       updated++;
