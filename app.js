@@ -1,28 +1,30 @@
-const PRIZE1=5000,PRIZE2=3000,PRIZE3=2000; // 5-player pool: 5×₦2k=₦10k (50/30/20%)
+const PRIZE1=7000,PRIZE2=4200,PRIZE3=2800; // 7-player pool: 7×₦2k=₦14k (50/30/20%)
 const KEY='challenge_arena_v20';
 
-// 2026/27 season — 8 cycles, players updated as they join
+// 2026/27 season — 8 cycles, all 7 players
 const CYCLES=[
-  {gw:[1,5],   players:[0,1,2,3,4], fee:15000}, // ₦3k/week × 5 GWs
-  {gw:[6,10],  players:[0,1,2,3,4], fee:15000},
-  {gw:[11,15], players:[0,1,2,3,4], fee:15000},
-  {gw:[16,20], players:[0,1,2,3,4], fee:15000},
-  {gw:[21,25], players:[0,1,2,3,4], fee:15000},
-  {gw:[26,30], players:[0,1,2,3,4], fee:15000},
-  {gw:[31,35], players:[0,1,2,3,4], fee:15000},
-  {gw:[36,38], players:[0,1,2,3,4], fee:9000},  // ₦3k/week × 3 GWs
+  {gw:[1,5],   players:[0,1,2,3,4,5,6], fee:15000}, // ₦3k/week × 5 GWs
+  {gw:[6,10],  players:[0,1,2,3,4,5,6], fee:15000},
+  {gw:[11,15], players:[0,1,2,3,4,5,6], fee:15000},
+  {gw:[16,20], players:[0,1,2,3,4,5,6], fee:15000},
+  {gw:[21,25], players:[0,1,2,3,4,5,6], fee:15000},
+  {gw:[26,30], players:[0,1,2,3,4,5,6], fee:15000},
+  {gw:[31,35], players:[0,1,2,3,4,5,6], fee:15000},
+  {gw:[36,38], players:[0,1,2,3,4,5,6], fee:9000},  // ₦3k/week × 3 GWs
 ];
 
-// 2026/27 starting roster — others will join and be added
-const INIT_PLAYERS=['Osahon','Syb','William','Hensalos','Emeka'];
-// idx: 0=Osahon, 1=Syb, 2=William, 3=Hensalos, 4=Emeka
+// 2026/27 roster
+// idx: 0=Osahon, 1=Syb, 2=William, 3=Hensalos, 4=Emeka, 5=Esther, 6=Christopher
+const INIT_PLAYERS=['Osahon','Syb','William','Hensalos','Emeka','Esther','Christopher'];
 
 const TEAM_NAMES=[
-  'Mainoo Business',      // 0  Osahon
-  'Mascotas',             // 1  Syb
-  'Kop Fc',               // 2  William
-  'SosmanFC',             // 3  Hensalos
-  'Ross FC',              // 4  Emeka
+  'Mainoo Business', // 0  Osahon
+  'Mascotas',        // 1  Syb
+  'Kop Fc',          // 2  William
+  'SosmanFC',        // 3  Hensalos
+  'Ross FC',         // 4  Emeka
+  'H.S.g',           // 5  Esther
+  'Shakabula',       // 6  Christopher
 ];
 
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
@@ -30,14 +32,13 @@ const PROXY='https://corsproxy.io/?';
 const ENTRY_MAP={
    642:0, // Osahon
   4893:2, // William
-  // 6255: Esther E — add when joined to app
-  // 9764: Christopher Oris — add when joined to app
-  // add others as players register: {entryId: playerIdx}
+  6255:5, // Esther
+  9764:6, // Christopher
+  // add Syb, Hensalos, Emeka once they join the FPL Challenge league
 };
 
-// Carry-over from 2025/26 — raw outstanding balance owed to each player
-// Cycle fees for this season are deducted as they are recorded in the Cycles tab
-const OPENING=[0,37666,44666,8000,5000];
+// Carry-over from 2025/26 — raw outstanding balances (no carry-over for Esther/Christopher)
+const OPENING=[0,37666,44666,8000,5000,0,0];
 
 const PRESET=[]; // 2026/27 — populated week by week
 
@@ -82,6 +83,10 @@ let pendingTab=null;
 
 let state=load();
 state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });
+// Add any new players from INIT_PLAYERS not yet in state
+INIT_PLAYERS.forEach((name,i)=>{
+  if(!state.players[i]) state.players.push({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0});
+});
 let activeCycleIdx=null;
 let currentSort='earnings';
 
