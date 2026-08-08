@@ -569,7 +569,7 @@ function renderAdminPlayers(){
       <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="flex:1;font-size:.9rem;font-weight:500">${p.name}</span>
       <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:120px;max-width:30vw;height:36px">
-      <span class="mono" style="font-size:.75rem;color:var(--muted)">₦${(p.accumulated-p.paidOut).toLocaleString()}</span>
+      <span class="mono" style="font-size:.75rem;color:var(--muted)">₦${(p.accumulated+(p.carryOver||0)-p.paidOut).toLocaleString()}</span>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:.8rem;color:var(--red);border-color:#fca5a5;min-height:36px;flex-shrink:0" onclick="removePlayer(${i})">Remove</button>
     </div>`).join('');
 }
@@ -1056,19 +1056,32 @@ async function syncFromFPL(){
     const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
     const curCycleIdx=Math.max(0,Math.min(Math.floor(lastGW/5),CYCLES.length-1));
     if(!state.cyclePayments[curCycleIdx]) state.cyclePayments[curCycleIdx]={};
+    const cycle=CYCLES[curCycleIdx];
+    const label=`Cycle ${curCycleIdx+1} fee`;
     let updated=0;
     rows.forEach(r=>{
       const playerIdx=ENTRY_MAP[r.entry];
       if(playerIdx===undefined) return;
       const p=state.players[playerIdx]; if(!p) return;
       if(r.entry_name) p.teamName=r.entry_name;
-      // Being in the league = paid — mark current cycle as cash if not already recorded
+      // Being in the league = paid — mark current cycle if not already recorded
       const cp=state.cyclePayments[curCycleIdx];
-      if(!cp[playerIdx]) cp[playerIdx]='cash';
+      if(!cp[playerIdx]){
+        const bal=p.accumulated+(p.carryOver||0)-p.paidOut;
+        if(bal>=cycle.fee){
+          // has enough balance — deduct from it
+          cp[playerIdx]='winnings';
+          p.paidOut+=cycle.fee;
+          state.payouts.push({player:p.name,amount:cycle.fee,gw:label});
+        } else {
+          cp[playerIdx]='cash';
+        }
+      }
       updated++;
     });
-    save(); renderAdminPlayers(); populateSelects(); renderStandings(); renderPayments();
-    status.textContent=updated?`Updated ${updated} player(s) — cycle ${curCycleIdx+1} marked paid`:'No matching entries found';
+    save();
+    renderAdminPlayers(); populateSelects(); renderStandings(); renderPayments();
+    status.textContent=updated?`Synced ${updated} player(s) — cycle ${curCycleIdx+1} marked paid`:'No matching entries found';
   } catch(err){
     status.textContent=`Failed: ${err}`;
   }
