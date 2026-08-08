@@ -1052,16 +1052,23 @@ async function syncFromFPL(){
   try{
     const data=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
     const rows=data.standings?.results||[];
+    // Determine current cycle index
+    const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
+    const curCycleIdx=Math.max(0,Math.min(Math.floor(lastGW/5),CYCLES.length-1));
+    if(!state.cyclePayments[curCycleIdx]) state.cyclePayments[curCycleIdx]={};
     let updated=0;
     rows.forEach(r=>{
       const playerIdx=ENTRY_MAP[r.entry];
       if(playerIdx===undefined) return;
       const p=state.players[playerIdx]; if(!p) return;
       if(r.entry_name) p.teamName=r.entry_name;
+      // Being in the league = paid — mark current cycle as cash if not already recorded
+      const cp=state.cyclePayments[curCycleIdx];
+      if(!cp[playerIdx]) cp[playerIdx]='cash';
       updated++;
     });
-    save(); renderAdminPlayers(); populateSelects(); renderStandings();
-    status.textContent=updated?`Updated ${updated} player(s)`:'No matching entries found';
+    save(); renderAdminPlayers(); populateSelects(); renderStandings(); renderPayments();
+    status.textContent=updated?`Updated ${updated} player(s) — cycle ${curCycleIdx+1} marked paid`:'No matching entries found';
   } catch(err){
     status.textContent=`Failed: ${err}`;
   }
