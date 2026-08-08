@@ -51,11 +51,8 @@
     <button class="tab tab-standings active" onclick="showTab('standings')">Standings</button>
     <button class="tab tab-season" onclick="showTab('season')">Season Pot</button>
     <button class="tab tab-fpl" onclick="showTab('fpl')">FPL League</button>
-    <button class="tab tab-achievements" onclick="showTab('achievements')">Achievements</button>
-    <button class="tab tab-history" onclick="showTab('history')">History</button>
     <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
     <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
-    <button class="tab tab-payment" onclick="showTab('payment')">Payment</button>
     <button class="tab tab-cycles" onclick="showTab('cycles')">Cycles</button>
     <a class="tab tab-archive" href="/archive-2526.html" target="_blank">Archives ↗</a>
     <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
@@ -125,19 +122,6 @@
     </div>
   </div>
 
-  <!-- ACHIEVEMENTS -->
-  <div id="sec-achievements" class="section">
-    <div id="achievements-content"></div>
-  </div>
-
-  <!-- HISTORY -->
-  <div id="sec-history" class="section">
-    <div class="card">
-      <div class="field" style="margin:0"><label>Gameweek</label><select id="hist-gw-sel" onchange="renderGWDetail()"><option value="">— select a gameweek —</option></select></div>
-    </div>
-    <div id="hist-detail"><div class="empty">select a gameweek above</div></div>
-  </div>
-
   <!-- RECORD GW -->
   <div id="sec-gameweek" class="section">
     <div class="card">
@@ -194,11 +178,6 @@
       <div class="card-title">Payout log</div>
       <div id="payout-log"><div class="empty">no payouts recorded</div></div>
     </div>
-  </div>
-
-  <!-- PAYMENT (public) -->
-  <div id="sec-payment" class="section">
-    <div id="payment-cycle-list"></div>
   </div>
 
   <!-- CYCLES (admin) -->

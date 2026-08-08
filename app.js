@@ -228,33 +228,6 @@ function recordGW(){
   renderStandings();
 }
 
-function populateHistorySelect(){
-  const sel=document.getElementById('hist-gw-sel');
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— select a gameweek —</option>';
-  [...state.gameweeks].reverse().forEach(g=>{ sel.innerHTML+=`<option value="${g.gw}">GW ${g.gw}</option>`; });
-  sel.value=cur||( state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:'' );
-  renderGWDetail();
-}
-
-function renderGWDetail(){
-  const sel=document.getElementById('hist-gw-sel');
-  const el=document.getElementById('hist-detail');
-  const gwNum=parseInt(sel.value);
-  if(!gwNum){ el.innerHTML='<div class="empty">select a gameweek above</div>'; return; }
-  const g=state.gameweeks.find(x=>x.gw===gwNum);
-  if(!g){ el.innerHTML='<div class="empty">no data for GW '+gwNum+'</div>'; return; }
-  const nm=i=>state.players[i]?.name||'?';
-  function posBlock(arr,label,cls){
-    if(!arr||!arr.length) return '';
-    const amt=g.awards[arr[0]]||0;
-    const perEach=arr.length>1?' each':'';
-    const rows=arr.map(i=>`<div style="display:flex;align-items:center;gap:10px"><div class="init">${nm(i).slice(0,2).toUpperCase()}</div><span style="font-weight:500">${nm(i)}</span></div>`).join('');
-    return `<div class="pos-group"><div class="pos-label ${cls}">${label} &mdash; ₦${amt.toLocaleString()}${perEach}</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">${rows}</div></div>`;
-  }
-  el.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:6px"><span style="font-size:12px;font-weight:700;color:var(--muted)">GW ${g.gw} results</span><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;min-height:36px" onclick="copyGWResults(${g.gw},this)">Copy</button><button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;min-height:36px;background:#25d366;color:#fff;border-color:#25d366" onclick="shareGWWhatsApp(${g.gw})">Share</button></div></div>${posBlock(g.pos[1],'1st place','gold')}${posBlock(g.pos[2],'2nd place','silver')}${posBlock(g.pos[3],'3rd place','bronze')}</div>`;
-}
-
 function setSort(s){
   currentSort=s;
   ['earnings','bank','podiums'].forEach(k=>{
@@ -263,83 +236,6 @@ function setSort(s){
     btn.style.cssText='font-size:12px;padding:6px 10px;min-height:36px';
   });
   renderStandings();
-}
-
-function renderAchievements(){
-  const el=document.getElementById('achievements-content'); if(!el) return;
-  const rows=state.players.map((p,i)=>({p,i,badges:computeBadges(i)}))
-    .sort((a,b)=>b.badges.length-a.badges.length);
-  const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
-  const topWinner=[...state.players].sort((a,b)=>b.w1-a.w1)[0];
-  const topPodium=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
-  const BADGE_LEGEND=[
-    {icon:'👑',label:'Champion',desc:'Has the most 1st place GW wins in the league'},
-    {icon:'🎯',label:'Hat-trick',desc:'Won 3 or more gameweeks outright'},
-    {icon:'💰',label:'Top Earner',desc:'Highest total accumulated prize money'},
-    {icon:'🏅',label:'Podium Regular',desc:'Finished in the top 3 at least 7 times'},
-    {icon:'🔥',label:'On Fire',desc:'3 or more consecutive GWs on the podium'},
-    {icon:'⚡',label:'Back-to-back',desc:'2 consecutive GWs on the podium'},
-    {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
-    {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes (minimum 3)'},
-  ];
-  el.innerHTML=`
-    <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
-      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem">Season Highlights</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">💰</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Top Earner</div><div style="font-size:13px;font-weight:700;color:#fff">${topEarner?.name||'—'}</div></div>
-        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">👑</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Wins</div><div style="font-size:13px;font-weight:700;color:#fff">${topWinner?.name||'—'}</div></div>
-        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">🏅</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Podiums</div><div style="font-size:13px;font-weight:700;color:#fff">${topPodium?.name||'—'}</div></div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:1.25rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;flex-wrap:wrap;gap:4px" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'grid':'none';this.querySelector('.chev').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
-        <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px">Badge Legend</div>
-        <span class="chev" style="font-size:14px;color:var(--muted)">▾</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:.75rem">
-        ${BADGE_LEGEND.map(b=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--surface2);border-radius:8px">
-          <span style="font-size:20px;flex-shrink:0">${b.icon}</span>
-          <div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${b.label}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${b.desc}</div></div>
-        </div>`).join('')}
-      </div>
-    </div>
-    ${rows.map(({p,i,badges})=>`
-      <div class="card" style="margin-bottom:.75rem;cursor:pointer" onclick="openProfile(${i})">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:${badges.length?'.75rem':'0'}">
-          <div class="init" style="width:36px;height:36px;font-size:11px;flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
-          <div style="flex:1"><div style="font-weight:600;font-size:14px">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
-          <div style="font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace">${badges.length} badge${badges.length!==1?'s':''}</div>
-        </div>
-        ${badges.length?`<div style="display:flex;flex-wrap:wrap;gap:6px">${badges.map(b=>`<div title="${b.desc}" style="display:flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#92400e">${b.icon} ${b.label}</div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--dim)">No achievements yet</div>'}
-      </div>`).join('')}`;
-}
-
-function computeBadges(playerIdx){
-  const p=state.players[playerIdx];
-  const badges=[];
-  const total=p.w1+p.w2+p.w3;
-  // Top earner
-  if(state.players.every(q=>q.accumulated<=p.accumulated)&&p.accumulated>0)
-    badges.push({icon:'💰',label:'Top Earner',desc:'Highest total prize earnings'});
-  // Most wins
-  if(p.w1>=1&&state.players.every(q=>q.w1<=p.w1))
-    badges.push({icon:'👑',label:'Champion',desc:`Most 1st place finishes (${p.w1})`});
-  // Hat-trick
-  if(p.w1>=3) badges.push({icon:'🎯',label:'Hat-trick',desc:`${p.w1} gameweek wins`});
-  // Podium regular
-  if(total>=7) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
-  // Streak
-  let streak=0,max=0;
-  state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
-  if(max>=3) badges.push({icon:'🔥',label:'On Fire',desc:`${max} podiums in a row`});
-  else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:'2 consecutive podiums'});
-  // Consistent (podium 25%+ of GWs)
-  if(state.gameweeks.length>5&&total/state.gameweeks.length>=0.25)
-    badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
-  // Silver specialist
-  if(p.w2>=3&&state.players.every(q=>q.w2<=p.w2))
-    badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
-  return badges;
 }
 
 function formGuide(playerIdx){
@@ -433,53 +329,6 @@ function reversePayout(idx){
   if(player) player.paidOut=Math.max(0,player.paidOut-p.amount);
   state.payouts.splice(idx,1);
   save(); renderPayoutLog(); updatePayoutInfo(); renderStandings();
-}
-
-function renderPaymentTab(){
-  const el=document.getElementById('payment-cycle-list'); if(!el) return;
-  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
-  const curCycle=Math.min(Math.floor((lastGW-1)/5),CYCLES.length-1);
-  el.innerHTML=CYCLES.map((c,idx)=>{
-    const cp=state.cyclePayments[idx]||{};
-    const label=`Cycle ${idx+1} fee`;
-    const paidCount=c.players.filter(i=>{const t=cp[i];return t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');}).length;
-    const allPaid=paidCount===c.players.length;
-    const isCur=idx===curCycle;
-    const rows=c.players.map(i=>{
-      const p=state.players[i]; const type=cp[i];
-      const isCash=type===true||type==='cash'; const isWin=type==='winnings';
-      const isPartial=type==='partial'; const isSettled=type==='settled';
-      const isCo=typeof type==='object'&&type?.type==='co-offset';
-      const offset=isWin?c.fee:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):isCo?type.own:0;
-      const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
-      const benefactorName=isCo?state.players[type.by]?.name:'';
-      const isPaid=isCash||isWin||isCo||isSettled;
-      const breakdown=isWin?`₦${c.fee.toLocaleString()} from winnings`
-        :isCash?`₦${c.fee.toLocaleString()} cash`
-        :isSettled?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} cash`
-        :isCo?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} covered by ${benefactorName}`
-        :isPartial?`₦${offset.toLocaleString()} from winnings · ₦${cashOwed.toLocaleString()} cash pending`:'—';
-      return {name:p.name,breakdown,cashOwed,isPaid};
-    }).sort((a,b)=>b.cashOwed-a.cashOwed);
-    const tableHTML=`<div class="tbl-wrap" style="margin-top:.75rem"><table>
-      <thead><tr><th>Player</th><th>Cash Owed</th><th>Status</th></tr></thead>
-      <tbody>${rows.map(r=>`<tr>
-        <td style="font-weight:500">${r.name}</td>
-        <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
-        <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
-      </tr>`).join('')}</tbody>
-    </table></div>`;
-    return `<div class="card" style="${isCur?'border-color:var(--accent);border-width:2px':''}margin-bottom:.75rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.chev').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'">
-        <div>
-          <div style="font-size:12px;font-weight:700;color:${isCur?'var(--accent)':'var(--fpl-dark)'};letter-spacing:.04em;text-transform:uppercase">${isCur?'▶ ':''}Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}</div>
-          <div style="font-size:12px;color:${allPaid?'var(--green)':'var(--muted)'};margin-top:2px">${allPaid?'All settled':paidCount+'/'+c.players.length+' paid'}</div>
-        </div>
-        <span class="chev" style="font-size:16px;color:var(--muted)">${isCur?'▾':'▸'}</span>
-      </div>
-      <div style="display:${isCur?'block':'none'}">${tableHTML}${!allPaid?`<button onclick="shareDebtReminder(${idx})" style="margin-top:.75rem;display:flex;align-items:center;gap:8px;padding:8px 14px;background:#25d366;color:#fff;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;min-height:36px">📢 Send payment reminder</button>`:''}</div>
-    </div>`;
-  }).join('');
 }
 
 function renderCycleOwingTable(cycleIdx){
@@ -833,8 +682,6 @@ function renderSeasonTab(){
 
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
-  if(t==='payment'){ renderPaymentTab(); }
-  if(t==='achievements'){ renderAchievements(); }
   if(t==='season'){ renderSeasonTab(); }
   if(t==='fpl'){ fetchFPLLeague(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
@@ -844,7 +691,6 @@ function showTab(t){
   if(t==='standings') renderStandings();
   if(t==='payout'){ populateSelects(); renderPayoutLog(); }
   if(t==='cycles') renderPayments();
-  if(t==='history') populateHistorySelect();
   if(t==='gameweek') populateSelects();
   if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
 }
@@ -1241,7 +1087,7 @@ function importState(input){
       state=imported;
       save();
       populateSelects(); renderStandings(); renderAdminPlayers();
-      populateHistorySelect(); renderPayments(); renderPayoutLog();
+      renderPayments(); renderPayoutLog();
       const st=document.getElementById('import-status');
       st.textContent='✓ Imported successfully'; st.style.color='var(--green)';
       setTimeout(()=>{st.textContent='';},3000);
