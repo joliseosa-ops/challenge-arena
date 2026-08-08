@@ -268,6 +268,8 @@ function renderStandings(){
   const mwp=document.getElementById('m-weekly-pot'); if(mwp) mwp.textContent='₦'+(PRIZE1+PRIZE2+PRIZE3).toLocaleString();
   const totalDisbursed=state.players.reduce((s,p)=>s+p.paidOut,0);
   const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+totalDisbursed.toLocaleString();
+  const totalBank=state.players.reduce((s,p)=>s+p.accumulated+(p.carryOver||0)-p.paidOut,0);
+  const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+totalBank.toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
@@ -702,10 +704,75 @@ function renderSeasonTab(){
     : '<div class="empty">No cycle payments recorded yet</div>';
 }
 
+function computeBadges(playerIdx){
+  const p=state.players[playerIdx];
+  const badges=[];
+  const total=p.w1+p.w2+p.w3;
+  if(state.players.every(q=>q.accumulated<=p.accumulated)&&p.accumulated>0)
+    badges.push({icon:'💰',label:'Top Earner',desc:'Highest total prize earnings'});
+  if(p.w1>=1&&state.players.every(q=>q.w1<=p.w1))
+    badges.push({icon:'👑',label:'Champion',desc:`Most 1st place finishes (${p.w1})`});
+  if(p.w1>=3) badges.push({icon:'🎯',label:'Hat-trick',desc:`${p.w1} gameweek wins`});
+  if(total>=7) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
+  let streak=0,max=0;
+  state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
+  if(max>=3) badges.push({icon:'🔥',label:'On Fire',desc:`${max} podiums in a row`});
+  else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:'2 consecutive podiums'});
+  if(state.gameweeks.length>5&&total/state.gameweeks.length>=0.25)
+    badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
+  if(p.w2>=3&&state.players.every(q=>q.w2<=p.w2))
+    badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
+  return badges;
+}
+
+function renderAchievements(){
+  const el=document.getElementById('achievements-content'); if(!el) return;
+  const rows=state.players.map((p,i)=>({p,i,badges:computeBadges(i)}))
+    .sort((a,b)=>b.badges.length-a.badges.length);
+  const topEarner=[...state.players].sort((a,b)=>b.accumulated-a.accumulated)[0];
+  const topWinner=[...state.players].sort((a,b)=>b.w1-a.w1)[0];
+  const topPodium=[...state.players].sort((a,b)=>(b.w1+b.w2+b.w3)-(a.w1+a.w2+a.w3))[0];
+  const BADGE_LEGEND=[
+    {icon:'👑',label:'Champion',desc:'Has the most 1st place GW wins'},
+    {icon:'🎯',label:'Hat-trick',desc:'Won 3 or more gameweeks outright'},
+    {icon:'💰',label:'Top Earner',desc:'Highest total accumulated prize money'},
+    {icon:'🏅',label:'Podium Regular',desc:'Finished in the top 3 at least 7 times'},
+    {icon:'🔥',label:'On Fire',desc:'3+ consecutive GWs on the podium'},
+    {icon:'⚡',label:'Back-to-back',desc:'2 consecutive GWs on the podium'},
+    {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
+    {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes (minimum 3)'},
+  ];
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.05em;text-transform:uppercase;margin-bottom:1rem">Season Highlights</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">💰</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Top Earner</div><div style="font-size:13px;font-weight:700;color:#fff">${topEarner?.name||'—'}</div></div>
+        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">👑</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Wins</div><div style="font-size:13px;font-weight:700;color:#fff">${topWinner?.name||'—'}</div></div>
+        <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:20px;margin-bottom:4px">🏅</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">Most Podiums</div><div style="font-size:13px;font-weight:700;color:#fff">${topPodium?.name||'—'}</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem">
+      <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px;margin-bottom:.75rem">Badge Legend</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+        ${BADGE_LEGEND.map(b=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--surface2);border-radius:8px"><span style="font-size:20px;flex-shrink:0">${b.icon}</span><div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${b.label}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${b.desc}</div></div></div>`).join('')}
+      </div>
+    </div>
+    ${rows.map(({p,i,badges})=>`
+      <div class="card" style="margin-bottom:.75rem;cursor:pointer" onclick="openProfile(${i})">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:${badges.length?'.75rem':'0'}">
+          <div class="init" style="width:36px;height:36px;font-size:11px;flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
+          <div style="flex:1"><div style="font-weight:600;font-size:14px">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
+          <div style="font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace">${badges.length} badge${badges.length!==1?'s':''}</div>
+        </div>
+        ${badges.length?`<div style="display:flex;flex-wrap:wrap;gap:6px">${badges.map(b=>`<div title="${b.desc}" style="display:flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#92400e">${b.icon} ${b.label}</div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--dim)">No achievements yet — check back after GW1</div>'}
+      </div>`).join('')}`;
+}
+
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   if(t==='season'){ renderSeasonTab(); }
   if(t==='fpl'){ fetchFPLLeague(); }
+  if(t==='achievements'){ renderAchievements(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');

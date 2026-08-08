@@ -54,6 +54,7 @@
     <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
     <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
     <button class="tab tab-cycles" onclick="showTab('cycles')">Cycles</button>
+    <button class="tab tab-achievements" onclick="showTab('achievements')">Stats</button>
     <a class="tab tab-archive" href="/archive-2526.html" target="_blank">Archives ↗</a>
     <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
   </div>
@@ -73,6 +74,7 @@
         <div class="metric"><div class="metric-label">Weekly pot</div><div class="metric-val" id="m-weekly-pot">—</div></div>
         <div class="metric"><div class="metric-label">Total players</div><div class="metric-val" id="m-players">—</div></div>
         <div class="metric"><div class="metric-label">Next GW Deadline</div><div class="metric-val" id="m-nextgw" style="color:var(--dim);font-size:clamp(12px,3.5vw,18px)">—</div></div>
+        <div class="metric"><div class="metric-label">Total in bank</div><div class="metric-val" id="m-total-bank">—</div></div>
         <div class="metric"><div class="metric-label">Total Disbursed</div><div class="metric-val" id="m-total-disbursed" style="color:var(--green)">—</div></div>
       </div>
       <div class="card" id="countdown-card" style="margin-bottom:1rem;border-color:var(--accent);border-width:2px;display:none"></div>
@@ -219,6 +221,11 @@
       </div>
       <div id="fpl-league-body"><div class="empty">Loading…</div></div>
     </div>
+  </div>
+
+  <!-- ACHIEVEMENTS / STATS -->
+  <div id="sec-achievements" class="section">
+    <div id="achievements-content"></div>
   </div>
 
   <!-- ADMIN -->
