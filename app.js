@@ -799,8 +799,7 @@ async function fetchFPLLeague(){
   if(btn) btn.disabled=true;
   el.innerHTML='<div class="empty">Loading…</div>';
   try{
-    const url=`${FPL_BASE}/leagues-classic/${FPL_LEAGUE_ID}/standings/`;
-    const res=await fetch(`${PROXY}${url}`).then(r=>r.ok?r.json():Promise.reject(r.status));
+    const res=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
     const rows=res.standings?.results||[];
     if(!rows.length){ el.innerHTML='<div class="empty">No standings yet</div>'; return; }
     el.innerHTML=`<div class="tbl-wrap"><table>
