@@ -270,6 +270,13 @@ function renderStandings(){
   const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+totalDisbursed.toLocaleString();
   const totalBank=state.players.reduce((s,p)=>s+p.accumulated+(p.carryOver||0)-p.paidOut,0);
   const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+totalBank.toLocaleString();
+  const fmt=n=>'₦'+n.toLocaleString();
+  const ppReceived=seasonPotTotal()*2;
+  const ppDistributed=state.players.reduce((s,p)=>s+p.accumulated,0);
+  const ppOutstanding=ppReceived-ppDistributed;
+  const ppr=document.getElementById('pp-received'); if(ppr) ppr.textContent=fmt(ppReceived);
+  const ppd=document.getElementById('pp-distributed'); if(ppd) ppd.textContent=fmt(ppDistributed);
+  const ppo=document.getElementById('pp-outstanding'); if(ppo) ppo.textContent=fmt(ppOutstanding);
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
