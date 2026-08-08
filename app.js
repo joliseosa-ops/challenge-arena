@@ -830,7 +830,6 @@ function renderSeasonTab(){
   document.getElementById('season-pot-body').innerHTML=pot>0
     ?`<p style="font-size:13px;color:var(--muted);line-height:1.8">Season pot grows at ₦1,000 per player per gameweek.<br>Total accumulated so far: <strong style="color:var(--text)">${fmt(pot)}</strong></p>`
     :'<div class="empty">No cycle payments recorded yet — pot starts at ₦0</div>';
-  fetchFPLLeague();
 }
 
 function showTab(t){
@@ -838,6 +837,7 @@ function showTab(t){
   if(t==='payment'){ renderPaymentTab(); }
   if(t==='achievements'){ renderAchievements(); }
   if(t==='season'){ renderSeasonTab(); }
+  if(t==='fpl'){ fetchFPLLeague(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
