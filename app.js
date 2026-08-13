@@ -257,11 +257,17 @@ function formGuide(playerIdx){
   return `<div style="display:flex;gap:3px;margin-top:4px">${[...pad,...dots].join('')}</div>`;
 }
 
+// pubBal: this-season balance only (carry-over is a separate admin-only account)
+// If paidOut ≤ carryOver, all deductions came from last season → season balance = accumulated
+// If paidOut > carryOver, the excess came from this season → deduct only that excess
+const pubBal=p=>p.accumulated-Math.max(0,p.paidOut-(p.carryOver||0));
+const fullBal=p=>p.accumulated+(p.carryOver||0)-p.paidOut;
+
 function renderStandings(){
   const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
-    if(currentSort==='bank') return (b.accumulated-b.paidOut+(b.carryOver||0))-(a.accumulated-a.paidOut+(a.carryOver||0));
+    if(currentSort==='bank') return pubBal(b)-pubBal(a);
     if(currentSort==='podiums') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
-    return b.accumulated-a.accumulated; // earnings this season only
+    return b.accumulated-a.accumulated;
   });
 
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:1;
@@ -270,10 +276,11 @@ function renderStandings(){
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   const mwp=document.getElementById('m-weekly-pot'); if(mwp){ const {p1,p2,p3}=prizes(); mwp.textContent='₦'+(p1+p2+p3).toLocaleString(); }
-  const totalDisbursed=state.players.reduce((s,p)=>s+p.paidOut,0);
-  const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+totalDisbursed.toLocaleString();
-  const totalBank=state.players.reduce((s,p)=>s+p.accumulated+(p.carryOver||0)-p.paidOut,0);
-  const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+totalBank.toLocaleString();
+  // Public tiles — this season only, no carry-over
+  const seasonWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
+  const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+seasonWithdrawn.toLocaleString();
+  const seasonBank=state.players.reduce((s,p)=>s+pubBal(p),0);
+  const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+seasonBank.toLocaleString();
   const fmt=n=>'₦'+n.toLocaleString();
   const ppReceived=seasonPotTotal()*2;
   const ppDistributed=state.players.reduce((s,p)=>s+p.accumulated,0);
@@ -285,7 +292,8 @@ function renderStandings(){
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
-    const bal=p.accumulated-p.paidOut+(p.carryOver||0);
+    const bal=pubBal(p);
+    const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0));
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
@@ -293,7 +301,7 @@ function renderStandings(){
       <td><span class="wins"><span class="w1">${p.w1||0}</span><span class="w2">${p.w2||0}</span><span class="w3">${p.w3||0}</span></span></td>
       <td><span class="${bal>0?'bal-pos':'bal-zero'}">₦${bal.toLocaleString()}</span></td>
       <td><span class="mono" style="color:var(--muted)">₦${p.accumulated.toLocaleString()}</span></td>
-      <td><span class="mono" style="color:var(--muted)">₦${p.paidOut.toLocaleString()}</span></td>
+      <td><span class="mono" style="color:var(--muted)">${withdrawn?'₦'+withdrawn.toLocaleString():'—'}</span></td>
     </tr>`;
   }).join('');
   renderSeasonRecap();
@@ -586,7 +594,10 @@ function renderAdminPlayers(){
       <span style="flex:1;font-size:.9rem;font-weight:500;min-width:70px">${p.name}</span>
       <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:110px;max-width:25vw;height:36px">
       <input type="number" value="${p.entryId||''}" placeholder="Entry ID" onblur="setEntryId(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.entryId?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:90px;max-width:22vw;height:36px" title="FPL Challenge entry ID">
-      <span class="mono" style="font-size:.75rem;color:var(--muted)">₦${(p.accumulated+(p.carryOver||0)-p.paidOut).toLocaleString()}</span>
+      <div style="text-align:right;line-height:1.3">
+        <div class="mono" style="font-size:.75rem;color:var(--text);font-weight:600">₦${fullBal(p).toLocaleString()}</div>
+        ${(p.carryOver||0)>0?`<div style="font-size:.65rem;color:var(--caution)">+₦${(p.carryOver||0).toLocaleString()} carry</div>`:''}
+      </div>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:.8rem;color:var(--red);border-color:#fca5a5;min-height:36px;flex-shrink:0" onclick="removePlayer(${i})">Remove</button>
     </div>`).join('');
 }
@@ -1084,15 +1095,16 @@ function renderH2H(){
 function openProfile(idx){
   const p=state.players[idx];
   const history=state.gameweeks.filter(g=>(g.awards[idx]||0)>0).map(g=>({gw:g.gw,amount:g.awards[idx]})).reverse();
-  const bal=p.accumulated-p.paidOut;
+  const bal=pubBal(p);
+  const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0));
   const initials=p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('profile-avatar').textContent=initials;
   document.getElementById('profile-name').textContent=p.name;
   document.getElementById('profile-team').textContent=p.teamName||'';
   document.getElementById('profile-content').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
-      <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Earned</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${p.accumulated.toLocaleString()}</div></div>
-      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Paid out</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--muted)">₦${p.paidOut.toLocaleString()}</div></div>
+      <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">GW Earnings</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${p.accumulated.toLocaleString()}</div></div>
+      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Withdrawn</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--muted)">₦${withdrawn.toLocaleString()}</div></div>
       <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem">
