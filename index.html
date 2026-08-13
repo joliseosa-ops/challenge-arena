@@ -75,7 +75,7 @@
         <div class="metric"><div class="metric-label">Total players</div><div class="metric-val" id="m-players">—</div></div>
         <div class="metric"><div class="metric-label">Next GW Deadline</div><div class="metric-val" id="m-nextgw" style="color:var(--dim);font-size:clamp(12px,3.5vw,18px)">—</div></div>
         <div class="metric"><div class="metric-label">Total in bank</div><div class="metric-val" id="m-total-bank">—</div></div>
-        <div class="metric"><div class="metric-label">Total Disbursed</div><div class="metric-val" id="m-total-disbursed" style="color:var(--green)">—</div></div>
+        <div class="metric"><div class="metric-label">Total Withdrawn</div><div class="metric-val" id="m-total-disbursed" style="color:var(--green)">—</div></div>
       </div>
       <div class="card" id="prize-pot-card" style="margin-bottom:1rem">
         <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.06em;text-transform:uppercase;border-left:3px solid var(--fpl-green);padding-left:8px;margin-bottom:1rem">Weekly Challenge Prize Pot</div>
@@ -85,11 +85,11 @@
             <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:17px;font-weight:700;color:var(--fpl-dark)" id="pp-received">—</div>
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:.875rem;text-align:center">
-            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Distributed</div>
+            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">GW Prizes Awarded</div>
             <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:17px;font-weight:700;color:var(--green)" id="pp-distributed">—</div>
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:.875rem;text-align:center">
-            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Outstanding</div>
+            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Still in the Pot</div>
             <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:17px;font-weight:700;color:var(--caution)" id="pp-outstanding">—</div>
           </div>
         </div>
@@ -111,7 +111,7 @@
         </div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>#</th><th>Player</th><th><div>Medals</div><div class="wins" style="margin-top:3px"><span class="w1">🥇</span><span class="w2">🥈</span><span class="w3">🥉</span></div></th><th>Money in bank</th><th>Total earnings</th><th>Paid out</th></tr></thead>
+            <thead><tr><th>#</th><th>Player</th><th><div>Medals</div><div class="wins" style="margin-top:3px"><span class="w1">🥇</span><span class="w2">🥈</span><span class="w3">🥉</span></div></th><th>Money in bank</th><th>GW Earnings</th><th>Withdrawn</th></tr></thead>
             <tbody id="standings-body"></tbody>
           </table>
         </div>
