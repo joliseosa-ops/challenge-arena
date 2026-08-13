@@ -679,12 +679,11 @@ async function fetchFPLLeague(){
     const rows=res.standings?.results||[];
     if(!rows.length){ el.innerHTML='<div class="empty">No standings yet</div>'; return; }
     el.innerHTML=`<div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Entry ID</th><th>GW</th><th>Total</th></tr></thead>
+      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW</th><th>Total</th></tr></thead>
       <tbody>${rows.map((r,i)=>`<tr>
         <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
         <td style="font-weight:500">${r.player_name}</td>
         <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
-        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${r.entry}</td>
         <td style="font-family:'JetBrains Mono',monospace">${r.event_total}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-weight:600">${r.total}</td>
       </tr>`).join('')}</tbody>
