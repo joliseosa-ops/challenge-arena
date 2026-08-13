@@ -667,7 +667,6 @@ async function fetchFPLLeague(){
     const res=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
     const rows=res.standings?.results||[];
     if(!rows.length){ el.innerHTML='<div class="empty">No standings yet</div>'; return; }
-    const trackedEntries=new Set(Object.keys(ENTRY_MAP).map(Number));
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Entry ID</th><th>GW</th><th>Total</th></tr></thead>
       <tbody>${rows.map((r,i)=>`<tr>
