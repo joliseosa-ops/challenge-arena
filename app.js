@@ -583,8 +583,9 @@ function renderAdminPlayers(){
   el.innerHTML=state.players.map((p,i)=>`
     <div class="player-row">
       <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
-      <span style="flex:1;font-size:.9rem;font-weight:500">${p.name}</span>
-      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:120px;max-width:30vw;height:36px">
+      <span style="flex:1;font-size:.9rem;font-weight:500;min-width:70px">${p.name}</span>
+      <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:110px;max-width:25vw;height:36px">
+      <input type="number" value="${p.entryId||''}" placeholder="Entry ID" onblur="setEntryId(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.entryId?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:90px;max-width:22vw;height:36px" title="FPL Challenge entry ID">
       <span class="mono" style="font-size:.75rem;color:var(--muted)">₦${(p.accumulated+(p.carryOver||0)-p.paidOut).toLocaleString()}</span>
       <button class="btn btn-ghost" style="padding:4px 10px;font-size:.8rem;color:var(--red);border-color:#fca5a5;min-height:36px;flex-shrink:0" onclick="removePlayer(${i})">Remove</button>
     </div>`).join('');
@@ -593,6 +594,16 @@ function renderAdminPlayers(){
 function setTeamName(idx,val){
   state.players[idx].teamName=val.trim();
   save(); renderStandings();
+}
+
+function setEntryId(idx,val){
+  const id=val.trim()?Number(val.trim()):undefined;
+  if(id&&isNaN(id)){ alert('Entry ID must be a number'); return; }
+  // Check for duplicates
+  const conflict=id&&state.players.findIndex((p,i)=>i!==idx&&p.entryId===id);
+  if(conflict!==-1&&conflict!==false){ alert(`Entry ID ${id} is already assigned to ${state.players[conflict].name}`); return; }
+  state.players[idx].entryId=id||undefined;
+  save(); renderAdminPlayers();
 }
 
 function addPlayer(){
