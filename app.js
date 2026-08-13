@@ -669,21 +669,16 @@ async function fetchFPLLeague(){
     if(!rows.length){ el.innerHTML='<div class="empty">No standings yet</div>'; return; }
     const trackedEntries=new Set(Object.keys(ENTRY_MAP).map(Number));
     el.innerHTML=`<div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Entry ID</th><th>GW</th><th>Total</th><th>In app?</th></tr></thead>
-      <tbody>${rows.map((r,i)=>{
-        const tracked=trackedEntries.has(r.entry);
-        return `<tr${tracked?'':' style="background:#fff7ed"'}>
-          <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
-          <td style="font-weight:500">${r.player_name}</td>
-          <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
-          <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${r.entry}</td>
-          <td style="font-family:'JetBrains Mono',monospace">${r.event_total}</td>
-          <td style="font-family:'JetBrains Mono',monospace;font-weight:600">${r.total}</td>
-          <td style="font-size:12px">${tracked?'<span style="color:var(--green);font-weight:600">✓</span>':'<span style="color:var(--caution);font-weight:600">Not added</span>'}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>
-    <div style="margin-top:.75rem;font-size:12px;color:var(--muted)">Highlighted rows are in the FPL league but not yet added to the Challenge Arena app.</div>`;
+      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Entry ID</th><th>GW</th><th>Total</th></tr></thead>
+      <tbody>${rows.map((r,i)=>`<tr>
+        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
+        <td style="font-weight:500">${r.player_name}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${r.entry}</td>
+        <td style="font-family:'JetBrains Mono',monospace">${r.event_total}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-weight:600">${r.total}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
   }catch(e){
     el.innerHTML=`<div class="empty">Could not load — ${e}</div>`;
   }finally{
