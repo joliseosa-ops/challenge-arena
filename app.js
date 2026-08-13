@@ -281,13 +281,6 @@ function renderStandings(){
   const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+seasonWithdrawn.toLocaleString();
   const seasonBank=state.players.reduce((s,p)=>s+pubBal(p),0);
   const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+seasonBank.toLocaleString();
-  const fmt=n=>'₦'+n.toLocaleString();
-  const ppReceived=seasonPotTotal()*2;
-  const ppDistributed=state.players.reduce((s,p)=>s+p.accumulated,0);
-  const ppOutstanding=ppReceived-ppDistributed;
-  const ppr=document.getElementById('pp-received'); if(ppr) ppr.textContent=fmt(ppReceived);
-  const ppd=document.getElementById('pp-distributed'); if(ppd) ppd.textContent=fmt(ppDistributed);
-  const ppo=document.getElementById('pp-outstanding'); if(ppo) ppo.textContent=fmt(ppOutstanding);
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
@@ -737,6 +730,69 @@ function renderSeasonTab(){
     : '<div class="empty">No cycle payments recorded yet</div>';
 }
 
+function renderFinanceTab(){
+  const el=document.getElementById('finance-content'); if(!el) return;
+  const fmt=n=>'₦'+n.toLocaleString();
+  const pot=seasonPotTotal();
+  const prizeReceived=pot*2;
+  const potReceived=pot;
+  const totalCollected=pot*3;
+  const gwAwarded=state.players.reduce((s,p)=>s+p.accumulated,0);
+  const seasonWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
+
+  const tile=(label,val,color='var(--fpl-dark)')=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid ${color};border-radius:8px;padding:1rem;text-align:center">
+      <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${label}</div>
+      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:18px;font-weight:700;color:${color}">${fmt(val)}</div>
+    </div>`;
+
+  const row=(label,val,sub='',color='var(--text)')=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:13px;font-weight:500">${label}</div>${sub?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${sub}</div>`:''}</div>
+      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-weight:700;color:${color}">${fmt(val)}</div>
+    </div>`;
+
+  // Per-GW prize history
+  const gwRows=[...state.gameweeks].reverse().map(g=>{
+    const winners=Object.entries(g.awards).filter(([,a])=>a>0)
+      .map(([i,a])=>`${state.players[parseInt(i)]?.name||'?'} ₦${a.toLocaleString()}`).join(' · ');
+    const total=Object.values(g.awards).reduce((s,a)=>s+a,0);
+    return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap">
+      <div><div style="font-size:12px;font-weight:700;color:var(--accent)">GW ${g.gw}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${winners||'—'}</div></div>
+      <div style="font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;font-weight:700;flex-shrink:0">${fmt(total)}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.06em;text-transform:uppercase;border-left:3px solid var(--fpl-green);padding-left:8px;margin-bottom:1rem">Season Overview</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${tile('Total Collected',totalCollected,'var(--fpl-dark)')}
+        ${tile('GW Prizes Awarded',gwAwarded,'var(--green)')}
+        ${tile('Player Withdrawals',seasonWithdrawn,'var(--blue)')}
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.06em;text-transform:uppercase;border-left:3px solid var(--accent);padding-left:8px;margin-bottom:.5rem">Weekly Prize Pot <span style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(₦2k/player/GW)</span></div>
+      ${row('Collected from cycle payments',prizeReceived,'₦2k × paid players × GWs covered','var(--fpl-dark)')}
+      ${row('Distributed as GW prizes',gwAwarded,'sum of 1st/2nd/3rd place awards','var(--green)')}
+      ${row('Still in the pot',prizeReceived-gwAwarded,'awaiting distribution','var(--caution)')}
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.06em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px;margin-bottom:.5rem">Season Pot <span style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(₦1k/player/GW)</span></div>
+      ${row('Accumulated',potReceived,'₦1k × paid players × GWs covered','var(--fpl-dark)')}
+      ${row('Paid out',0,'distributed at end of season','var(--muted)')}
+      ${row('Remaining',potReceived,'locked until season end','var(--caution)')}
+    </div>
+
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.06em;text-transform:uppercase;border-left:3px solid var(--green);padding-left:8px;margin-bottom:.25rem">GW Prize History</div>
+      ${gwRows||'<div class="empty">No gameweeks recorded yet</div>'}
+    </div>`;
+}
+
 function computeBadges(playerIdx){
   const p=state.players[playerIdx];
   const badges=[];
@@ -804,6 +860,7 @@ function renderAchievements(){
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
   if(t==='season'){ renderSeasonTab(); }
+  if(t==='finance'){ renderFinanceTab(); }
   if(t==='fpl'){ fetchFPLLeague(); }
   if(t==='achievements'){ renderAchievements(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
