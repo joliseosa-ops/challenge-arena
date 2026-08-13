@@ -1,17 +1,20 @@
-const PRIZE1=7000,PRIZE2=4200,PRIZE3=2800; // 7-player pool: 7×₦2k=₦14k (50/30/20%)
 const KEY='challenge_arena_v21';
+const WEEKLY_PRIZE_RATE=2000; // ₦2k per player per GW goes to weekly prizes
+// prizes() computes dynamically from actual player count — updates when players are added
+function prizes(){ const pot=state.players.length*WEEKLY_PRIZE_RATE; return {p1:Math.round(pot*.50),p2:Math.round(pot*.30),p3:Math.round(pot*.20)}; }
 
-// 2026/27 season — 8 cycles, all 7 players
+// 2026/27 season — 8 cycles, ₦3k/player/GW. players[] is populated dynamically by syncCyclePlayers()
 const CYCLES=[
-  {gw:[1,5],   players:[0,1,2,3,4,5,6], fee:15000}, // ₦3k/week × 5 GWs
-  {gw:[6,10],  players:[0,1,2,3,4,5,6], fee:15000},
-  {gw:[11,15], players:[0,1,2,3,4,5,6], fee:15000},
-  {gw:[16,20], players:[0,1,2,3,4,5,6], fee:15000},
-  {gw:[21,25], players:[0,1,2,3,4,5,6], fee:15000},
-  {gw:[26,30], players:[0,1,2,3,4,5,6], fee:15000},
-  {gw:[31,35], players:[0,1,2,3,4,5,6], fee:15000},
-  {gw:[36,38], players:[0,1,2,3,4,5,6], fee:9000},  // ₦3k/week × 3 GWs
+  {gw:[1,5],   fee:15000},
+  {gw:[6,10],  fee:15000},
+  {gw:[11,15], fee:15000},
+  {gw:[16,20], fee:15000},
+  {gw:[21,25], fee:15000},
+  {gw:[26,30], fee:15000},
+  {gw:[31,35], fee:15000},
+  {gw:[36,38], fee:9000},
 ];
+function syncCyclePlayers(){ const all=state.players.map((_,i)=>i); CYCLES.forEach(c=>c.players=all); }
 
 // 2026/27 roster
 // idx: 0=Osahon, 1=Syb, 2=William, 3=Hensalos, 4=Emeka, 5=Esther, 6=Christopher
@@ -113,6 +116,7 @@ function getSlots(pre){ return ['a','b','c'].map(s=>document.getElementById(pre+
 function calcPrizes(){
   const s1=getSlots('p1'),s2=getSlots('p2'),s3=getSlots('p3');
   if(!s1.length) return {awards:{},lines:[],note:'',positions:{1:[],2:[],3:[]}};
+  const {p1,p2,p3}=prizes();
   const awards={};
   const lines=[];
   const notes=[];
@@ -120,24 +124,24 @@ function calcPrizes(){
   const add=(idxs,pool)=>{ const sh=Math.floor(pool/idxs.length); idxs.forEach(i=>awards[i]=(awards[i]||0)+sh); return sh; };
 
   if(s1.length===3){
-    const sh=add(s1,PRIZE1+PRIZE2+PRIZE3);
+    const sh=add(s1,p1+p2+p3);
     lines.push(`3-way 1st: ${s1.map(nm).join(', ')} → ₦${sh.toLocaleString()} each`);
     notes.push(`${s1.map(nm).join(', ')} 3-way 1st`);
   } else if(s1.length===2){
-    const sh=add(s1,PRIZE1+PRIZE2);
+    const sh=add(s1,p1+p2);
     lines.push(`Joint 1st: ${s1.map(nm).join(' & ')} → ₦${sh.toLocaleString()} each`);
     notes.push(`${s1.map(nm).join(' & ')} joint 1st`);
-    if(s3.length){ const sh3=add(s3,PRIZE3); lines.push(`3rd: ${s3.map(nm).join(' & ')} → ₦${sh3.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} 3rd`); }
+    if(s3.length){ const sh3=add(s3,p3); lines.push(`3rd: ${s3.map(nm).join(' & ')} → ₦${sh3.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} 3rd`); }
   } else {
-    add(s1,PRIZE1); lines.push(`1st: ${nm(s1[0])} → ₦${PRIZE1.toLocaleString()}`); notes.push(`${nm(s1[0])} 1st`);
+    add(s1,p1); lines.push(`1st: ${nm(s1[0])} → ₦${p1.toLocaleString()}`); notes.push(`${nm(s1[0])} 1st`);
     if(s2.length>=2){
-      const pool=s3.length?PRIZE2+PRIZE3:PRIZE2;
+      const pool=s3.length?p2+p3:p2;
       const sh=add(s2,pool);
       lines.push(`Joint 2nd: ${s2.map(nm).join(' & ')} → ₦${sh.toLocaleString()} each`);
       notes.push(`${s2.map(nm).join(' & ')} joint 2nd`);
     } else if(s2.length===1){
-      add(s2,PRIZE2); lines.push(`2nd: ${nm(s2[0])} → ₦${PRIZE2.toLocaleString()}`); notes.push(`${nm(s2[0])} 2nd`);
-      if(s3.length){ const sh=add(s3,PRIZE3); lines.push(`${s3.length>1?'Joint ':''}3rd: ${s3.map(nm).join(' & ')} → ₦${sh.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} ${s3.length>1?'joint ':''}3rd`); }
+      add(s2,p2); lines.push(`2nd: ${nm(s2[0])} → ₦${p2.toLocaleString()}`); notes.push(`${nm(s2[0])} 2nd`);
+      if(s3.length){ const sh=add(s3,p3); lines.push(`${s3.length>1?'Joint ':''}3rd: ${s3.map(nm).join(' & ')} → ₦${sh.toLocaleString()}${s3.length>1?' each':''}`); notes.push(`${s3.map(nm).join(' & ')} ${s3.length>1?'joint ':''}3rd`); }
     }
   }
   const positions={1:s1.map(Number),2:s2.map(Number),3:s3.map(Number)};
@@ -265,7 +269,7 @@ function renderStandings(){
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
-  const mwp=document.getElementById('m-weekly-pot'); if(mwp) mwp.textContent='₦'+(PRIZE1+PRIZE2+PRIZE3).toLocaleString();
+  const mwp=document.getElementById('m-weekly-pot'); if(mwp){ const {p1,p2,p3}=prizes(); mwp.textContent='₦'+(p1+p2+p3).toLocaleString(); }
   const totalDisbursed=state.players.reduce((s,p)=>s+p.paidOut,0);
   const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+totalDisbursed.toLocaleString();
   const totalBank=state.players.reduce((s,p)=>s+p.accumulated+(p.carryOver||0)-p.paidOut,0);
@@ -831,6 +835,11 @@ function applyMigrations(){
   INIT_PLAYERS.forEach((name,i)=>{
     if(!state.players[i]) state.players.push({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0});
   });
+  // Seed entryId from ENTRY_MAP for existing players
+  Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
+    if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
+  });
+  syncCyclePlayers();
 }
 
 // Load from cloud and re-render if newer data is available
@@ -1155,7 +1164,7 @@ function renderDebtTracker(){
   el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
 }
 
-// ── Sync names from FPL ───────────────────────────────────────────────────────
+// ── Sync from FPL — auto-adds new players, updates names, marks cycle paid ────
 async function syncFromFPL(){
   const btn=document.getElementById('sync-fpl-btn');
   const status=document.getElementById('sync-fpl-status');
@@ -1163,45 +1172,47 @@ async function syncFromFPL(){
   try{
     const data=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
     const rows=data.standings?.results||[];
-    // Determine current cycle index
     const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
     const curCycleIdx=Math.max(0,Math.min(Math.floor(lastGW/5),CYCLES.length-1));
     if(!state.cyclePayments[curCycleIdx]) state.cyclePayments[curCycleIdx]={};
     const cycle=CYCLES[curCycleIdx];
     const label=`Cycle ${curCycleIdx+1} fee`;
-    let updated=0;
+    let added=0, updated=0;
     rows.forEach(r=>{
-      const playerIdx=ENTRY_MAP[r.entry];
-      if(playerIdx===undefined) return;
-      const p=state.players[playerIdx]; if(!p) return;
-      if(r.entry_name) p.teamName=r.entry_name;
-      // Being in the league = paid — mark current cycle, or upgrade cash→winnings
+      // Match by entryId (set via applyMigrations or previous sync)
+      let playerIdx=state.players.findIndex(p=>p.entryId===r.entry);
+      if(playerIdx===-1){
+        // New player — add them automatically
+        state.players.push({name:r.player_name,teamName:r.entry_name||'',entryId:r.entry,accumulated:0,paidOut:0,carryOver:0,w1:0,w2:0,w3:0});
+        playerIdx=state.players.length-1;
+        added++;
+      } else {
+        // Update name and team from FPL
+        state.players[playerIdx].name=r.player_name;
+        if(r.entry_name) state.players[playerIdx].teamName=r.entry_name;
+        updated++;
+      }
+      syncCyclePlayers(); // expand cycle.players to include new player
+      // Being in the league = confirmed paid for current cycle
       const cp=state.cyclePayments[curCycleIdx];
-      const alreadyWinnings=cp[playerIdx]==='winnings';
+      const p=state.players[playerIdx];
       const alreadyCash=cp[playerIdx]==='cash'||cp[playerIdx]===true;
       const bal=p.accumulated+(p.carryOver||0)-p.paidOut;
       if(!cp[playerIdx]){
-        if(bal>=cycle.fee){
-          cp[playerIdx]='winnings';
-          p.paidOut+=cycle.fee;
-          state.payouts.push({player:p.name,amount:cycle.fee,gw:label});
-        } else {
-          cp[playerIdx]='cash';
-        }
-      } else if(alreadyCash&&bal+cycle.fee>=cycle.fee){
-        // was marked cash but has balance — upgrade to winnings
+        if(bal>=cycle.fee){ cp[playerIdx]='winnings'; p.paidOut+=cycle.fee; state.payouts.push({player:p.name,amount:cycle.fee,gw:label}); }
+        else { cp[playerIdx]='cash'; }
+      } else if(alreadyCash){
         const freshBal=p.accumulated+(p.carryOver||0)-p.paidOut;
-        if(freshBal>=cycle.fee){
-          cp[playerIdx]='winnings';
-          p.paidOut+=cycle.fee;
-          state.payouts.push({player:p.name,amount:cycle.fee,gw:label});
-        }
+        if(freshBal>=cycle.fee){ cp[playerIdx]='winnings'; p.paidOut+=cycle.fee; state.payouts.push({player:p.name,amount:cycle.fee,gw:label}); }
       }
-      updated++;
     });
+    syncCyclePlayers();
     save();
     renderAdminPlayers(); populateSelects(); renderStandings(); renderPayments();
-    status.textContent=updated?`Synced ${updated} player(s) — cycle ${curCycleIdx+1} marked paid`:'No matching entries found';
+    const msg=[];
+    if(added) msg.push(`${added} new player${added>1?'s':''} added`);
+    msg.push(`${updated} updated — cycle ${curCycleIdx+1} marked paid`);
+    status.textContent=msg.join(', ');
   } catch(err){
     status.textContent=`Failed: ${err}`;
   }
