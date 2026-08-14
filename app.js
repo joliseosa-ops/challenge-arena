@@ -279,7 +279,7 @@ function renderStandings(){
   // Public tiles — this season only, no carry-over
   const pot=seasonPotTotal();
   const mpr=document.getElementById('m-prize-received'); if(mpr) mpr.textContent='₦'+(pot*2).toLocaleString();
-  const msph=document.getElementById('m-season-pot-home'); if(msph) msph.textContent='₦'+pot.toLocaleString();
+  const mtc=document.getElementById('m-total-collected'); if(mtc) mtc.textContent='₦'+(pot*3).toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
