@@ -279,6 +279,7 @@ function renderStandings(){
   // Public tiles — this season only, no carry-over
   const seasonWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
   const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+seasonWithdrawn.toLocaleString();
+  const mpr=document.getElementById('m-prize-received'); if(mpr) mpr.textContent='₦'+(seasonPotTotal()*2).toLocaleString();
   const seasonBank=state.players.reduce((s,p)=>s+pubBal(p),0);
   const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+seasonBank.toLocaleString();
   updateGWCountdown();
