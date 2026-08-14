@@ -277,12 +277,9 @@ function renderStandings(){
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   const mwp=document.getElementById('m-weekly-pot'); if(mwp){ const {p1,p2,p3}=prizes(); mwp.textContent='₦'+(p1+p2+p3).toLocaleString(); }
   // Public tiles — this season only, no carry-over
-  const seasonWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
-  const mtd=document.getElementById('m-total-disbursed'); if(mtd) mtd.textContent='₦'+seasonWithdrawn.toLocaleString();
-  const mpr=document.getElementById('m-prize-received'); if(mpr) mpr.textContent='₦'+(seasonPotTotal()*2).toLocaleString();
-  const msph=document.getElementById('m-season-pot-home'); if(msph) msph.textContent='₦'+seasonPotTotal().toLocaleString();
-  const seasonBank=state.players.reduce((s,p)=>s+pubBal(p),0);
-  const mtb=document.getElementById('m-total-bank'); if(mtb) mtb.textContent='₦'+seasonBank.toLocaleString();
+  const pot=seasonPotTotal();
+  const mpr=document.getElementById('m-prize-received'); if(mpr) mpr.textContent='₦'+(pot*2).toLocaleString();
+  const msph=document.getElementById('m-season-pot-home'); if(msph) msph.textContent='₦'+pot.toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
