@@ -14,7 +14,7 @@
   /* Ranks */
   --gold:#b45309;--silver:#4b5563;--bronze:#92400e;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;font-feature-settings:"zero" 0}
 .hidden{display:none!important}
 html,body{overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:'Poppins',system-ui,-apple-system,sans-serif;min-height:100vh;font-size:14px;line-height:1.5}
