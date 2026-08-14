@@ -784,10 +784,9 @@ function renderFinanceTab(){
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px">Weekly Prize Pool — ${fmt(weeklyReceived)} received</div>
       ${row('Distributed as GW prizes',gwAwarded,'var(--green)','var(--green)')}
       ${row('Remaining — yet to be distributed',weeklyRemaining,'var(--caution)','var(--caution)')}
-      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">Season Pot — ${fmt(seasonPot)} locked</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">Season Pot — ${fmt(seasonPot)} accumulated</div>
       ${row('Accumulated this season',seasonPot,'#f59e0b','#b45309')}
       ${row('Paid out',0,'var(--border)','var(--dim)')}
-      ${row('Locked until GW38',seasonPot,'var(--caution)','var(--caution)')}
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">GW Prize Winnings — ${fmt(gwAwarded)} earned</div>
       ${row('Withdrawn by players',totalWithdrawn,'var(--blue)','var(--blue)')}
       ${row('Still in player accounts',totalInBank,'var(--fpl-dark)','var(--fpl-dark)')}
