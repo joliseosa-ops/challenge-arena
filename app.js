@@ -413,9 +413,9 @@ function renderPayments(){
     const isCur=i===curCycle;
     return `<div class="cycle-card" style="${isCur?'border-color:var(--accent);border-width:2px':''}">
       <div style="font-size:11px;font-weight:700;color:${isCur?'var(--accent)':'var(--muted)'};margin-bottom:3px">${isCur?'▶ ':''}Cycle ${i+1}</div>
-      <div style="font-size:11px;color:var(--dim);font-family:'Roboto Mono',monospace;margin-bottom:3px">GW${c.gw[0]}–${c.gw[1]}</div>
+      <div style="font-size:11px;color:var(--dim);font-family:'Inconsolata',monospace;margin-bottom:3px">GW${c.gw[0]}–${c.gw[1]}</div>
       <div style="font-size:10px;color:var(--dim);margin-bottom:6px">₦${c.fee.toLocaleString()}</div>
-      <div style="font-family:'Roboto Mono',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${c.players.length}</span></div>
+      <div style="font-family:'Inconsolata',monospace;font-size:18px;font-weight:600;color:var(--text)">${paid}<span style="color:var(--dim);font-size:13px">/${c.players.length}</span></div>
       <div class="cycle-bar"><div class="cycle-bar-fill" style="width:${pct}%"></div></div>
       <button class="btn btn-ghost" style="padding:6px 10px;font-size:.8rem;width:100%;margin-top:4px;min-height:36px" onclick="openCycleModal(${i})">Manage</button>
     </div>`;
@@ -452,7 +452,7 @@ function openCycleModal(idx){
     return `<div class="check-item" style="flex-wrap:wrap">
       <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){['cpw${i}','cppw${i}'].forEach(id=>{var el=document.getElementById(id);if(el)el.checked=false;})}">
       <label for="cp${i}" style="flex:1">${p.name}</label>
-      <span style="font-size:11px;font-family:'Roboto Mono',monospace;color:var(--dim);margin-right:4px">₦${bal.toLocaleString()}</span>
+      <span style="font-size:11px;font-family:'Inconsolata',monospace;color:var(--dim);margin-right:4px">₦${bal.toLocaleString()}</span>
       <span class="${statusClass}" style="${statusStyle}">${statusTag}</span>
       ${canWin||isWin?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:6px">
         <input type="checkbox" id="cpw${i}" ${isWin?'checked':''} onchange="if(this.checked)document.getElementById('cp${i}').checked=false">
@@ -688,8 +688,8 @@ async function fetchFPLLeague(){
         <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
         <td style="font-weight:500">${r.player_name}</td>
         <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
-        <td style="font-family:'Roboto Mono',monospace">${r.event_total}</td>
-        <td style="font-family:'Roboto Mono',monospace;font-weight:600">${r.total}</td>
+        <td style="font-family:'Inconsolata',monospace">${r.event_total}</td>
+        <td style="font-family:'Inconsolata',monospace;font-weight:600">${r.total}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
   }catch(e){
@@ -720,11 +720,11 @@ function renderSeasonTab(){
         <div style="font-size:12px;font-weight:700;color:var(--text)">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">${names}</div>
       </div>
-      <span style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:var(--green);white-space:nowrap">${fmt(contribution)}</span>
+      <span style="font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;color:var(--green);white-space:nowrap">${fmt(contribution)}</span>
     </div>`;
   }).filter(Boolean);
 
-  const totalRow=`<div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--border)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total</span><span style="font-family:'Roboto Mono',monospace;font-size:14px;font-weight:700;color:var(--text)">${fmt(pot)}</span></div>`;
+  const totalRow=`<div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--border)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total</span><span style="font-family:'Inconsolata',monospace;font-size:14px;font-weight:700;color:var(--text)">${fmt(pot)}</span></div>`;
   document.getElementById('season-pot-body').innerHTML=rows.length
     ? rows.join('')+totalRow
     : '<div class="empty">No cycle payments recorded yet</div>';
@@ -743,13 +743,13 @@ function renderFinanceTab(){
   const tile=(label,val,color='var(--fpl-dark)')=>`
     <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid ${color};border-radius:8px;padding:1rem;text-align:center">
       <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${label}</div>
-      <div style="font-family:'Roboto Mono',monospace;font-size:18px;font-weight:700;color:${color}">${fmt(val)}</div>
+      <div style="font-family:'Inconsolata',monospace;font-size:18px;font-weight:700;color:${color}">${fmt(val)}</div>
     </div>`;
 
   const row=(label,val,sub='',color='var(--text)')=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
       <div><div style="font-size:13px;font-weight:500">${label}</div>${sub?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${sub}</div>`:''}</div>
-      <div style="font-family:'Roboto Mono',monospace;font-weight:700;color:${color}">${fmt(val)}</div>
+      <div style="font-family:'Inconsolata',monospace;font-weight:700;color:${color}">${fmt(val)}</div>
     </div>`;
 
   // Per-GW prize history
@@ -759,7 +759,7 @@ function renderFinanceTab(){
     const total=Object.values(g.awards).reduce((s,a)=>s+a,0);
     return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap">
       <div><div style="font-size:12px;font-weight:700;color:var(--accent)">GW ${g.gw}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${winners||'—'}</div></div>
-      <div style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;flex-shrink:0">${fmt(total)}</div>
+      <div style="font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;flex-shrink:0">${fmt(total)}</div>
     </div>`;
   }).join('');
 
@@ -851,7 +851,7 @@ function renderAchievements(){
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:${badges.length?'.75rem':'0'}">
           <div class="init" style="width:36px;height:36px;font-size:11px;flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
           <div style="flex:1"><div style="font-weight:600;font-size:14px">${p.name}</div>${p.teamName?`<div style="font-size:11px;color:var(--muted)">${p.teamName}</div>`:''}</div>
-          <div style="font-size:12px;color:var(--dim);font-family:'Roboto Mono',monospace">${badges.length} badge${badges.length!==1?'s':''}</div>
+          <div style="font-size:12px;color:var(--dim);font-family:'Inconsolata',monospace">${badges.length} badge${badges.length!==1?'s':''}</div>
         </div>
         ${badges.length?`<div style="display:flex;flex-wrap:wrap;gap:6px">${badges.map(b=>`<div title="${b.desc}" style="display:flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fcd34d;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#92400e">${b.icon} ${b.label}</div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--dim)">No achievements yet — check back after GW1</div>'}
       </div>`).join('')}`;
@@ -950,15 +950,15 @@ function renderSeasonRecap(){
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Prize Pot</div>
-        <div style="font-family:'Roboto Mono',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
+        <div style="font-family:'Inconsolata',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--accent)">₦${totalFees.toLocaleString()}</div>
       </div>
       <div style="background:#dcfce7;border-top:3px solid var(--green);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Paid Out</div>
-        <div style="font-family:'Roboto Mono',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div>
+        <div style="font-family:'Inconsolata',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--green)">₦${totalPrizes.toLocaleString()}</div>
       </div>
       <div style="background:#dbeafe;border-top:3px solid var(--blue);border-radius:8px;padding:.75rem;text-align:center">
         <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">In Bank</div>
-        <div style="font-family:'Roboto Mono',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--blue)">₦${mib.toLocaleString()}</div>
+        <div style="font-family:'Inconsolata',monospace;font-size:clamp(11px,3vw,14px);font-weight:700;color:var(--blue)">₦${mib.toLocaleString()}</div>
       </div>
     </div>`; })()}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
@@ -1001,7 +1001,7 @@ function renderCountdown(){
   el.style.display='';
   el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
     <div><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Next season starts</div>
-    <div style="font-family:'Roboto Mono',monospace;font-size:22px;font-weight:800;color:var(--fpl-dark)">${days}<span style="font-size:13px;font-weight:500;color:var(--muted)"> days</span> ${hrs}<span style="font-size:13px;font-weight:500;color:var(--muted)"> hrs</span> ${mins}<span style="font-size:13px;font-weight:500;color:var(--muted)"> mins</span> ${secs}<span style="font-size:13px;font-weight:500;color:var(--muted)"> secs</span></div>
+    <div style="font-family:'Inconsolata',monospace;font-size:22px;font-weight:800;color:var(--fpl-dark)">${days}<span style="font-size:13px;font-weight:500;color:var(--muted)"> days</span> ${hrs}<span style="font-size:13px;font-weight:500;color:var(--muted)"> hrs</span> ${mins}<span style="font-size:13px;font-weight:500;color:var(--muted)"> mins</span> ${secs}<span style="font-size:13px;font-weight:500;color:var(--muted)"> secs</span></div>
     <div style="font-size:12px;color:var(--muted);margin-top:2px">${dateStr} · ${timeStr}</div></div>
     <div style="font-size:28px">⏳</div>
   </div>`;
@@ -1018,7 +1018,7 @@ function renderEarningsChart(){
     <div style="display:grid;grid-template-columns:clamp(60px,25%,100px) 1fr clamp(44px,12%,64px);gap:6px;align-items:center;margin-bottom:9px">
       <span style="font-size:12px;font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#6b21a8" onclick="openProfile(${p.i})">${p.name}</span>
       <div style="background:rgba(0,0,0,.07);border-radius:4px;height:10px;overflow:hidden"><div style="background:linear-gradient(90deg,#7c3aed 0%,#00c875 100%);height:100%;width:${Math.round((p.accumulated/max)*100)}%;border-radius:4px"></div></div>
-      <span style="font-family:'Roboto Mono',monospace;font-size:11px;color:#374151">₦${Math.round(p.accumulated/1000)}k</span>
+      <span style="font-family:'Inconsolata',monospace;font-size:11px;color:#374151">₦${Math.round(p.accumulated/1000)}k</span>
     </div>`).join('');
 }
 
@@ -1077,7 +1077,7 @@ function renderWeeklyTable(gwNum,gwRecord,ptsMap=null){
         return `<tr${podiumCls?' class="'+podiumCls+'"':''} onclick="openProfile(${e.idx})" style="cursor:pointer">
           <td><span class="${hasPoints?rC(displayRank):rC(e.pos)}">${hasPoints?rL(displayRank):rL(e.pos)}</span></td>
           <td><div style="display:flex;align-items:center;gap:10px"><div class="init">${e.name.slice(0,2).toUpperCase()}</div><div><div class="player-name" style="font-weight:500">${e.name}</div>${e.teamName?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${e.teamName}</div>`:''}</div></div></td>
-          ${hasPoints?`<td><span style="font-family:'Roboto Mono',monospace;font-weight:700;color:var(--fpl-dark)">${e.pts??'—'}</span></td>`:''}
+          ${hasPoints?`<td><span style="font-family:'Inconsolata',monospace;font-weight:700;color:var(--fpl-dark)">${e.pts??'—'}</span></td>`:''}
           <td>${e.prize>0?`<span class="bal-pos">₦${e.prize.toLocaleString()}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
         </tr>`;
       }).join('')}</tbody>
@@ -1132,7 +1132,7 @@ function renderH2H(){
   const hi=(arr,v)=>{ const max=Math.max(...arr),min=Math.min(...arr); return v===max&&arr.filter(x=>x===max).length===1?'color:var(--accent);font-weight:700':v===min&&arr.filter(x=>x===min).length===1?'color:var(--dim)':''; };
   const row=(label,getVal,fmt=v=>v)=>{
     const rv=ps.map((_,i)=>getVal(i));
-    return `<tr><td style="font-size:12px;color:var(--muted);padding:8px 4px;border-bottom:1px solid var(--border)">${label}</td>${rv.map(v=>`<td style="text-align:center;font-family:'Roboto Mono',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(rv,v)}">${fmt(v)}</td>`).join('')}</tr>`;
+    return `<tr><td style="font-size:12px;color:var(--muted);padding:8px 4px;border-bottom:1px solid var(--border)">${label}</td>${rv.map(v=>`<td style="text-align:center;font-family:'Inconsolata',monospace;font-size:13px;padding:8px 4px;border-bottom:1px solid var(--border);${hi(rv,v)}">${fmt(v)}</td>`).join('')}</tr>`;
   };
   el.innerHTML=`<table style="width:100%;border-collapse:collapse">
     <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500"></th>${ps.map(p=>`<th style="font-size:13px;font-weight:700;text-align:center;padding:6px 4px">${p.name}</th>`).join('')}</tr></thead>
@@ -1160,9 +1160,9 @@ function openProfile(idx){
   document.getElementById('profile-team').textContent=p.teamName||'';
   document.getElementById('profile-content').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
-      <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">GW Earnings</div><div style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${p.accumulated.toLocaleString()}</div></div>
-      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Withdrawn</div><div style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:var(--muted)">₦${withdrawn.toLocaleString()}</div></div>
-      <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
+      <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">GW Earnings</div><div style="font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${p.accumulated.toLocaleString()}</div></div>
+      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Withdrawn</div><div style="font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;color:var(--muted)">₦${withdrawn.toLocaleString()}</div></div>
+      <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem">
       <span class="w1">${p.w1} 🥇</span>
@@ -1174,7 +1174,7 @@ function openProfile(idx){
     ${history.length?history.map(g=>`<div class="gw-item" style="border-bottom:1px solid var(--border)">
       <span class="gw-num">GW${g.gw}</span>
       <span class="gw-detail" style="flex:1">Prize awarded</span>
-      <span style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${g.amount.toLocaleString()}</span>
+      <span style="font-family:'Inconsolata',monospace;font-size:13px;font-weight:700;color:var(--accent)">₦${g.amount.toLocaleString()}</span>
     </div>`).join(''):'<div class="empty">No prizes yet</div>'}`;
   document.getElementById('profile-overlay').classList.add('open');
 }
@@ -1234,7 +1234,7 @@ function renderDebtTracker(){
     return unpaid.length?{cycle:ci+1,gw:`GW${c.gw[0]}–${c.gw[1]}`,fee:c.fee,unpaid}:null;
   }).filter(Boolean);
   if(!debtors.length){ el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div><div style="font-size:13px;color:var(--green);font-weight:500">All cycle fees accounted for.</div></div>`; return; }
-  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'Roboto Mono',monospace;color:var(--muted);white-space:nowrap">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
+  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'Inconsolata',monospace;color:var(--muted);white-space:nowrap">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
 }
 
 // ── Sync from FPL — auto-adds new players, updates names, marks cycle paid ────
