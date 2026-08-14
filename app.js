@@ -727,15 +727,26 @@ function renderSeasonTab(){
 function renderFinanceTab(){
   const el=document.getElementById('finance-content'); if(!el) return;
   const fmt=n=>'₦'+Math.abs(n).toLocaleString();
+  const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
 
-  // --- Figures ---
-  const weeklyPotPerGW=state.players.length*WEEKLY_PRIZE_RATE;
-  const seasonPot=seasonPotTotal();
-  const grandTotal=weeklyPotPerGW*state.gameweeks.length+seasonPot; // total collected this season
+  // --- Cycle totals (actual cash received) ---
+  let totalCycleReceived=0, totalCycleExpected=0;
+  CYCLES.forEach((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    totalCycleReceived+=c.players.filter(i=>isPaid(cp[i])).length*c.fee;
+    totalCycleExpected+=c.players.length*c.fee;
+  });
+  const totalCycleOutstanding=totalCycleExpected-totalCycleReceived;
+
+  // --- Split into weekly vs season portions (2k:1k ratio per GW) ---
+  const seasonPot=seasonPotTotal();           // 1k/player/GW paid
+  const weeklyReceived=seasonPot*2;           // 2k/player/GW paid
+  // grandTotal = totalCycleReceived (weeklyReceived + seasonPot)
+
+  // --- GW prizes & player balances ---
   const gwAwarded=state.players.reduce((s,p)=>s+p.accumulated,0);
   const totalWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
   const totalInBank=state.players.reduce((s,p)=>s+Math.max(0,pubBal(p)),0);
-  const totalOwed=state.players.reduce((s,p)=>s+Math.abs(Math.min(0,pubBal(p))),0); // outstanding from players
 
   const tile=(label,val,color='var(--fpl-dark)',sub='')=>`
     <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid ${color};border-radius:8px;padding:1rem">
@@ -762,34 +773,35 @@ function renderFinanceTab(){
 
   el.innerHTML=`
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Total Collected This Season</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
-        ${tile('Weekly Prize Pot',weeklyPotPerGW*state.gameweeks.length,'var(--accent)',`₦${weeklyPotPerGW.toLocaleString()} × ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
-        ${tile('Season Pot',seasonPot,'#f59e0b','accumulated from cycles')}
-        ${tile('Grand Total',grandTotal,'var(--fpl-dark)','weekly + season combined')}
+      <div class="card-title">Total Collected from Cycles</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:1rem">
+        ${tile('Weekly Pot Received',weeklyReceived,'var(--accent)','₦2k/player/GW paid')}
+        ${tile('Season Pot Received',seasonPot,'#f59e0b','₦1k/player/GW paid')}
+        ${tile('Total Received',totalCycleReceived,'var(--fpl-dark)','cash in hand')}
       </div>
+      ${row('Total expected (all cycles)',totalCycleExpected,'if every player paid every cycle','var(--muted)')}
+      ${totalCycleOutstanding>0?row('Still outstanding',totalCycleOutstanding,'cycle fees not yet paid','var(--red)'):''}
     </div>
 
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Weekly Prize Pot</div>
-      ${row('Pot per gameweek',weeklyPotPerGW,`₦${(WEEKLY_PRIZE_RATE).toLocaleString()} × ${state.players.length} players`,'var(--fpl-dark)')}
-      ${row('Total awarded (GW prizes)',gwAwarded,'sum of all 1st / 2nd / 3rd place payments','var(--green)')}
-      ${row('Remaining in pot',Math.max(0,weeklyPotPerGW*state.gameweeks.length-gwAwarded),'collected but not yet distributed','var(--caution)')}
+      ${row('Total collected',weeklyReceived,'from cycle payments (₦2k/player/GW)','var(--fpl-dark)')}
+      ${row('Awarded as GW prizes',gwAwarded,'sum of all 1st / 2nd / 3rd place payments','var(--green)')}
+      ${row('Remaining in pot',Math.max(0,weeklyReceived-gwAwarded),'collected but not yet distributed','var(--caution)')}
     </div>
 
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Season Pot</div>
-      ${row('Accumulated',seasonPot,'total season contributions collected','var(--fpl-dark)')}
+      ${row('Accumulated',seasonPot,'from cycle payments (₦1k/player/GW)','var(--fpl-dark)')}
       ${row('Paid out',0,'distributed at end of season','var(--muted)')}
       ${row('Locked in pot',seasonPot,'pays out at GW38','var(--caution)')}
     </div>
 
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Player Money Overview</div>
-      ${row('GW prizes awarded',gwAwarded,'total prize money earned by players','var(--green)')}
+      <div class="card-title">Player Money</div>
+      ${row('GW prizes awarded',gwAwarded,'total earned by all players','var(--green)')}
       ${row('Withdrawn',totalWithdrawn,'paid out to players this season','var(--blue)')}
-      ${row('In bank (held)',totalInBank,'prize money still held for players','var(--fpl-dark)')}
-      ${totalOwed>0?row('Outstanding (owed)',totalOwed,'players with unpaid balances','var(--red)'):''}
+      ${row('In bank',totalInBank,'prize money held, not yet withdrawn','var(--fpl-dark)')}
     </div>
 
     <div class="card">
