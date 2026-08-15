@@ -693,36 +693,6 @@ async function fetchFPLLeague(){
   }
 }
 
-function renderSeasonTab(){
-  const fmt=n=>'₦'+n.toLocaleString();
-  const pot=seasonPotTotal();
-  document.getElementById('m-season-pot').textContent=fmt(pot);
-  document.getElementById('m-season-paid').textContent=fmt(0);
-  document.getElementById('m-season-remaining').textContent=fmt(pot);
-
-  const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
-
-  const rows=CYCLES.map((c,idx)=>{
-    const cp=state.cyclePayments[idx]||{};
-    const gwCount=(c.gw[1]-c.gw[0])+1;
-    const paidPlayers=c.players.filter(i=>isPaid(cp[i]));
-    if(!paidPlayers.length) return null;
-    const contribution=paidPlayers.length*gwCount*1000;
-    const names=paidPlayers.map(i=>state.players[i]?.name||'?').join(', ');
-    return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text)">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${names}</div>
-      </div>
-      <span style="font-family:'Poppins',system-ui,sans-serif;font-size:13px;font-weight:700;color:var(--green);white-space:nowrap">${fmt(contribution)}</span>
-    </div>`;
-  }).filter(Boolean);
-
-  const totalRow=`<div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--border)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total</span><span style="font-family:'Poppins',system-ui,sans-serif;font-size:14px;font-weight:700;color:var(--text)">${fmt(pot)}</span></div>`;
-  document.getElementById('season-pot-body').innerHTML=rows.length
-    ? rows.join('')+totalRow
-    : '<div class="empty">No cycle payments recorded yet</div>';
-}
 
 function renderFinanceTab(){
   const el=document.getElementById('finance-content'); if(!el) return;
@@ -864,7 +834,6 @@ function renderAchievements(){
 
 function showTab(t){
   if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
-  if(t==='season'){ renderSeasonTab(); }
   if(t==='finance'){ renderFinanceTab(); }
   if(t==='fpl'){ fetchFPLLeague(); }
   if(t==='achievements'){ renderAchievements(); }
