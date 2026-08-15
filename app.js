@@ -818,7 +818,7 @@ function renderFinanceTab(){
     </div>
 
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Where Every Dime Is</div>
+      <div class="card-title">Where Every Kobo Is</div>
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px">Weekly Prize Pool — ${fmt(weeklyReceived)} received</div>
       ${row('Distributed as GW prizes',gwAwarded,'var(--green)','var(--green)')}
       ${row('Remaining in pot',weeklyRemaining,'var(--caution)','var(--caution)')}
