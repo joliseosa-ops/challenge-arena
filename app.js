@@ -263,23 +263,6 @@ function formGuide(playerIdx){
 const pubBal=p=>p.accumulated-Math.max(0,p.paidOut-(p.carryOver||0));
 const fullBal=p=>p.accumulated+(p.carryOver||0)-p.paidOut;
 
-function renderDebtBanner(){
-  const banner=document.getElementById('debt-banner'); if(!banner) return;
-  const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
-  let debtors=0,totalOwed=0;
-  CYCLES.forEach((c,idx)=>{
-    const cp=state.cyclePayments[idx]||{};
-    const unpaid=c.players.filter(i=>!isPaid(cp[i]));
-    debtors+=unpaid.length; totalOwed+=unpaid.length*c.fee;
-  });
-  if(!debtors){ banner.style.display='none'; return; }
-  banner.style.display='block';
-  banner.innerHTML=`<div style="display:flex;align-items:center;gap:10px;background:#fef3c7;border:1px solid #fcd34d;border-left:4px solid var(--caution);border-radius:8px;padding:.875rem 1rem">
-    <span style="font-size:18px">⚠️</span>
-    <div><div style="font-size:13px;font-weight:700;color:#92400e">${debtors} outstanding cycle payment${debtors!==1?'s':''}</div>
-    <div style="font-size:11px;color:#b45309;margin-top:1px">₦${totalOwed.toLocaleString()} owed — see Outstanding Fees below</div></div>
-  </div>`;
-}
 
 function renderStandings(){
   const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
@@ -713,7 +696,6 @@ async function fetchFPLLeague(){
 
 
 function renderFinanceTab(){
-  renderDebtBanner();
   const el=document.getElementById('finance-content'); if(!el) return;
   const fmt=n=>'₦'+Math.abs(n).toLocaleString();
   const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
