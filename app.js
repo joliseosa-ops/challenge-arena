@@ -274,7 +274,7 @@ function renderDebtBanner(){
   });
   if(!debtors){ banner.style.display='none'; return; }
   banner.style.display='block';
-  banner.innerHTML=`<div onclick="showTab('finance')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fef3c7;border:1px solid #fcd34d;border-left:4px solid var(--caution);border-radius:8px;padding:.875rem 1rem">
+  banner.innerHTML=`<div id="debt-banner-inner" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fef3c7;border:1px solid #fcd34d;border-left:4px solid var(--caution);border-radius:8px;padding:.875rem 1rem">
     <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:18px">⚠️</span>
       <div><div style="font-size:13px;font-weight:700;color:#92400e">${debtors} outstanding cycle payment${debtors!==1?'s':''}</div>
@@ -282,6 +282,7 @@ function renderDebtBanner(){
     </div>
     <span style="font-size:13px;color:#92400e;font-weight:700;flex-shrink:0">→</span>
   </div>`;
+  document.getElementById('debt-banner-inner').addEventListener('click',()=>showTab('finance'));
 }
 
 function renderStandings(){
