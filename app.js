@@ -967,7 +967,7 @@ function renderAchievements(){
 }
 
 function showTab(t){
-  if((t==='admin'||t==='payout'||t==='cycles'||t==='gameweek')&&!isAdmin){ requireAdmin(t); return; }
+  if(t==='admin'&&!isAdmin){ requireAdmin(t); return; }
   if(t==='finance'){ renderFinanceTab(); }
   if(t==='fpl'){ fetchFPLLeague(); }
   if(t==='achievements'){ renderAchievements(); }
@@ -976,10 +976,17 @@ function showTab(t){
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
   document.getElementById('sec-'+t).classList.add('active');
   if(t==='standings') renderStandings();
-  if(t==='payout'){ populateSelects(); renderPayoutLog(); }
-  if(t==='cycles') renderPayments();
-  if(t==='gameweek') populateSelects();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); showAdminSection('settings'); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
+}
+
+function showAdminSection(s){
+  document.querySelectorAll('.admin-sub').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.admin-sub-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('admin-sub-'+s).style.display='';
+  document.querySelector(`.admin-sub-btn[onclick="showAdminSection('${s}')"]`).classList.add('active');
+  if(s==='payout'){ populateSelects(); renderPayoutLog(); }
+  if(s==='cycles') renderPayments();
+  if(s==='gameweek') populateSelects();
 }
 
 function requireAdmin(tab){
@@ -990,28 +997,16 @@ function requireAdmin(tab){
   setTimeout(()=>document.getElementById('pin-input').focus(),50);
 }
 
-function setAdminTabs(show){
-  document.querySelectorAll('.admin-only-tab').forEach(t=>t.classList.toggle('hidden',!show));
-}
-
 function submitPin(){
   if(document.getElementById('pin-input').value===ADMIN_PIN){
     isAdmin=true;
     sessionStorage.setItem('ca_admin','1');
-    setAdminTabs(true);
     closePinModal();
     if(pendingTab){ showTab(pendingTab); pendingTab=null; }
   } else {
     document.getElementById('pin-error').style.display='block';
     document.getElementById('pin-input').select();
   }
-}
-
-function adminLogout(){
-  isAdmin=false;
-  sessionStorage.removeItem('ca_admin');
-  setAdminTabs(false);
-  showTab('standings');
 }
 
 function closePinModal(){
@@ -1021,7 +1016,6 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
-if(isAdmin) setAdminTabs(true);
 
 function applyMigrations(){
   state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });

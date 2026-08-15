@@ -52,11 +52,8 @@
     <button class="tab tab-finance" onclick="showTab('finance')">The Bank</button>
     <button class="tab tab-achievements" onclick="showTab('achievements')">Stats</button>
     <button class="tab tab-fpl" onclick="showTab('fpl')">FPL League</button>
-    <button class="tab tab-gameweek admin-only-tab hidden" onclick="showTab('gameweek')">Record GW</button>
-    <button class="tab tab-payout admin-only-tab hidden" onclick="showTab('payout')">Payout</button>
-    <button class="tab tab-cycles admin-only-tab hidden" onclick="showTab('cycles')">Cycles</button>
-    <a class="tab tab-archive admin-only-tab hidden" href="/archive-2526.html" target="_blank">Archives ↗</a>
-    <button class="tab tab-admin admin-only-tab hidden" onclick="showTab('admin')">Admin</button>
+    <a class="tab tab-archive" href="/archive-2526.html" target="_blank">Archives ↗</a>
+    <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
   </div>
 
 
@@ -122,80 +119,6 @@
     </div>
   </div>
 
-  <!-- RECORD GW -->
-  <div id="sec-gameweek" class="section">
-    <div class="card">
-      <div class="card-title">Enter GW result</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap">
-        <button class="btn btn-ghost" id="fetch-gw-btn" onclick="fetchLatestGW()">↓ Fetch from FPL</button>
-        <span id="fetch-gw-status" style="font-size:12px;color:var(--muted)"></span>
-      </div>
-      <div class="pos-group">
-        <div class="pos-label gold">1st place &mdash; ₦22,000</div>
-        <div class="slots">
-          <div class="field"><label>Player A</label><select id="p1a"><option value="">—</option></select></div>
-          <div class="field"><label>Player B (tie)</label><select id="p1b"><option value="">—</option></select></div>
-          <div class="field"><label>Player C (tie)</label><select id="p1c"><option value="">—</option></select></div>
-        </div>
-      </div>
-      <div class="pos-group">
-        <div class="pos-label silver">2nd place &mdash; ₦11,000</div>
-        <div class="slots">
-          <div class="field"><label>Player A</label><select id="p2a"><option value="">—</option></select></div>
-          <div class="field"><label>Player B (tie)</label><select id="p2b"><option value="">—</option></select></div>
-          <div class="field"><label>Player C (tie)</label><select id="p2c"><option value="">—</option></select></div>
-        </div>
-      </div>
-      <div class="pos-group">
-        <div class="pos-label bronze">3rd place &mdash; ₦5,000</div>
-        <div class="slots">
-          <div class="field"><label>Player A</label><select id="p3a"><option value="">—</option></select></div>
-          <div class="field"><label>Player B (tie)</label><select id="p3b"><option value="">—</option></select></div>
-          <div class="field"><label>Player C (tie)</label><select id="p3c"><option value="">—</option></select></div>
-        </div>
-      </div>
-      <div class="card" style="margin:1rem 0 0;padding:1rem;background:#f8f8f8;border-color:#e5e5e5">
-        <div class="card-title" style="margin-bottom:.75rem">GW Points</div>
-        <div id="gw-points-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px"></div>
-      </div>
-      <div id="prize-preview" class="info-box hidden" style="margin-top:1rem"></div>
-      <button class="btn" style="margin-top:1rem" onclick="recordGW()">Record gameweek</button>
-    </div>
-  </div>
-
-  <!-- PAYOUT -->
-  <div id="sec-payout" class="section">
-    <div class="card">
-      <div class="card-title">Process payout</div>
-      <div class="field"><label>Select player</label><select id="po-player" onchange="updatePayoutInfo()"><option value="">— select player —</option></select></div>
-      <div id="po-info" class="info-box hidden"></div>
-      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
-        <div class="field" style="margin:0"><label>Amount to pay out (₦)</label><input type="number" id="po-amt" placeholder="Enter amount"></div>
-        <button class="btn" onclick="processPayout()">Pay out</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Payout log</div>
-      <div id="payout-log"><div class="empty">no payouts recorded</div></div>
-    </div>
-  </div>
-
-  <!-- CYCLES (admin) -->
-  <div id="sec-cycles" class="section">
-    <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">How payment cycles work</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7">The 38-week season is split into <strong style="color:var(--text)">7 payment cycles</strong>. Players pay upfront per cycle to cover their ₦2,000/week stake — <strong style="color:var(--accent)">₦10,000</strong> for cycles 1–6, and <strong style="color:var(--accent)">₦16,000</strong> for the final cycle (GW31–38, 8 weeks). Tap <strong style="color:var(--text)">Manage</strong> on any cycle to mark who has paid.</p>
-    </div>
-    <div class="metrics" style="margin-bottom:1.5rem">
-      <div class="metric"><div class="metric-label">Current cycle</div><div class="metric-val accent" id="m-cycle">—</div></div>
-      <div class="metric"><div class="metric-label">Cycle fee</div><div class="metric-val">₦10,000</div></div>
-      <div class="metric"><div class="metric-label">Paid this cycle</div><div class="metric-val" id="m-cycle-paid">—</div></div>
-    </div>
-    <div class="cycle-grid" id="cycle-grid"></div>
-    <div id="cycle-owing-table" style="margin-top:1rem"></div>
-    <div id="debt-tracker" style="margin-top:1rem"></div>
-  </div>
-
   <!-- SEASON POT -->
   <!-- FPL LEAGUE -->
   <div id="sec-fpl" class="section">
@@ -220,58 +143,135 @@
 
   <!-- ADMIN -->
   <div id="sec-admin" class="section">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-      <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red);font-size:12px" onclick="adminLogout()">🔒 Exit Admin</button>
+    <div class="admin-subnav">
+      <button class="admin-sub-btn active" onclick="showAdminSection('settings')">Settings</button>
+      <button class="admin-sub-btn" onclick="showAdminSection('gameweek')">Record GW</button>
+      <button class="admin-sub-btn" onclick="showAdminSection('payout')">Payout</button>
+      <button class="admin-sub-btn" onclick="showAdminSection('cycles')">Cycles</button>
     </div>
-    <div class="card">
-      <div class="card-title">Export / Import data</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Export saves everything — results, prizes, payouts and payments — to a JSON file. Send it to the other admin to import and stay in sync.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-ghost" onclick="exportState()">↓ Export data</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">↑ Import data</button>
-        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importState(this)">
-        <span id="import-status" style="font-size:12px;color:var(--muted)"></span>
+
+    <div id="admin-sub-settings" class="admin-sub">
+      <div class="card">
+        <div class="card-title">Export / Import data</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Export saves everything — results, prizes, payouts and payments — to a JSON file. Send it to the other admin to import and stay in sync.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-ghost" onclick="exportState()">↓ Export data</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">↑ Import data</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importState(this)">
+          <span id="import-status" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add player</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+          <div class="field" style="margin:0"><label>Player name</label><input type="text" id="new-player-name" placeholder="Enter full name"></div>
+          <button class="btn" onclick="addPlayer()">Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sync from FPL</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Pull the latest player names and team names directly from FPL Challenge.</p>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="sync-fpl-btn" onclick="syncFromFPL()">Sync from FPL</button>
+          <span id="sync-fpl-status" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Player list</div>
+        <div id="admin-player-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Next GW deadline</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Set the next gameweek deadline — a live countdown appears in the metrics row for all players.</p>
+        <div class="field"><label>Deadline date &amp; time</label><input type="datetime-local" id="next-gw-date" onchange="setNextGWDate(this.value)"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Next season countdown</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Set the date the next season kicks off — a countdown will appear on the Standings page for all players to see.</p>
+        <div class="field"><label>Start date &amp; time</label><input type="datetime-local" id="next-season-date" onchange="setNextSeasonDate(this.value)"></div>
+      </div>
+      <div class="card card-danger">
+        <div class="card-title" style="color:var(--red)">Delete last GW entry</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Removes the most recently entered gameweek and reverses all prize and podium changes. Use this to correct a wrong entry — then re-enter the GW with the right data.</p>
+        <div id="delete-gw-info" style="font-size:13px;color:var(--text);margin-bottom:1rem;font-family:'Poppins',system-ui,sans-serif"></div>
+        <button class="btn btn-danger" onclick="confirmDeleteLastGW()">Delete last GW</button>
+      </div>
+      <div class="card card-danger">
+        <div class="card-title" style="color:var(--red)">New season reset</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Clears all results, prizes, payouts, and payment records. Player names are kept. Use this at the start of a new season.</p>
+        <button class="btn btn-danger" onclick="confirmReset()">Reset for new season</button>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">Add player</div>
-      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
-        <div class="field" style="margin:0"><label>Player name</label><input type="text" id="new-player-name" placeholder="Enter full name"></div>
-        <button class="btn" onclick="addPlayer()">Add</button>
+
+    <div id="admin-sub-gameweek" class="admin-sub" style="display:none">
+      <div class="card">
+        <div class="card-title">Enter GW result</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="fetch-gw-btn" onclick="fetchLatestGW()">↓ Fetch from FPL</button>
+          <span id="fetch-gw-status" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <div class="pos-group">
+          <div class="pos-label gold">1st place &mdash; ₦22,000</div>
+          <div class="slots">
+            <div class="field"><label>Player A</label><select id="p1a"><option value="">—</option></select></div>
+            <div class="field"><label>Player B (tie)</label><select id="p1b"><option value="">—</option></select></div>
+            <div class="field"><label>Player C (tie)</label><select id="p1c"><option value="">—</option></select></div>
+          </div>
+        </div>
+        <div class="pos-group">
+          <div class="pos-label silver">2nd place &mdash; ₦11,000</div>
+          <div class="slots">
+            <div class="field"><label>Player A</label><select id="p2a"><option value="">—</option></select></div>
+            <div class="field"><label>Player B (tie)</label><select id="p2b"><option value="">—</option></select></div>
+            <div class="field"><label>Player C (tie)</label><select id="p2c"><option value="">—</option></select></div>
+          </div>
+        </div>
+        <div class="pos-group">
+          <div class="pos-label bronze">3rd place &mdash; ₦5,000</div>
+          <div class="slots">
+            <div class="field"><label>Player A</label><select id="p3a"><option value="">—</option></select></div>
+            <div class="field"><label>Player B (tie)</label><select id="p3b"><option value="">—</option></select></div>
+            <div class="field"><label>Player C (tie)</label><select id="p3c"><option value="">—</option></select></div>
+          </div>
+        </div>
+        <div class="card" style="margin:1rem 0 0;padding:1rem;background:#f8f8f8;border-color:#e5e5e5">
+          <div class="card-title" style="margin-bottom:.75rem">GW Points</div>
+          <div id="gw-points-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px"></div>
+        </div>
+        <div id="prize-preview" class="info-box hidden" style="margin-top:1rem"></div>
+        <button class="btn" style="margin-top:1rem" onclick="recordGW()">Record gameweek</button>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">Sync from FPL</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Pull the latest player names and team names directly from FPL Challenge.</p>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-ghost" id="sync-fpl-btn" onclick="syncFromFPL()">Sync from FPL</button>
-        <span id="sync-fpl-status" style="font-size:12px;color:var(--muted)"></span>
+
+    <div id="admin-sub-payout" class="admin-sub" style="display:none">
+      <div class="card">
+        <div class="card-title">Process payout</div>
+        <div class="field"><label>Select player</label><select id="po-player" onchange="updatePayoutInfo()"><option value="">— select player —</option></select></div>
+        <div id="po-info" class="info-box hidden"></div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+          <div class="field" style="margin:0"><label>Amount to pay out (₦)</label><input type="number" id="po-amt" placeholder="Enter amount"></div>
+          <button class="btn" onclick="processPayout()">Pay out</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Payout log</div>
+        <div id="payout-log"><div class="empty">no payouts recorded</div></div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">Player list</div>
-      <div id="admin-player-list"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Next GW deadline</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Set the next gameweek deadline — a live countdown appears in the metrics row for all players.</p>
-      <div class="field"><label>Deadline date &amp; time</label><input type="datetime-local" id="next-gw-date" onchange="setNextGWDate(this.value)"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Next season countdown</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Set the date the next season kicks off — a countdown will appear on the Standings page for all players to see.</p>
-      <div class="field"><label>Start date &amp; time</label><input type="datetime-local" id="next-season-date" onchange="setNextSeasonDate(this.value)"></div>
-    </div>
-    <div class="card card-danger">
-      <div class="card-title" style="color:var(--red)">Delete last GW entry</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Removes the most recently entered gameweek and reverses all prize and podium changes. Use this to correct a wrong entry — then re-enter the GW with the right data.</p>
-      <div id="delete-gw-info" style="font-size:13px;color:var(--text);margin-bottom:1rem;font-family:'Poppins',system-ui,sans-serif"></div>
-      <button class="btn btn-danger" onclick="confirmDeleteLastGW()">Delete last GW</button>
-    </div>
-    <div class="card card-danger">
-      <div class="card-title" style="color:var(--red)">New season reset</div>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Clears all results, prizes, payouts, and payment records. Player names are kept. Use this at the start of a new season.</p>
-      <button class="btn btn-danger" onclick="confirmReset()">Reset for new season</button>
+
+    <div id="admin-sub-cycles" class="admin-sub" style="display:none">
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">How payment cycles work</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7">The 38-week season is split into <strong style="color:var(--text)">7 payment cycles</strong>. Players pay upfront per cycle to cover their ₦2,000/week stake — <strong style="color:var(--accent)">₦10,000</strong> for cycles 1–6, and <strong style="color:var(--accent)">₦16,000</strong> for the final cycle (GW31–38, 8 weeks). Tap <strong style="color:var(--text)">Manage</strong> on any cycle to mark who has paid.</p>
+      </div>
+      <div class="metrics" style="margin-bottom:1.5rem">
+        <div class="metric"><div class="metric-label">Current cycle</div><div class="metric-val accent" id="m-cycle">—</div></div>
+        <div class="metric"><div class="metric-label">Cycle fee</div><div class="metric-val">₦10,000</div></div>
+        <div class="metric"><div class="metric-label">Paid this cycle</div><div class="metric-val" id="m-cycle-paid">—</div></div>
+      </div>
+      <div class="cycle-grid" id="cycle-grid"></div>
+      <div id="cycle-owing-table" style="margin-top:1rem"></div>
+      <div id="debt-tracker" style="margin-top:1rem"></div>
     </div>
   </div>
 
