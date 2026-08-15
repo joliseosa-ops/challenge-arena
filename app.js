@@ -699,21 +699,34 @@ function renderFinanceTab(){
   const fmt=n=>'₦'+Math.abs(n).toLocaleString();
   const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
 
-  // Actual cash received from cycle payments
+  // --- Core figures ---
   let totalReceived=0;
   CYCLES.forEach((c,idx)=>{
     const cp=state.cyclePayments[idx]||{};
     totalReceived+=c.players.filter(i=>isPaid(cp[i])).length*c.fee;
   });
-  const seasonPot=seasonPotTotal();   // ₦1k/player/GW paid
-  const weeklyReceived=seasonPot*2;   // ₦2k/player/GW paid
-
+  const seasonPot=seasonPotTotal();
+  const weeklyReceived=seasonPot*2;
   const weeklyPotPerGW=state.players.length*WEEKLY_PRIZE_RATE;
   const gwAwarded=state.players.reduce((s,p)=>s+p.accumulated,0);
   const weeklyRemaining=Math.max(0,weeklyReceived-gwAwarded);
   const totalWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
   const totalInBank=state.players.reduce((s,p)=>s+Math.max(0,pubBal(p)),0);
 
+  // --- Season pot projection ---
+  const totalGWs=CYCLES.reduce((s,c)=>s+(c.gw[1]-c.gw[0]+1),0);
+  const projectedSeasonPot=state.players.length*1000*totalGWs;
+
+  // --- Outstanding per cycle ---
+  const cycleDebtors=CYCLES.map((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const unpaid=c.players.filter(i=>!isPaid(cp[i]));
+    return {idx,c,unpaid};
+  }).filter(x=>x.unpaid.length>0);
+
+  const totalOutstanding=cycleDebtors.reduce((s,{c,unpaid})=>s+unpaid.length*c.fee,0);
+
+  // --- Helpers ---
   const tile=(label,val,color,sub='')=>`
     <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid ${color};border-radius:8px;padding:1rem">
       <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">${label}</div>
@@ -728,6 +741,61 @@ function renderFinanceTab(){
       <div style="font-weight:700;color:${color};white-space:nowrap">${fmt(val)}</div>
     </div>`;
 
+  // --- Cycle collection status ---
+  const cycleStatusRows=CYCLES.map((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const paidCount=c.players.filter(i=>isPaid(cp[i])).length;
+    const total=c.players.length;
+    const pct=total?Math.round(paidCount/total*100):0;
+    const collected=paidCount*c.fee;
+    const allPaid=paidCount===total;
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <span style="font-size:13px;font-weight:600">Cycle ${idx+1}</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:6px">GW${c.gw[0]}–${c.gw[1]}</span>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:13px;font-weight:700;color:${allPaid?'var(--green)':'var(--text)'}">${fmt(collected)}</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:4px">${paidCount}/${total} paid</span>
+        </div>
+      </div>
+      <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${allPaid?'var(--green)':'var(--accent)'};border-radius:3px;transition:width .3s"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // --- Outstanding / who hasn't paid ---
+  const outstandingHtml=cycleDebtors.length===0
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:.75rem 1rem;background:var(--green-bg);border-radius:8px;color:var(--green);font-weight:600;font-size:13px">✓ All cycle payments received — no outstanding fees</div>`
+    : cycleDebtors.map(({idx,c,unpaid})=>`
+        <div style="margin-bottom:.75rem;border:1px solid var(--red-bg);border-left:3px solid var(--red);border-radius:6px;padding:.75rem 1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+            <span style="font-size:13px;font-weight:700">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</span>
+            <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(unpaid.length*c.fee)} owed</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${unpaid.map(i=>`<span style="font-size:12px;font-weight:600;background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:20px">${state.players[i]?.name||'?'} · ${fmt(c.fee)}</span>`).join('')}
+          </div>
+        </div>`).join('');
+
+  // --- Per-player summary ---
+  const playerRows=[...state.players.map((p,i)=>({p,i}))]
+    .sort((a,b)=>b.p.accumulated-a.p.accumulated)
+    .map(({p})=>{
+      const earned=p.accumulated;
+      const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0));
+      const inBank=pubBal(p);
+      return `<tr>
+        <td style="font-weight:600">${p.name}</td>
+        <td style="font-weight:700;color:var(--green)">${earned>0?fmt(earned):'—'}</td>
+        <td style="color:var(--blue)">${withdrawn>0?fmt(withdrawn):'—'}</td>
+        <td style="font-weight:700;color:${inBank>0?'var(--fpl-dark)':inBank<0?'var(--red)':'var(--dim)'}">${inBank!==0?fmt(inBank):'—'}</td>
+      </tr>`;
+    }).join('');
+
+  // --- GW history ---
   const gwRows=[...state.gameweeks].reverse().map(g=>{
     const winners=Object.entries(g.awards).filter(([,a])=>a>0)
       .map(([i,a])=>`${state.players[parseInt(i)]?.name||'?'} ₦${a.toLocaleString()}`).join(' · ');
@@ -744,7 +812,7 @@ function renderFinanceTab(){
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
         ${tile('Weekly Pot / GW',weeklyPotPerGW,'var(--accent)',`₦${WEEKLY_PRIZE_RATE.toLocaleString()} × ${state.players.length} players`)}
         ${tile('Weekly Total',weeklyReceived,'var(--accent)','all weekly fees received')}
-        ${tile('Season Pot',seasonPot,'#f59e0b','all season fees received')}
+        ${tile('Season Pot',seasonPot,'#f59e0b','accumulated so far')}
         ${tile('Grand Total',totalReceived,'var(--fpl-dark)','weekly + season combined')}
       </div>
     </div>
@@ -753,13 +821,42 @@ function renderFinanceTab(){
       <div class="card-title">Where Every Dime Is</div>
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px">Weekly Prize Pool — ${fmt(weeklyReceived)} received</div>
       ${row('Distributed as GW prizes',gwAwarded,'var(--green)','var(--green)')}
-      ${row('Remaining — yet to be distributed',weeklyRemaining,'var(--caution)','var(--caution)')}
+      ${row('Remaining in pot',weeklyRemaining,'var(--caution)','var(--caution)')}
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">Season Pot — ${fmt(seasonPot)} accumulated</div>
       ${row('Accumulated this season',seasonPot,'#f59e0b','#b45309')}
       ${row('Paid out',0,'var(--border)','var(--dim)')}
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">GW Prize Winnings — ${fmt(gwAwarded)} earned</div>
       ${row('Withdrawn by players',totalWithdrawn,'var(--blue)','var(--blue)')}
       ${row('Still in player accounts',totalInBank,'var(--fpl-dark)','var(--fpl-dark)')}
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        Outstanding Cycle Fees
+        ${totalOutstanding>0?`<span style="font-size:12px;font-weight:700;color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:20px">${fmt(totalOutstanding)} owed</span>`:''}
+      </div>
+      ${outstandingHtml}
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">Cycle Collection Status</div>
+      ${cycleStatusRows}
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">Player Earnings Summary</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Player</th><th>GW Earned</th><th>Withdrawn</th><th>In Account</th></tr></thead>
+        <tbody>${playerRows||'<tr><td colspan="4" class="empty">No data yet</td></tr>'}</tbody>
+      </table></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">Season Pot Projection</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+        ${tile('Current',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
+        ${tile('Projected (full season)',projectedSeasonPot,'var(--fpl-dark)',`${state.players.length} players × ₦1k × ${totalGWs} GWs`)}
+      </div>
     </div>
 
     <div class="card">
