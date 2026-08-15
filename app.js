@@ -274,15 +274,11 @@ function renderDebtBanner(){
   });
   if(!debtors){ banner.style.display='none'; return; }
   banner.style.display='block';
-  banner.innerHTML=`<div id="debt-banner-inner" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fef3c7;border:1px solid #fcd34d;border-left:4px solid var(--caution);border-radius:8px;padding:.875rem 1rem">
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-size:18px">⚠️</span>
-      <div><div style="font-size:13px;font-weight:700;color:#92400e">${debtors} outstanding cycle payment${debtors!==1?'s':''}</div>
-      <div style="font-size:11px;color:#b45309;margin-top:1px">₦${totalOwed.toLocaleString()} owed — tap to view in The Bank</div></div>
-    </div>
-    <span style="font-size:13px;color:#92400e;font-weight:700;flex-shrink:0">→</span>
+  banner.innerHTML=`<div style="display:flex;align-items:center;gap:10px;background:#fef3c7;border:1px solid #fcd34d;border-left:4px solid var(--caution);border-radius:8px;padding:.875rem 1rem">
+    <span style="font-size:18px">⚠️</span>
+    <div><div style="font-size:13px;font-weight:700;color:#92400e">${debtors} outstanding cycle payment${debtors!==1?'s':''}</div>
+    <div style="font-size:11px;color:#b45309;margin-top:1px">₦${totalOwed.toLocaleString()} owed — see Outstanding Fees below</div></div>
   </div>`;
-  document.getElementById('debt-banner-inner').addEventListener('click',()=>showTab('finance'));
 }
 
 function renderStandings(){
@@ -298,7 +294,6 @@ function renderStandings(){
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   updateGWCountdown();
-  renderDebtBanner();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
@@ -718,6 +713,7 @@ async function fetchFPLLeague(){
 
 
 function renderFinanceTab(){
+  renderDebtBanner();
   const el=document.getElementById('finance-content'); if(!el) return;
   const fmt=n=>'₦'+Math.abs(n).toLocaleString();
   const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
