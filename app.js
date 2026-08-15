@@ -276,6 +276,7 @@ function renderStandings(){
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
+  const mwp=document.getElementById('m-weeklypot'); if(mwp) mwp.textContent='₦'+(state.players.length*WEEKLY_PRIZE_RATE).toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
