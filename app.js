@@ -808,7 +808,7 @@ function renderFinanceTab(){
 
   el.innerHTML=`
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">What We've Collected</div>
+      <div class="card-title">Money In</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
         ${tile('Weekly Pot / GW',weeklyPotPerGW,'var(--accent)',`₦${WEEKLY_PRIZE_RATE.toLocaleString()} × ${state.players.length} players`)}
         ${tile('Weekly Total',weeklyReceived,'var(--accent)','all weekly fees received')}
