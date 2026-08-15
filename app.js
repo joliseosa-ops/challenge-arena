@@ -990,16 +990,28 @@ function requireAdmin(tab){
   setTimeout(()=>document.getElementById('pin-input').focus(),50);
 }
 
+function setAdminTabs(show){
+  document.querySelectorAll('.admin-only-tab').forEach(t=>t.classList.toggle('hidden',!show));
+}
+
 function submitPin(){
   if(document.getElementById('pin-input').value===ADMIN_PIN){
     isAdmin=true;
     sessionStorage.setItem('ca_admin','1');
+    setAdminTabs(true);
     closePinModal();
     if(pendingTab){ showTab(pendingTab); pendingTab=null; }
   } else {
     document.getElementById('pin-error').style.display='block';
     document.getElementById('pin-input').select();
   }
+}
+
+function adminLogout(){
+  isAdmin=false;
+  sessionStorage.removeItem('ca_admin');
+  setAdminTabs(false);
+  showTab('standings');
 }
 
 function closePinModal(){
@@ -1009,6 +1021,7 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
+if(isAdmin) setAdminTabs(true);
 
 function applyMigrations(){
   state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });

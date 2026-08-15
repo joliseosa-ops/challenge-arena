@@ -52,11 +52,11 @@
     <button class="tab tab-finance" onclick="showTab('finance')">The Bank</button>
     <button class="tab tab-achievements" onclick="showTab('achievements')">Stats</button>
     <button class="tab tab-fpl" onclick="showTab('fpl')">FPL League</button>
-    <button class="tab tab-gameweek" onclick="showTab('gameweek')">Record GW</button>
-    <button class="tab tab-payout" onclick="showTab('payout')">Payout</button>
-    <button class="tab tab-cycles" onclick="showTab('cycles')">Cycles</button>
-    <a class="tab tab-archive" href="/archive-2526.html" target="_blank">Archives ↗</a>
-    <button class="tab tab-admin" onclick="showTab('admin')">Admin</button>
+    <button class="tab tab-gameweek admin-only-tab hidden" onclick="showTab('gameweek')">Record GW</button>
+    <button class="tab tab-payout admin-only-tab hidden" onclick="showTab('payout')">Payout</button>
+    <button class="tab tab-cycles admin-only-tab hidden" onclick="showTab('cycles')">Cycles</button>
+    <a class="tab tab-archive admin-only-tab hidden" href="/archive-2526.html" target="_blank">Archives ↗</a>
+    <button class="tab tab-admin admin-only-tab hidden" onclick="showTab('admin')">Admin</button>
   </div>
 
 
@@ -220,6 +220,9 @@
 
   <!-- ADMIN -->
   <div id="sec-admin" class="section">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red);font-size:12px" onclick="adminLogout()">🔒 Exit Admin</button>
+    </div>
     <div class="card">
       <div class="card-title">Export / Import data</div>
       <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Export saves everything — results, prizes, payouts and payments — to a JSON file. Send it to the other admin to import and stay in sync.</p>
