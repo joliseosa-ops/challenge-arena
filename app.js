@@ -1160,7 +1160,7 @@ function copyGWResults(gwNum,btn){
   const g=state.gameweeks.find(x=>x.gw===gwNum); if(!g) return;
   const nm=i=>state.players[i]?.name||'?';
   const medal=pos=>pos===1?'1st':pos===2?'2nd':'3rd';
-  const lines=[`GW${gwNum} Results — Challenge Arena`,`─────────────────────`];
+  const lines=[`GW${gwNum} Results — The Bank`,`─────────────────────`];
   [1,2,3].forEach(pos=>{
     const arr=g.pos[pos]||[]; if(!arr.length) return;
     const amt=g.awards[arr[0]]||0;
@@ -1172,7 +1172,7 @@ function copyGWResults(gwNum,btn){
 function shareGWWhatsApp(gwNum){
   const g=state.gameweeks.find(x=>x.gw===gwNum); if(!g) return;
   const nm=i=>state.players[i]?.name||'?';
-  const lines=[`🏆 Challenge Arena – GW${gwNum} Results`,``];
+  const lines=[`🏆 The Bank – GW${gwNum} Results`,``];
   [[1,'🥇'],[2,'🥈'],[3,'🥉']].forEach(([pos,medal])=>{
     const arr=g.pos[pos]||[]; if(!arr.length) return;
     const amt=g.awards[arr[0]]||0;
@@ -1195,7 +1195,7 @@ function shareDebtReminder(cycleIdx){
     return `• ${p.name}: ₦${(c.fee-offset).toLocaleString()}`;
   });
   if(!debtors.length){ alert('All players are settled for this cycle!'); return; }
-  const lines=[`📢 Challenge Arena – Cycle ${cycleIdx+1} Payment Reminder`,`GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,``,`Outstanding:`, ...debtors,``,`Please settle asap 🙏`];
+  const lines=[`📢 The Bank – Cycle ${cycleIdx+1} Payment Reminder`,`GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,``,`Outstanding:`, ...debtors,``,`Please settle asap 🙏`];
   window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
 }
 
@@ -1280,7 +1280,7 @@ function importState(input){
   reader.onload=e=>{
     try{
       const imported=JSON.parse(e.target.result);
-      if(!imported.players||!imported.gameweeks) throw new Error('Invalid file — not a Challenge Arena backup');
+      if(!imported.players||!imported.gameweeks) throw new Error('Invalid file — not a The Bank backup');
       if(!confirm(`Import ${file.name}?\n\nThis will overwrite all current data on this device.`)){input.value='';return;}
       state=imported;
       save();
