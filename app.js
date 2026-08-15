@@ -263,6 +263,27 @@ function formGuide(playerIdx){
 const pubBal=p=>p.accumulated-Math.max(0,p.paidOut-(p.carryOver||0));
 const fullBal=p=>p.accumulated+(p.carryOver||0)-p.paidOut;
 
+function renderDebtBanner(){
+  const banner=document.getElementById('debt-banner'); if(!banner) return;
+  const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
+  let debtors=0,totalOwed=0;
+  CYCLES.forEach((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    const unpaid=c.players.filter(i=>!isPaid(cp[i]));
+    debtors+=unpaid.length; totalOwed+=unpaid.length*c.fee;
+  });
+  if(!debtors){ banner.style.display='none'; return; }
+  banner.style.display='block';
+  banner.innerHTML=`<div onclick="showTab('finance')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fef3c7;border:1px solid #fcd34d;border-left:4px solid var(--caution);border-radius:8px;padding:.875rem 1rem">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">⚠️</span>
+      <div><div style="font-size:13px;font-weight:700;color:#92400e">${debtors} outstanding cycle payment${debtors!==1?'s':''}</div>
+      <div style="font-size:11px;color:#b45309;margin-top:1px">₦${totalOwed.toLocaleString()} owed — tap to view in The Bank</div></div>
+    </div>
+    <span style="font-size:13px;color:#92400e;font-weight:700;flex-shrink:0">→</span>
+  </div>`;
+}
+
 function renderStandings(){
   const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
     if(currentSort==='bank') return pubBal(b)-pubBal(a);
@@ -276,6 +297,7 @@ function renderStandings(){
   if(hb) hb.textContent='GW '+lastGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   updateGWCountdown();
+  renderDebtBanner();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
@@ -780,6 +802,23 @@ function renderFinanceTab(){
           </div>
         </div>`).join('');
 
+  // --- WhatsApp chase message ---
+  const waChaseBtn=cycleDebtors.length>0 ? (()=>{
+    const lines=['💰 *The Bank — Outstanding Fees*',''];
+    cycleDebtors.forEach(({idx,c,unpaid})=>{
+      lines.push(`*Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]} (₦${c.fee.toLocaleString()}/player)*`);
+      unpaid.forEach(i=>lines.push(`  • ${state.players[i]?.name||'?'}`));
+      lines.push('');
+    });
+    lines.push(`Total outstanding: ₦${totalOutstanding.toLocaleString()}`);
+    lines.push('Please settle asap 🙏');
+    const url='https://wa.me/?text='+encodeURIComponent(lines.join('\n'));
+    return `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:.75rem;padding:8px 16px;background:#25d366;color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.559 4.13 1.535 5.863L.057 23.5l5.803-1.524A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.882a9.882 9.882 0 0 1-5.032-1.378l-.361-.214-3.741.981.998-3.648-.235-.374A9.86 9.86 0 0 1 2.118 12C2.118 6.978 6.978 2.118 12 2.118S21.882 6.978 21.882 12 17.022 21.882 12 21.882z"/></svg>
+      Send payment reminder
+    </a>`;
+  })() : '';
+
   // --- Per-player summary ---
   const playerRows=[...state.players.map((p,i)=>({p,i}))]
     .sort((a,b)=>b.p.accumulated-a.p.accumulated)
@@ -836,6 +875,7 @@ function renderFinanceTab(){
         ${totalOutstanding>0?`<span style="font-size:12px;font-weight:700;color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:20px">${fmt(totalOutstanding)} owed</span>`:''}
       </div>
       ${outstandingHtml}
+      ${waChaseBtn}
     </div>
 
     <div class="card" style="margin-bottom:1rem">
@@ -852,11 +892,29 @@ function renderFinanceTab(){
     </div>
 
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Season Pot Projection</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
-        ${tile('Current',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
-        ${tile('Projected (full season)',projectedSeasonPot,'var(--fpl-dark)',`${state.players.length} players × ₦1k × ${totalGWs} GWs`)}
+      <div class="card-title">Season Pot</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem">
+        ${tile('Accumulated so far',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
+        ${tile('Projected at GW38',projectedSeasonPot,'var(--fpl-dark)',`${state.players.length} players × ₦1k × ${totalGWs} GWs`)}
       </div>
+      ${seasonPot>0?`<div style="background:var(--surface2);border-radius:8px;padding:.875rem 1rem">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem">If distributed today (50 / 30 / 20 split)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:80px;text-align:center;background:var(--surface);border:1px solid #fcd34d;border-radius:8px;padding:.75rem .5rem">
+            <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">🥇 1st</div>
+            <div style="font-size:18px;font-weight:700;color:#b45309">₦${Math.round(seasonPot*.5).toLocaleString()}</div>
+          </div>
+          <div style="flex:1;min-width:80px;text-align:center;background:var(--surface);border:1px solid #cbd5e1;border-radius:8px;padding:.75rem .5rem">
+            <div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;margin-bottom:4px">🥈 2nd</div>
+            <div style="font-size:18px;font-weight:700;color:#4b5563">₦${Math.round(seasonPot*.3).toLocaleString()}</div>
+          </div>
+          <div style="flex:1;min-width:80px;text-align:center;background:var(--surface);border:1px solid #fed7aa;border-radius:8px;padding:.75rem .5rem">
+            <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">🥉 3rd</div>
+            <div style="font-size:18px;font-weight:700;color:#92400e">₦${Math.round(seasonPot*.2).toLocaleString()}</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Distribution not finalised — for illustration only</div>
+      </div>`:''}
     </div>
 
     <div class="card">
