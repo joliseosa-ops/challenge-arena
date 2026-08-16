@@ -782,35 +782,38 @@ function renderFinanceTab(){
   }).join('');
 
   // --- Outstanding / who hasn't paid ---
+  const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.559 4.13 1.535 5.863L.057 23.5l5.803-1.524A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.882a9.882 9.882 0 0 1-5.032-1.378l-.361-.214-3.741.981.998-3.648-.235-.374A9.86 9.86 0 0 1 2.118 12C2.118 6.978 6.978 2.118 12 2.118S21.882 6.978 21.882 12 17.022 21.882 12 21.882z"/></svg>`;
+
   const outstandingHtml=cycleDebtors.length===0
     ? `<div style="display:flex;align-items:center;gap:8px;padding:.75rem 1rem;background:var(--green-bg);border-radius:8px;color:var(--green);font-weight:600;font-size:13px">✓ All cycle payments received — no outstanding fees</div>`
-    : cycleDebtors.map(({idx,c,unpaid})=>`
+    : cycleDebtors.map(({idx,c,unpaid})=>{
+        const waLines=[
+          `💰 *Challenge Arena – Cycle ${idx+1} Payment Reminder*`,
+          `GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,
+          ``,
+          `Still outstanding:`,
+          ...unpaid.map(i=>`  • ${state.players[i]?.name||'?'}`),
+          ``,
+          `Total: ₦${(unpaid.length*c.fee).toLocaleString()}`,
+          `Please settle asap 🙏`
+        ];
+        const waUrl='https://wa.me/?text='+encodeURIComponent(waLines.join('\n'));
+        return `
         <div style="margin-bottom:.75rem;border:1px solid var(--red-bg);border-left:3px solid var(--red);border-radius:6px;padding:.75rem 1rem">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:8px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:700">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</span>
-            <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(unpaid.length*c.fee)} owed</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(unpaid.length*c.fee)} owed</span>
+              <a href="${waUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:#25d366;color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">${waIcon} Remind</a>
+            </div>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             ${unpaid.map(i=>`<span style="font-size:12px;font-weight:600;background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:20px">${state.players[i]?.name||'?'} · ${fmt(c.fee)}</span>`).join('')}
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
 
-  // --- WhatsApp chase message ---
-  const waChaseBtn=cycleDebtors.length>0 ? (()=>{
-    const lines=['💰 *The Bank — Outstanding Fees*',''];
-    cycleDebtors.forEach(({idx,c,unpaid})=>{
-      lines.push(`*Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]} (₦${c.fee.toLocaleString()}/player)*`);
-      unpaid.forEach(i=>lines.push(`  • ${state.players[i]?.name||'?'}`));
-      lines.push('');
-    });
-    lines.push(`Total outstanding: ₦${totalOutstanding.toLocaleString()}`);
-    lines.push('Please settle asap 🙏');
-    const url='https://wa.me/?text='+encodeURIComponent(lines.join('\n'));
-    return `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:.75rem;padding:8px 16px;background:#25d366;color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.559 4.13 1.535 5.863L.057 23.5l5.803-1.524A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.882a9.882 9.882 0 0 1-5.032-1.378l-.361-.214-3.741.981.998-3.648-.235-.374A9.86 9.86 0 0 1 2.118 12C2.118 6.978 6.978 2.118 12 2.118S21.882 6.978 21.882 12 17.022 21.882 12 21.882z"/></svg>
-      Send payment reminder
-    </a>`;
-  })() : '';
+  const waChaseBtn='';
 
   // --- Per-player summary ---
   const playerRows=[...state.players.map((p,i)=>({p,i}))]
