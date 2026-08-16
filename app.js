@@ -445,6 +445,8 @@ function openCycleModal(idx){
     const isPartial=type==='partial';
     const isSettled=type==='settled';
     const isCo=typeof type==='object'&&type?.type==='co-offset';
+    const isPc=typeof type==='object'&&type?.type==='partial-cash';
+    const pcPaid=isPc?(type.paid||0):0;
     const canWin=!isCash&&!isWin&&!isPartial&&!isSettled&&!isCo&&bal>=c.fee;
     const canPartial=!isCash&&!isWin&&!isPartial&&!isSettled&&!isCo&&bal>0&&bal<c.fee;
     const ownOffset=isCo?type.own:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===`Cycle ${idx+1} fee`)?.amount||bal):bal;
@@ -455,9 +457,9 @@ function openCycleModal(idx){
       const q=state.players[j]; const qbal=q.accumulated+(q.carryOver||0)-q.paidOut;
       return `<option value="${j}" ${isCo&&type.by===j?'selected':''} ${qbal<shortfall?'disabled':''}>${q.name} (₦${qbal.toLocaleString()})</option>`;
     }).join('');
-    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ ₦${ownOffset.toLocaleString()} own + ₦${cashOwed.toLocaleString()} by ${benefactorName}`:'—';
-    const statusClass=(isCash||isWin||isCo||isSettled)?'paid-tag':isPartial?'paid-tag':'unpaid-tag';
-    const statusStyle=isPartial?'color:var(--caution)':isSettled||isCo?'color:var(--green)':'';
+    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ ₦${ownOffset.toLocaleString()} own + ₦${cashOwed.toLocaleString()} by ${benefactorName}`:isPc?`⚡ ₦${pcPaid.toLocaleString()} collected — ₦${(c.fee-pcPaid).toLocaleString()} remaining`:'—';
+    const statusClass=(isCash||isWin||isCo||isSettled)?'paid-tag':isPartial||isPc?'paid-tag':'unpaid-tag';
+    const statusStyle=isPartial||isPc?'color:var(--caution)':isSettled||isCo?'color:var(--green)':'';
     return `<div class="check-item" style="flex-wrap:wrap">
       <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){['cpw${i}','cppw${i}'].forEach(id=>{var el=document.getElementById(id);if(el)el.checked=false;})}">
       <label for="cp${i}" style="flex:1">${p.name}</label>
@@ -486,6 +488,11 @@ function openCycleModal(idx){
           </div>
         </div>
       </div>`:''}
+      ${!isCash&&!isWin&&!isPartial&&!isSettled&&!isCo?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:8px">
+        <label style="font-size:11px;color:var(--muted);white-space:nowrap">Already collected: ₦</label>
+        <input type="number" id="cppc${i}" value="${pcPaid||''}" placeholder="0" min="0" max="${c.fee}" style="width:90px;height:28px;font-size:12px;padding:2px 6px">
+        ${isPc?`<span style="font-size:11px;color:var(--caution)">₦${(c.fee-pcPaid).toLocaleString()} still owed</span>`:''}
+      </div>`:''}
     </div>`;
   }).join('');
   document.getElementById('cycle-overlay').classList.add('open');
@@ -501,6 +508,8 @@ function saveCycle(){
     const cashEl=document.getElementById('cp'+i);
     const coEl=document.getElementById('cpco'+i);
     const srEl=document.getElementById('cpsr'+i);
+    const pcEl=document.getElementById('cppc'+i);
+    const pcAmt=pcEl?parseFloat(pcEl.value)||0:0;
     if(winEl?.checked) newCP[i]='winnings';
     else if(partialEl?.checked){
       const byIdx=coEl&&coEl.value!==''?parseInt(coEl.value):null;
@@ -508,6 +517,7 @@ function saveCycle(){
       else if(srEl?.checked) newCP[i]='settled';
       else newCP[i]='partial';
     } else if(cashEl?.checked) newCP[i]='cash';
+    else if(pcAmt>0) newCP[i]=pcAmt>=CYCLES[activeCycleIdx].fee?'cash':{type:'partial-cash',paid:pcAmt};
   });
   c.players.forEach(i=>{
     const prev=prevCP[i];
@@ -733,13 +743,14 @@ function renderFinanceTab(){
   const projectedSeasonPot=state.players.length*1000*totalGWs;
 
   // --- Outstanding per cycle ---
+  const pcAmount=cp=>typeof cp==='object'&&cp?.type==='partial-cash'?(cp.paid||0):0;
   const cycleDebtors=CYCLES.map((c,idx)=>{
     const cp=state.cyclePayments[idx]||{};
     const unpaid=c.players.filter(i=>!isPaid(cp[i]));
-    return {idx,c,unpaid};
+    return {idx,c,unpaid,cp};
   }).filter(x=>x.unpaid.length>0);
 
-  const totalOutstanding=cycleDebtors.reduce((s,{c,unpaid})=>s+unpaid.length*c.fee,0);
+  const totalOutstanding=cycleDebtors.reduce((s,{c,unpaid,cp})=>s+unpaid.reduce((t,i)=>t+Math.max(0,c.fee-pcAmount(cp[i])),0),0);
 
   // --- Helpers ---
   const tile=(label,val,color,sub='')=>`
@@ -786,12 +797,13 @@ function renderFinanceTab(){
 
   const outstandingHtml=cycleDebtors.length===0
     ? `<div style="display:flex;align-items:center;gap:8px;padding:.75rem 1rem;background:var(--green-bg);border-radius:8px;color:var(--green);font-weight:600;font-size:13px">✓ All cycle payments received — no outstanding fees</div>`
-    : cycleDebtors.map(({idx,c,unpaid})=>{
+    : cycleDebtors.map(({idx,c,unpaid,cp})=>{
         const debtorInfo=unpaid.map(i=>{
           const p=state.players[i];
+          const alreadyPaid=pcAmount(cp[i]);
           const inBank=Math.max(0,pubBal(p));
-          const net=Math.max(0,c.fee-inBank);
-          return {name:p?.name||'?',inBank,net};
+          const net=Math.max(0,c.fee-alreadyPaid-inBank);
+          return {name:p?.name||'?',alreadyPaid,inBank,net};
         });
         const totalNet=debtorInfo.reduce((s,d)=>s+d.net,0);
         const waLines=[
@@ -799,9 +811,11 @@ function renderFinanceTab(){
           `GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,
           ``,
           `Still outstanding:`,
-          ...debtorInfo.map(d=>d.inBank>0
-            ? `  • ${d.name} — ₦${d.net.toLocaleString()} to pay (₦${d.inBank.toLocaleString()} from winnings)`
-            : `  • ${d.name} — ₦${d.net.toLocaleString()}`),
+          ...debtorInfo.map(d=>{
+            const notes=[];
+            if(d.alreadyPaid>0) notes.push(`₦${d.alreadyPaid.toLocaleString()} already received`);
+            if(d.inBank>0) notes.push(`₦${d.inBank.toLocaleString()} from winnings`);
+            return `  • ${d.name} — ₦${d.net.toLocaleString()} to pay${notes.length?` (${notes.join(', ')})`:''}`;}),
           ``,
           `Total to collect: ₦${totalNet.toLocaleString()}`,
           `Please settle asap 🙏`
@@ -818,9 +832,10 @@ function renderFinanceTab(){
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             ${debtorInfo.map(d=>{
-              const badge=d.inBank>0
-                ? `${d.name} · ${fmt(d.net)} net<span style="font-size:10px;opacity:.75"> (₦${d.inBank.toLocaleString()} in bank)</span>`
-                : `${d.name} · ${fmt(d.net)}`;
+              const notes=[];
+              if(d.alreadyPaid>0) notes.push(`₦${d.alreadyPaid.toLocaleString()} paid`);
+              if(d.inBank>0) notes.push(`₦${d.inBank.toLocaleString()} in bank`);
+              const badge=`${d.name} · ${fmt(d.net)}${notes.length?`<span style="font-size:10px;opacity:.75"> (${notes.join(', ')})</span>`:''}`;
               return `<span style="font-size:12px;font-weight:600;background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:20px">${badge}</span>`;
             }).join('')}
           </div>
