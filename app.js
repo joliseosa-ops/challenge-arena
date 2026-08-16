@@ -845,7 +845,7 @@ function renderFinanceTab(){
         ${tile('Weekly Pot / GW',weeklyPotPerGW,'var(--accent)',`₦${WEEKLY_PRIZE_RATE.toLocaleString()} × ${state.players.length} players`)}
         ${tile('Weekly Total',weeklyReceived,'var(--accent)','all weekly fees received')}
         ${tile('Season Pot',seasonPot,'#f59e0b','accumulated so far')}
-        ${tile('Grand Total',totalReceived,'var(--fpl-dark)','weekly + season combined')}
+        ${tile('Grand Total',totalReceived,'var(--heading)','weekly + season combined')}
       </div>
     </div>
 
@@ -859,7 +859,7 @@ function renderFinanceTab(){
       ${row('Paid out',0,'var(--border)','var(--dim)')}
       <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">GW Prize Winnings — ${fmt(gwAwarded)} earned</div>
       ${row('Withdrawn by players',totalWithdrawn,'var(--blue)','var(--blue)')}
-      ${row('Still in player accounts',totalInBank,'var(--fpl-dark)','var(--fpl-dark)')}
+      ${row('Still in player accounts',totalInBank,'var(--heading)','var(--heading)')}
     </div>
 
     <div class="card" style="margin-bottom:1rem">
@@ -888,7 +888,7 @@ function renderFinanceTab(){
       <div class="card-title">Season Pot</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem">
         ${tile('Accumulated so far',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
-        ${tile('Projected at GW38',projectedSeasonPot,'var(--fpl-dark)',`${state.players.length} players × ₦1k × ${totalGWs} GWs`)}
+        ${tile('Projected at GW38',projectedSeasonPot,'var(--heading)',`${state.players.length} players × ₦1k × ${totalGWs} GWs`)}
       </div>
       ${seasonPot>0?`<div style="background:var(--surface2);border-radius:8px;padding:.875rem 1rem">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem">If distributed today (50 / 30 / 20 split)</div>

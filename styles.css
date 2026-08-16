@@ -24,10 +24,10 @@
   --text:#f0edf5;--muted:#9d8fb5;--dim:#5e5275;
   --accent:#a855f7;--accent-light:#2d1654;
   --heading:#e2d9f3;--btn-bg:#6b21a8;
-  --green:#22c55e;--green-bg:#0a2e1a;
-  --red:#f87171;--red-bg:#3b0a0a;
-  --caution:#fbbf24;--caution-bg:#2d1a00;
-  --blue:#60a5fa;--blue-bg:#0f1f3d;
+  --green:#22c55e;--green-bg:rgba(34,197,94,0.12);
+  --red:#f87171;--red-bg:rgba(248,113,113,0.15);
+  --caution:#fbbf24;--caution-bg:rgba(251,191,36,0.12);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,0.12);
   --gold:#fbbf24;--silver:#94a3b8;--bronze:#fb923c;
   --hover-row:rgba(168,85,247,.1);
 }
@@ -38,10 +38,10 @@
     --text:#f0edf5;--muted:#9d8fb5;--dim:#5e5275;
     --accent:#a855f7;--accent-light:#2d1654;
     --heading:#e2d9f3;--btn-bg:#6b21a8;
-    --green:#22c55e;--green-bg:#0a2e1a;
-    --red:#f87171;--red-bg:#3b0a0a;
-    --caution:#fbbf24;--caution-bg:#2d1a00;
-    --blue:#60a5fa;--blue-bg:#0f1f3d;
+    --green:#22c55e;--green-bg:rgba(34,197,94,0.12);
+    --red:#f87171;--red-bg:rgba(248,113,113,0.15);
+    --caution:#fbbf24;--caution-bg:rgba(251,191,36,0.12);
+    --blue:#60a5fa;--blue-bg:rgba(96,165,250,0.12);
     --gold:#fbbf24;--silver:#94a3b8;--bronze:#fb923c;
     --hover-row:rgba(168,85,247,.1);
   }
