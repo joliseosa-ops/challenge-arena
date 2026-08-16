@@ -585,7 +585,7 @@ function updateGWCountdown(){
   const el=document.getElementById('m-nextgw'); if(!el) return;
   const t=gwCountdownText();
   el.textContent=t;
-  el.style.color=t==='LIVE'?'var(--green)':t==='—'?'var(--dim)':'var(--fpl-dark)';
+  el.style.color=t==='LIVE'?'var(--green)':t==='—'?'var(--dim)':'var(--heading)';
 }
 
 function renderAdminPlayers(){
@@ -823,7 +823,7 @@ function renderFinanceTab(){
         <td style="font-weight:600">${p.name}</td>
         <td style="font-weight:700;color:var(--green)">${earned>0?fmt(earned):'—'}</td>
         <td style="color:var(--blue)">${withdrawn>0?fmt(withdrawn):'—'}</td>
-        <td style="font-weight:700;color:${inBank>0?'var(--fpl-dark)':inBank<0?'var(--red)':'var(--dim)'}">${inBank!==0?fmt(inBank):'—'}</td>
+        <td style="font-weight:700;color:${inBank>0?'var(--heading)':inBank<0?'var(--red)':'var(--dim)'}">${inBank!==0?fmt(inBank):'—'}</td>
       </tr>`;
     }).join('');
 
@@ -964,7 +964,7 @@ function renderAchievements(){
       </div>
     </div>
     <div class="card" style="margin-bottom:1.25rem">
-      <div style="font-size:12px;font-weight:700;color:var(--fpl-dark);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px;margin-bottom:.75rem">Badge Legend</div>
+      <div style="font-size:12px;font-weight:700;color:var(--heading);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid #f59e0b;padding-left:8px;margin-bottom:.75rem">Badge Legend</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
         ${BADGE_LEGEND.map(b=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--surface2);border-radius:8px"><span style="font-size:20px;flex-shrink:0">${b.icon}</span><div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${b.label}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${b.desc}</div></div></div>`).join('')}
       </div>
