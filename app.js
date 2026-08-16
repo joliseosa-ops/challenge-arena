@@ -80,6 +80,19 @@ function save(){
   syncToCloud(state);
 }
 
+function toggleTheme(){
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem('ca_theme',next);
+  const btn=document.getElementById('theme-toggle');
+  if(btn) btn.textContent=next==='dark'?'☀️':'🌙';
+}
+function initThemeToggle(){
+  const t=document.documentElement.dataset.theme||'light';
+  const btn=document.getElementById('theme-toggle');
+  if(btn) btn.textContent=t==='dark'?'☀️':'🌙';
+}
+
 const ADMIN_PIN='0697'; // change this to your preferred PIN
 let isAdmin=!!sessionStorage.getItem('ca_admin');
 let pendingTab=null;
@@ -1017,6 +1030,7 @@ function closePinModal(){
 
 populateSelects();
 renderStandings();
+initThemeToggle();
 
 function applyMigrations(){
   state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });

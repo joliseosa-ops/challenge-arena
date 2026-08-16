@@ -23,6 +23,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ChalArena">
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+<script>(function(){var t=localStorage.getItem('ca_theme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.dataset.theme=t;})();</script>
 </head>
 <body>
 
@@ -41,7 +42,10 @@
           <div class="logo-sub">FPL Mini-League</div>
         </div>
       </div>
-      <div style="font-family:'Poppins',system-ui,sans-serif;font-size:11px;font-weight:700;color:#00ff87;background:rgba(0,255,135,.12);border:1px solid rgba(0,255,135,.35);padding:5px 12px;border-radius:20px;letter-spacing:.05em;white-space:nowrap">2026/27 Season</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:'Poppins',system-ui,sans-serif;font-size:11px;font-weight:700;color:#00ff87;background:rgba(0,255,135,.12);border:1px solid rgba(0,255,135,.35);padding:5px 12px;border-radius:20px;letter-spacing:.05em;white-space:nowrap">2026/27 Season</div>
+        <button id="theme-toggle" onclick="toggleTheme()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0" aria-label="Toggle theme"></button>
+      </div>
     </div>
   </header>
 
@@ -74,7 +78,7 @@
       </div>
       <div class="card" id="countdown-card" style="margin-bottom:1rem;border-color:var(--accent);border-width:2px;display:none"></div>
       <div class="card" id="season-recap-card" style="margin-bottom:1rem;display:none"></div>
-      <div class="card" style="margin-bottom:1rem;background:#f8f8f8;border-color:#e5e5e5">
+      <div class="card" style="margin-bottom:1rem;background:var(--surface2);border-color:var(--border)">
         <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0;display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">STANDINGS</span>
           <div style="display:flex;gap:6px">
@@ -94,13 +98,13 @@
           </table>
         </div>
       </div>
-      <div class="card" id="earnings-chart-card" style="margin-bottom:1rem;background:#f8f8f8;border-color:#e5e5e5">
+      <div class="card" id="earnings-chart-card" style="margin-bottom:1rem;background:var(--surface2);border-color:var(--border)">
         <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0">
           <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">EARNINGS CHART</span>
         </div>
         <div id="earnings-chart"></div>
       </div>
-      <div class="card" id="h2h-card" style="background:#f8f8f8;border-color:#e5e5e5">
+      <div class="card" id="h2h-card" style="background:var(--surface2);border-color:var(--border)">
         <div class="card-title">Head-to-head</div>
         <div class="h2h-selects" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
           <div class="field" style="margin:0"><label>Player A</label><select id="h2h-a" onchange="renderH2H()"><option value="">— select —</option></select></div>
@@ -235,7 +239,7 @@
             <div class="field"><label>Player C (tie)</label><select id="p3c"><option value="">—</option></select></div>
           </div>
         </div>
-        <div class="card" style="margin:1rem 0 0;padding:1rem;background:#f8f8f8;border-color:#e5e5e5">
+        <div class="card" style="margin:1rem 0 0;padding:1rem;background:var(--surface2);border-color:var(--border)">
           <div class="card-title" style="margin-bottom:.75rem">GW Points</div>
           <div id="gw-points-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px"></div>
         </div>
