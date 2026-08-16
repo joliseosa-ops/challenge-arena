@@ -50,7 +50,7 @@ const GW1_DEADLINE='2026-08-21T18:00:00.000Z';
 
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0}));
-  return {players,gameweeks:[],payouts:[],cyclePayments:{},nextGWDate:null,nextSeasonDate:null};
+  return {players,gameweeks:[],payouts:[],cyclePayments:{},cycleCredited:{},nextGWDate:null,nextSeasonDate:null};
 }
 
 // ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
@@ -445,8 +445,7 @@ function openCycleModal(idx){
     const isPartial=type==='partial';
     const isSettled=type==='settled';
     const isCo=typeof type==='object'&&type?.type==='co-offset';
-    const isPc=typeof type==='object'&&type?.type==='partial-cash';
-    const pcPaid=isPc?(type.paid||0):0;
+    const credited=state.cycleCredited[idx]?.[i]||0;
     const canWin=!isCash&&!isWin&&!isPartial&&!isSettled&&!isCo&&bal>=c.fee;
     const canPartial=!isCash&&!isWin&&!isPartial&&!isSettled&&!isCo&&bal>0&&bal<c.fee;
     const ownOffset=isCo?type.own:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===`Cycle ${idx+1} fee`)?.amount||bal):bal;
@@ -457,9 +456,9 @@ function openCycleModal(idx){
       const q=state.players[j]; const qbal=q.accumulated+(q.carryOver||0)-q.paidOut;
       return `<option value="${j}" ${isCo&&type.by===j?'selected':''} ${qbal<shortfall?'disabled':''}>${q.name} (₦${qbal.toLocaleString()})</option>`;
     }).join('');
-    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ ₦${ownOffset.toLocaleString()} own + ₦${cashOwed.toLocaleString()} by ${benefactorName}`:isPc?`⚡ ₦${pcPaid.toLocaleString()} collected — ₦${(c.fee-pcPaid).toLocaleString()} remaining`:'—';
-    const statusClass=(isCash||isWin||isCo||isSettled)?'paid-tag':isPartial||isPc?'paid-tag':'unpaid-tag';
-    const statusStyle=isPartial||isPc?'color:var(--caution)':isSettled||isCo?'color:var(--green)':'';
+    const statusTag=isWin?'✓ winnings':isCash?'✓ cash':isPartial?`⚡ partial (₦${cashOwed.toLocaleString()} cash)`:isSettled?`✓ settled (₦${ownOffset.toLocaleString()} winnings + ₦${cashOwed.toLocaleString()} cash)`:isCo?`✓ ₦${ownOffset.toLocaleString()} own + ₦${cashOwed.toLocaleString()} by ${benefactorName}`:credited>0?`⚡ ₦${credited.toLocaleString()} collected — ₦${(c.fee-credited).toLocaleString()} remaining`:'—';
+    const statusClass=(isCash||isWin||isCo||isSettled)?'paid-tag':isPartial||credited>0?'paid-tag':'unpaid-tag';
+    const statusStyle=isPartial||credited>0?'color:var(--caution)':isSettled||isCo?'color:var(--green)':'';
     return `<div class="check-item" style="flex-wrap:wrap">
       <input type="checkbox" id="cp${i}" ${isCash?'checked':''} onchange="if(this.checked){['cpw${i}','cppw${i}'].forEach(id=>{var el=document.getElementById(id);if(el)el.checked=false;})}">
       <label for="cp${i}" style="flex:1">${p.name}</label>
@@ -490,8 +489,8 @@ function openCycleModal(idx){
       </div>`:''}
       ${!isCash&&!isWin&&!isPartial&&!isSettled&&!isCo?`<div style="width:100%;padding:4px 0 0 23px;display:flex;align-items:center;gap:8px">
         <label style="font-size:11px;color:var(--muted);white-space:nowrap">Already collected: ₦</label>
-        <input type="number" id="cppc${i}" value="${pcPaid||''}" placeholder="0" min="0" max="${c.fee}" style="width:90px;height:28px;font-size:12px;padding:2px 6px">
-        ${isPc?`<span style="font-size:11px;color:var(--caution)">₦${(c.fee-pcPaid).toLocaleString()} still owed</span>`:''}
+        <input type="number" id="cppc${i}" value="${credited||''}" placeholder="0" min="0" max="${c.fee}" style="width:90px;height:28px;font-size:12px;padding:2px 6px">
+        ${credited>0?`<span style="font-size:11px;color:var(--caution)">₦${(c.fee-credited).toLocaleString()} still owed</span>`:''}
       </div>`:''}
     </div>`;
   }).join('');
@@ -517,7 +516,10 @@ function saveCycle(){
       else if(srEl?.checked) newCP[i]='settled';
       else newCP[i]='partial';
     } else if(cashEl?.checked) newCP[i]='cash';
-    else if(pcAmt>0) newCP[i]=pcAmt>=CYCLES[activeCycleIdx].fee?'cash':{type:'partial-cash',paid:pcAmt};
+    // Save partial collection to cycleCredited (isolated from cyclePayments)
+    if(!state.cycleCredited[activeCycleIdx]) state.cycleCredited[activeCycleIdx]={};
+    if(pcAmt>0&&!newCP[i]) state.cycleCredited[activeCycleIdx][i]=pcAmt;
+    else if(newCP[i]) delete state.cycleCredited[activeCycleIdx][i]; // clear credited when fully paid
   });
   c.players.forEach(i=>{
     const prev=prevCP[i];
@@ -743,14 +745,14 @@ function renderFinanceTab(){
   const projectedSeasonPot=state.players.length*1000*totalGWs;
 
   // --- Outstanding per cycle ---
-  const pcAmount=cp=>typeof cp==='object'&&cp?.type==='partial-cash'?(cp.paid||0):0;
+  const credited=(idx,i)=>(state.cycleCredited[idx]?.[i])||0;
   const cycleDebtors=CYCLES.map((c,idx)=>{
     const cp=state.cyclePayments[idx]||{};
     const unpaid=c.players.filter(i=>!isPaid(cp[i]));
     return {idx,c,unpaid,cp};
   }).filter(x=>x.unpaid.length>0);
 
-  const totalOutstanding=cycleDebtors.reduce((s,{c,unpaid,cp})=>s+unpaid.reduce((t,i)=>t+Math.max(0,c.fee-pcAmount(cp[i])),0),0);
+  const totalOutstanding=cycleDebtors.reduce((s,{c,unpaid,idx})=>s+unpaid.reduce((t,i)=>t+Math.max(0,c.fee-credited(idx,i)),0),0);
 
   // --- Helpers ---
   const tile=(label,val,color,sub='')=>`
@@ -800,7 +802,7 @@ function renderFinanceTab(){
     : cycleDebtors.map(({idx,c,unpaid,cp})=>{
         const debtorInfo=unpaid.map(i=>{
           const p=state.players[i];
-          const alreadyPaid=pcAmount(cp[i]);
+          const alreadyPaid=credited(idx,i);
           const inBank=Math.max(0,pubBal(p));
           const net=Math.max(0,c.fee-alreadyPaid-inBank);
           return {name:p?.name||'?',alreadyPaid,inBank,net};
@@ -1069,6 +1071,7 @@ function applyMigrations(){
   INIT_PLAYERS.forEach((name,i)=>{
     if(!state.players[i]) state.players.push({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0});
   });
+  if(!state.cycleCredited) state.cycleCredited={};
   // Seed entryId from ENTRY_MAP for existing players
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
