@@ -555,7 +555,7 @@ function saveCycle(){
     }
   });
   state.cyclePayments[activeCycleIdx]=newCP;
-  save(); closeModal(); renderPayments(); renderStandings();
+  save(); closeModal(); renderPayments(); renderStandings(); renderFinanceTab();
 }
 function closeModal(){ document.getElementById('cycle-overlay').classList.remove('open'); }
 document.getElementById('cycle-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
