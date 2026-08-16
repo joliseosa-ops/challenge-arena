@@ -787,14 +787,23 @@ function renderFinanceTab(){
   const outstandingHtml=cycleDebtors.length===0
     ? `<div style="display:flex;align-items:center;gap:8px;padding:.75rem 1rem;background:var(--green-bg);border-radius:8px;color:var(--green);font-weight:600;font-size:13px">✓ All cycle payments received — no outstanding fees</div>`
     : cycleDebtors.map(({idx,c,unpaid})=>{
+        const debtorInfo=unpaid.map(i=>{
+          const p=state.players[i];
+          const inBank=Math.max(0,pubBal(p));
+          const net=Math.max(0,c.fee-inBank);
+          return {name:p?.name||'?',inBank,net};
+        });
+        const totalNet=debtorInfo.reduce((s,d)=>s+d.net,0);
         const waLines=[
           `💰 *Challenge Arena – Cycle ${idx+1} Payment Reminder*`,
           `GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,
           ``,
           `Still outstanding:`,
-          ...unpaid.map(i=>`  • ${state.players[i]?.name||'?'}`),
+          ...debtorInfo.map(d=>d.inBank>0
+            ? `  • ${d.name} — ₦${d.net.toLocaleString()} to pay (₦${d.inBank.toLocaleString()} from winnings)`
+            : `  • ${d.name} — ₦${d.net.toLocaleString()}`),
           ``,
-          `Total: ₦${(unpaid.length*c.fee).toLocaleString()}`,
+          `Total to collect: ₦${totalNet.toLocaleString()}`,
           `Please settle asap 🙏`
         ];
         const waUrl='https://wa.me/?text='+encodeURIComponent(waLines.join('\n'));
@@ -803,12 +812,17 @@ function renderFinanceTab(){
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:8px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:700">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</span>
             <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(unpaid.length*c.fee)} owed</span>
+              <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(totalNet)} to collect</span>
               <a href="${waUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:#25d366;color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">${waIcon} Remind</a>
             </div>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${unpaid.map(i=>`<span style="font-size:12px;font-weight:600;background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:20px">${state.players[i]?.name||'?'} · ${fmt(c.fee)}</span>`).join('')}
+            ${debtorInfo.map(d=>{
+              const badge=d.inBank>0
+                ? `${d.name} · ${fmt(d.net)} net<span style="font-size:10px;opacity:.75"> (₦${d.inBank.toLocaleString()} in bank)</span>`
+                : `${d.name} · ${fmt(d.net)}`;
+              return `<span style="font-size:12px;font-weight:600;background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:20px">${badge}</span>`;
+            }).join('')}
           </div>
         </div>`;
       }).join('');
