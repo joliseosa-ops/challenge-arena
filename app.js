@@ -896,14 +896,16 @@ function renderFinanceTab(){
       ${row('Still in player accounts',totalInBank,'var(--heading)','var(--heading)')}
     </div>
 
-    <div class="card" style="margin-bottom:1rem">
-      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
-        Outstanding Cycle Fees
-        ${totalOutstanding>0?`<span style="font-size:12px;font-weight:700;color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:20px">${fmt(totalOutstanding)} owed</span>`:''}
-      </div>
-      ${outstandingHtml}
-      ${waChaseBtn}
-    </div>
+    <details class="card" style="margin-bottom:1rem" ${totalOutstanding>0?'open':''}>
+      <summary style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;padding:0">
+        <span class="card-title" style="margin-bottom:0;pointer-events:none">Outstanding Cycle Fees</span>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          ${totalOutstanding>0?`<span style="font-size:12px;font-weight:700;color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:20px">${fmt(totalOutstanding)} owed</span>`:`<span style="font-size:12px;font-weight:600;color:var(--green)">✓ all paid</span>`}
+          <span class="outstanding-chevron" style="font-size:12px;color:var(--muted)">▾</span>
+        </div>
+      </summary>
+      <div style="margin-top:.875rem">${outstandingHtml}</div>
+    </details>
 
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Cycle Collection Status</div>

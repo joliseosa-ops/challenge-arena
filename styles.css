@@ -89,6 +89,10 @@ tr.podium-3:hover td{background:rgba(146,64,14,.13)!important}
 /* Cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1rem}
 .card-title{font-size:12px;font-weight:700;color:var(--heading);margin-bottom:1rem;letter-spacing:.06em;text-transform:uppercase;border-left:3px solid var(--accent);padding-left:8px}
+details.card>summary{-webkit-appearance:none}
+details.card>summary::-webkit-details-marker{display:none}
+details.card[open] .outstanding-chevron{transform:rotate(180deg)}
+.outstanding-chevron{display:inline-block;transition:transform 200ms ease}
 
 /* Metrics */
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1.5rem}
