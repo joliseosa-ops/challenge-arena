@@ -721,6 +721,15 @@ async function fetchFPLLeague(){
 }
 
 
+function toggleOutstanding(){
+  const c=document.getElementById('outstanding-content');
+  const ch=document.getElementById('outstanding-chevron');
+  if(!c) return;
+  const open=c.style.display!=='none';
+  c.style.display=open?'none':'';
+  if(ch) ch.style.transform=open?'':'rotate(180deg)';
+}
+
 function renderFinanceTab(){
   const el=document.getElementById('finance-content'); if(!el) return;
   const fmt=n=>'₦'+Math.abs(n).toLocaleString();
@@ -896,16 +905,16 @@ function renderFinanceTab(){
       ${row('Still in player accounts',totalInBank,'var(--heading)','var(--heading)')}
     </div>
 
-    <details class="card" style="margin-bottom:1rem">
-      <summary style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;padding:0">
+    <div class="card" style="margin-bottom:1rem">
+      <div onclick="toggleOutstanding()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
         <span class="card-title" style="margin-bottom:0;pointer-events:none">Outstanding Cycle Fees</span>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           ${totalOutstanding>0?`<span style="font-size:12px;font-weight:700;color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:20px">${fmt(totalOutstanding)} owed</span>`:`<span style="font-size:12px;font-weight:600;color:var(--green)">✓ all paid</span>`}
-          <span class="outstanding-chevron" style="font-size:12px;color:var(--muted)">▾</span>
+          <span id="outstanding-chevron" style="font-size:12px;color:var(--muted);display:inline-block;transition:transform 200ms ease">▾</span>
         </div>
-      </summary>
-      <div style="margin-top:.875rem">${outstandingHtml}</div>
-    </details>
+      </div>
+      <div id="outstanding-content" style="display:none;margin-top:.875rem">${outstandingHtml}</div>
+    </div>
 
     <details class="card" style="margin-bottom:1rem">
       <summary style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;padding:0">
