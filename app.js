@@ -721,6 +721,22 @@ async function fetchFPLLeague(){
 }
 
 
+function toggleKobo(){
+  const c=document.getElementById('kobo-content');
+  const ch=document.getElementById('kobo-chevron');
+  if(!c) return;
+  const open=c.style.display!=='none';
+  c.style.display=open?'none':'';
+  if(ch) ch.style.transform=open?'':'rotate(180deg)';
+}
+function toggleEarnings(){
+  const c=document.getElementById('earnings-content');
+  const ch=document.getElementById('earnings-chevron');
+  if(!c) return;
+  const open=c.style.display!=='none';
+  c.style.display=open?'none':'';
+  if(ch) ch.style.transform=open?'':'rotate(180deg)';
+}
 function toggleOutstanding(){
   const c=document.getElementById('outstanding-content');
   const ch=document.getElementById('outstanding-chevron');
@@ -893,16 +909,21 @@ function renderFinanceTab(){
     </div>
 
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Where Every Kobo Is</div>
-      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px">Weekly Prize Pool — ${fmt(weeklyReceived)} received</div>
-      ${row('Distributed as GW prizes',gwAwarded,'var(--green)','var(--green)')}
-      ${row('Remaining in pot',weeklyRemaining,'var(--caution)','var(--caution)')}
-      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">Season Pot — ${fmt(seasonPot)} accumulated</div>
-      ${row('Accumulated this season',seasonPot,'#f59e0b','#b45309')}
-      ${row('Paid out',0,'var(--border)','var(--dim)')}
-      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">GW Prize Winnings — ${fmt(gwAwarded)} earned</div>
-      ${row('Withdrawn by players',totalWithdrawn,'var(--blue)','var(--blue)')}
-      ${row('Still in player accounts',totalInBank,'var(--heading)','var(--heading)')}
+      <div onclick="toggleKobo()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+        <span class="card-title" style="margin-bottom:0;pointer-events:none">Where Every Kobo Is</span>
+        <span id="kobo-chevron" style="font-size:12px;color:var(--muted);display:inline-block;transition:transform 200ms ease">▾</span>
+      </div>
+      <div id="kobo-content" style="display:none;margin-top:.875rem">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px">Weekly Prize Pool — ${fmt(weeklyReceived)} received</div>
+        ${row('Distributed as GW prizes',gwAwarded,'var(--green)','var(--green)')}
+        ${row('Remaining in pot',weeklyRemaining,'var(--caution)','var(--caution)')}
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">Season Pot — ${fmt(seasonPot)} accumulated</div>
+        ${row('Accumulated this season',seasonPot,'#f59e0b','#b45309')}
+        ${row('Paid out',0,'var(--border)','var(--dim)')}
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px">GW Prize Winnings — ${fmt(gwAwarded)} earned</div>
+        ${row('Withdrawn by players',totalWithdrawn,'var(--blue)','var(--blue)')}
+        ${row('Still in player accounts',totalInBank,'var(--heading)','var(--heading)')}
+      </div>
     </div>
 
     <div class="card" style="margin-bottom:1rem">
@@ -925,11 +946,16 @@ function renderFinanceTab(){
     </details>
 
     <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Player Earnings Summary</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Player</th><th>GW Earned</th><th>Withdrawn</th><th>In Account</th></tr></thead>
-        <tbody>${playerRows||'<tr><td colspan="4" class="empty">No data yet</td></tr>'}</tbody>
-      </table></div>
+      <div onclick="toggleEarnings()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+        <span class="card-title" style="margin-bottom:0;pointer-events:none">Player Earnings Summary</span>
+        <span id="earnings-chevron" style="font-size:12px;color:var(--muted);display:inline-block;transition:transform 200ms ease">▾</span>
+      </div>
+      <div id="earnings-content" style="display:none;margin-top:.875rem">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Player</th><th>GW Earned</th><th>Withdrawn</th><th>In Account</th></tr></thead>
+          <tbody>${playerRows||'<tr><td colspan="4" class="empty">No data yet</td></tr>'}</tbody>
+        </table></div>
+      </div>
     </div>
 
     <div class="card" style="margin-bottom:1rem">
