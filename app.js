@@ -896,7 +896,7 @@ function renderFinanceTab(){
       ${row('Still in player accounts',totalInBank,'var(--heading)','var(--heading)')}
     </div>
 
-    <details class="card" style="margin-bottom:1rem" ${totalOutstanding>0?'open':''}>
+    <details class="card" style="margin-bottom:1rem">
       <summary style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;padding:0">
         <span class="card-title" style="margin-bottom:0;pointer-events:none">Outstanding Cycle Fees</span>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
