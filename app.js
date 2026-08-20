@@ -703,6 +703,13 @@ async function fetchFPLLeague(){
     const res=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
     const rows=res.standings?.results||[];
     if(!rows.length){ el.innerHTML='<div class="empty">No standings yet</div>'; return; }
+    // Sync team names from FPL API into state
+    let changed=false;
+    rows.forEach(r=>{
+      const p=state.players.find(p=>p.entryId===r.entry);
+      if(p&&p.teamName!==r.entry_name){ p.teamName=r.entry_name; changed=true; }
+    });
+    if(changed){ save(); renderStandings(); }
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW</th><th>Total</th></tr></thead>
       <tbody>${rows.map((r,i)=>`<tr>
