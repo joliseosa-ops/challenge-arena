@@ -907,10 +907,13 @@ function renderFinanceTab(){
       <div style="margin-top:.875rem">${outstandingHtml}</div>
     </details>
 
-    <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Cycle Collection Status</div>
-      ${cycleStatusRows}
-    </div>
+    <details class="card" style="margin-bottom:1rem">
+      <summary style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;padding:0">
+        <span class="card-title" style="margin-bottom:0;pointer-events:none">Cycle Collection Status</span>
+        <span class="outstanding-chevron" style="font-size:12px;color:var(--muted)">▾</span>
+      </summary>
+      <div style="margin-top:.875rem">${cycleStatusRows}</div>
+    </details>
 
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Player Earnings Summary</div>
