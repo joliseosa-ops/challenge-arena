@@ -187,6 +187,15 @@
         <div id="admin-player-list"></div>
       </div>
       <div class="card">
+        <div class="card-title">Payment Details</div>
+        <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Shown on The Bank tab so managers know where to send cycle fees.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="field" style="margin:0"><label>Bank name</label><input type="text" id="ba-bank" placeholder="e.g. Access Bank" onblur="saveBankAccount()"></div>
+          <div class="field" style="margin:0"><label>Account name</label><input type="text" id="ba-name" placeholder="Full account name" onblur="saveBankAccount()"></div>
+          <div class="field" style="margin:0"><label>Account number</label><input type="text" id="ba-number" placeholder="10-digit number" onblur="saveBankAccount()"></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-title">Next GW deadline</div>
         <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Set the next gameweek deadline — a live countdown appears in the metrics row for all players.</p>
         <div class="field"><label>Deadline date &amp; time</label><input type="datetime-local" id="next-gw-date" onchange="setNextGWDate(this.value)"></div>

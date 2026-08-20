@@ -50,7 +50,7 @@ const GW1_DEADLINE='2026-08-21T18:00:00.000Z';
 
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0}));
-  return {players,gameweeks:[],payouts:[],cyclePayments:{},cycleCredited:{},nextGWDate:null,nextSeasonDate:null};
+  return {players,gameweeks:[],payouts:[],cyclePayments:{},cycleCredited:{},nextGWDate:null,nextSeasonDate:null,bankAccount:{name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'}};
 }
 
 // ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
@@ -728,6 +728,14 @@ async function fetchFPLLeague(){
 }
 
 
+function saveBankAccount(){
+  const bank=document.getElementById('ba-bank')?.value.trim()||'';
+  const name=document.getElementById('ba-name')?.value.trim()||'';
+  const number=document.getElementById('ba-number')?.value.trim()||'';
+  state.bankAccount={bank,name,number};
+  save();
+}
+
 function toggleKobo(){
   const c=document.getElementById('kobo-content');
   const ch=document.getElementById('kobo-chevron');
@@ -933,6 +941,24 @@ function renderFinanceTab(){
       </div>
     </div>
 
+    ${state.bankAccount?.number?`<div class="card" style="margin-bottom:1rem;border-left:3px solid var(--accent)">
+      <div class="card-title" style="margin-bottom:.75rem">Payment Details</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Bank</span>
+          <span style="font-size:13px;font-weight:600">${state.bankAccount.bank}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Account Name</span>
+          <span style="font-size:13px;font-weight:600">${state.bankAccount.name}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Account Number</span>
+          <span style="font-size:18px;font-weight:800;color:var(--accent);letter-spacing:.08em">${state.bankAccount.number}</span>
+        </div>
+      </div>
+    </div>`:''}
+
     <div class="card" style="margin-bottom:1rem">
       <div onclick="toggleOutstanding()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
         <span class="card-title" style="margin-bottom:0;pointer-events:none">Outstanding Cycle Fees</span>
@@ -1071,7 +1097,7 @@ function showTab(t){
   document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
   document.getElementById('sec-'+t).classList.add('active');
   if(t==='standings') renderStandings();
-  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); showAdminSection('settings'); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); }
+  if(t==='admin'){ renderAdminPlayers(); renderDeleteGWInfo(); showAdminSection('settings'); const nd=document.getElementById('next-season-date'); if(nd) nd.value=toInputDatetime(state.nextSeasonDate); const gd=document.getElementById('next-gw-date'); if(gd) gd.value=toInputDatetime(state.nextGWDate); const ba=state.bankAccount||{}; ['bank','name','number'].forEach(k=>{ const el=document.getElementById('ba-'+k); if(el) el.value=ba[k]||''; }); }
 }
 
 function showAdminSection(s){
@@ -1119,6 +1145,7 @@ function applyMigrations(){
     if(!state.players[i]) state.players.push({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0});
   });
   if(!state.cycleCredited) state.cycleCredited={};
+  if(!state.bankAccount) state.bankAccount={name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'};
   // Seed entryId from ENTRY_MAP for existing players
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
