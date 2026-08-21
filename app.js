@@ -657,6 +657,7 @@ function renderAdminPlayers(){
       <span style="flex:1;font-size:.9rem;font-weight:500;min-width:70px">${p.name}</span>
       <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:110px;max-width:25vw;height:36px">
       <input type="number" value="${p.entryId||''}" placeholder="Entry ID" onblur="setEntryId(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.entryId?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:90px;max-width:22vw;height:36px" title="FPL Challenge entry ID">
+      <input type="password" value="${p.pin||''}" placeholder="PIN" onblur="setPlayerPin(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.pin?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:64px;max-width:18vw;height:36px" title="Payout request PIN for ${p.name}">
       <div style="text-align:right;line-height:1.3">
         <div class="mono" style="font-size:.75rem;color:var(--text);font-weight:600">₦${fullBal(p).toLocaleString()}</div>
         ${(p.carryOver||0)>0?`<div style="font-size:.65rem;color:var(--caution)">+₦${(p.carryOver||0).toLocaleString()} carry</div>`:''}
@@ -677,6 +678,11 @@ function setEntryId(idx,val){
   const conflict=id&&state.players.findIndex((p,i)=>i!==idx&&p.entryId===id);
   if(conflict!==-1&&conflict!==false){ alert(`Entry ID ${id} is already assigned to ${state.players[conflict].name}`); return; }
   state.players[idx].entryId=id||undefined;
+  save(); renderAdminPlayers();
+}
+
+function setPlayerPin(idx,val){
+  state.players[idx].pin=val.trim();
   save(); renderAdminPlayers();
 }
 
@@ -788,19 +794,24 @@ function openPayoutRequest(){
   });
   document.getElementById('pr-amount').value='';
   document.getElementById('pr-balance-row').style.display='none';
-  ['pr-bank','pr-account-name','pr-account-number'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['pr-bank','pr-account-name','pr-account-number','pr-pin'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const pinRow=document.getElementById('pr-pin-row'); if(pinRow) pinRow.style.display='none';
   document.getElementById('payout-req-overlay').classList.add('open');
 }
 
 function onPayoutPlayerChange(){
   const idx=parseInt(document.getElementById('pr-player').value);
   const row=document.getElementById('pr-balance-row');
-  if(isNaN(idx)){ row.style.display='none'; return; }
-  const bal=Math.max(0,pubBal(state.players[idx]));
+  const pinRow=document.getElementById('pr-pin-row');
+  if(isNaN(idx)){ row.style.display='none'; if(pinRow) pinRow.style.display='none'; return; }
+  const p=state.players[idx];
+  const bal=Math.max(0,pubBal(p));
   document.getElementById('pr-balance').textContent='₦'+bal.toLocaleString();
   row.style.display='flex';
   document.getElementById('pr-amount').max=bal;
   document.getElementById('pr-amount').value=bal;
+  if(pinRow){ pinRow.style.display=p.pin?'block':'none'; }
+  const pinInput=document.getElementById('pr-pin'); if(pinInput) pinInput.value='';
 }
 
 function sendPayoutRequest(){
@@ -811,6 +822,10 @@ function sendPayoutRequest(){
   const p=state.players[idx];
   const bal=Math.max(0,pubBal(p));
   if(amt>bal){ alert(`Amount exceeds your balance of ₦${bal.toLocaleString()}`); return; }
+  if(p.pin){
+    const entered=(document.getElementById('pr-pin')?.value||'').trim();
+    if(entered!==p.pin){ alert('Incorrect PIN'); return; }
+  }
   const bankName=(document.getElementById('pr-bank')?.value||'').trim();
   const accountName=(document.getElementById('pr-account-name')?.value||'').trim();
   const accountNumber=(document.getElementById('pr-account-number')?.value||'').trim();
@@ -1234,6 +1249,7 @@ function applyMigrations(){
   if(!state.cycleCredited) state.cycleCredited={};
   if(!state.bankAccount) state.bankAccount={name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'};
   if(!state.payoutRequests) state.payoutRequests=[];
+  state.players.forEach(p=>{ if(p.pin===undefined) p.pin=''; });
   // Seed entryId from ENTRY_MAP for existing players
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
