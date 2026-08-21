@@ -275,6 +275,7 @@ function formGuide(playerIdx){
 // If paidOut > carryOver, the excess came from this season → deduct only that excess
 const pubBal=p=>p.accumulated-Math.max(0,p.paidOut-(p.carryOver||0));
 const fullBal=p=>p.accumulated+(p.carryOver||0)-p.paidOut;
+const credited=(idx,i)=>(state.cycleCredited[idx]?.[i])||0;
 
 
 function renderStandings(){
@@ -836,13 +837,11 @@ function renderFinanceTab(){
   const projectedSeasonPot=state.players.length*1000*totalGWs;
 
   // --- Outstanding per cycle ---
-  const credited=(idx,i)=>(state.cycleCredited[idx]?.[i])||0;
   const cycleDebtors=CYCLES.map((c,idx)=>{
     const cp=state.cyclePayments[idx]||{};
     const unpaid=c.players.filter(i=>!isPaid(cp[i]));
     return {idx,c,unpaid,cp};
   }).filter(x=>x.unpaid.length>0);
-
   const totalOutstanding=cycleDebtors.reduce((s,{c,unpaid,idx})=>s+unpaid.reduce((t,i)=>t+Math.max(0,c.fee-credited(idx,i)),0),0);
 
   // --- Helpers ---
