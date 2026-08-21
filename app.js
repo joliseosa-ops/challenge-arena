@@ -657,7 +657,7 @@ function renderAdminPlayers(){
       <span style="flex:1;font-size:.9rem;font-weight:500;min-width:70px">${p.name}</span>
       <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:110px;max-width:25vw;height:36px">
       <input type="number" value="${p.entryId||''}" placeholder="Entry ID" onblur="setEntryId(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.entryId?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:90px;max-width:22vw;height:36px" title="FPL Challenge entry ID">
-      <input type="password" value="${p.pin||''}" placeholder="PIN" onblur="setPlayerPin(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.pin?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:64px;max-width:18vw;height:36px" title="Payout request PIN for ${p.name}">
+      <input type="text" value="${p.pin||''}" placeholder="PIN" onblur="setPlayerPin(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.pin?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:64px;max-width:18vw;height:36px;font-family:monospace;letter-spacing:.08em" title="Payout request PIN for ${p.name}">
       <div style="text-align:right;line-height:1.3">
         <div class="mono" style="font-size:.75rem;color:var(--text);font-weight:600">₦${fullBal(p).toLocaleString()}</div>
         ${(p.carryOver||0)>0?`<div style="font-size:.65rem;color:var(--caution)">+₦${(p.carryOver||0).toLocaleString()} carry</div>`:''}
@@ -690,7 +690,8 @@ function addPlayer(){
   const name=document.getElementById('new-player-name').value.trim();
   if(!name){ alert('Enter a player name'); return; }
   if(state.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Player already exists'); return; }
-  state.players.push({name,teamName:'',accumulated:0,paidOut:0,carryOver:0,w1:0,w2:0,w3:0});
+  const genPin=()=>String(Math.floor(1000+Math.random()*9000));
+  state.players.push({name,teamName:'',accumulated:0,paidOut:0,carryOver:0,w1:0,w2:0,w3:0,pin:genPin()});
   save(); document.getElementById('new-player-name').value='';
   renderAdminPlayers(); populateSelects(); renderStandings();
 }
@@ -1249,7 +1250,8 @@ function applyMigrations(){
   if(!state.cycleCredited) state.cycleCredited={};
   if(!state.bankAccount) state.bankAccount={name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'};
   if(!state.payoutRequests) state.payoutRequests=[];
-  state.players.forEach(p=>{ if(p.pin===undefined) p.pin=''; });
+  const genPin=()=>String(Math.floor(1000+Math.random()*9000));
+  state.players.forEach(p=>{ if(!p.pin) p.pin=genPin(); });
   // Seed entryId from ENTRY_MAP for existing players
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
