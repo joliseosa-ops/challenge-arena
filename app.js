@@ -1272,6 +1272,7 @@ function applyMigrations(){
     state=cloud;
     applyMigrations();
     try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+    syncToCloud(state);
     populateSelects(); renderStandings();
   } else {
     syncToCloud(state); // seed cloud on first run
