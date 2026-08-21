@@ -50,7 +50,7 @@ const GW1_DEADLINE='2026-08-21T18:00:00.000Z';
 
 function buildDefault(){
   const players=INIT_PLAYERS.map((name,i)=>({name,teamName:TEAM_NAMES[i]||'',accumulated:0,paidOut:0,carryOver:OPENING[i]||0,w1:0,w2:0,w3:0}));
-  return {players,gameweeks:[],payouts:[],cyclePayments:{},cycleCredited:{},nextGWDate:null,nextSeasonDate:null,bankAccount:{name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'}};
+  return {players,gameweeks:[],payouts:[],payoutRequests:[],cyclePayments:{},cycleCredited:{},nextGWDate:null,nextSeasonDate:null,bankAccount:{name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'}};
 }
 
 // ── Cloud sync (Supabase) ─────────────────────────────────────────────────────
@@ -337,6 +337,34 @@ function processPayout(){
 }
 
 function renderPayoutLog(){
+  const reqEl=document.getElementById('payout-requests');
+  if(reqEl){
+    const pending=(state.payoutRequests||[]).filter(r=>r.status==='pending');
+    if(!pending.length){
+      reqEl.innerHTML='<div class="empty">no pending requests</div>';
+    } else {
+      reqEl.innerHTML=pending.map(r=>{
+        const ts=new Date(r.timestamp);
+        const timeStr=ts.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' · '+ts.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+        return `<div style="border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:.75rem 1rem;margin-bottom:.625rem">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:.5rem">
+            <div>
+              <span style="font-size:13px;font-weight:700">${r.player}</span>
+              <span style="font-size:11px;color:var(--muted);margin-left:8px">${timeStr}</span>
+            </div>
+            <span style="font-size:15px;font-weight:700;color:var(--accent)">₦${r.amount.toLocaleString()}</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem;line-height:1.6">
+            🏦 ${r.bank.bank} &nbsp;·&nbsp; ${r.bank.accountName} &nbsp;·&nbsp; <span style="font-family:monospace;letter-spacing:.05em">${r.bank.accountNumber}</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="processPayoutRequest(${r.id})" style="padding:5px 14px;font-size:12px;font-weight:700;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;min-height:32px">✓ Process & Record</button>
+            <button onclick="dismissPayoutRequest(${r.id})" style="padding:5px 12px;font-size:12px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;min-height:32px">Dismiss</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
   const el=document.getElementById('payout-log');
   if(!state.payouts.length){ el.innerHTML='<div class="empty">no payouts recorded</div>'; return; }
   el.innerHTML=state.payouts.map((p,i)=>({...p,_idx:i})).reverse().map(p=>{
@@ -347,6 +375,25 @@ function renderPayoutLog(){
       <button onclick="reversePayout(${p._idx})" style="padding:3px 10px;font-size:.75rem;min-height:30px;background:none;border:1px solid #fca5a5;color:var(--red);border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap">↩ Reverse</button>
     </div>`;
   }).join('');
+}
+
+function processPayoutRequest(id){
+  const req=state.payoutRequests.find(r=>r.id===id); if(!req) return;
+  const p=state.players[req.playerIdx];
+  if(!p){ alert('Player not found'); return; }
+  const bal=Math.max(0,pubBal(p));
+  if(req.amount>bal){ alert(`${p.name} only has ₦${bal.toLocaleString()} available now`); return; }
+  p.paidOut+=req.amount;
+  state.payouts.push({player:p.name,amount:req.amount,gw:state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:'Payout'});
+  req.status='processed';
+  save(); renderPayoutLog(); updatePayoutInfo(); renderStandings();
+}
+
+function dismissPayoutRequest(id){
+  const req=state.payoutRequests.find(r=>r.id===id); if(!req) return;
+  if(!confirm(`Dismiss payout request for ${req.player}?`)) return;
+  req.status='dismissed';
+  save(); renderPayoutLog();
 }
 
 function reversePayout(idx){
@@ -741,6 +788,7 @@ function openPayoutRequest(){
   });
   document.getElementById('pr-amount').value='';
   document.getElementById('pr-balance-row').style.display='none';
+  ['pr-bank','pr-account-name','pr-account-number'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('payout-req-overlay').classList.add('open');
 }
 
@@ -763,12 +811,23 @@ function sendPayoutRequest(){
   const p=state.players[idx];
   const bal=Math.max(0,pubBal(p));
   if(amt>bal){ alert(`Amount exceeds your balance of ₦${bal.toLocaleString()}`); return; }
+  const bankName=(document.getElementById('pr-bank')?.value||'').trim();
+  const accountName=(document.getElementById('pr-account-name')?.value||'').trim();
+  const accountNumber=(document.getElementById('pr-account-number')?.value||'').trim();
+  if(!bankName||!accountName||!accountNumber){ alert('Please fill in your bank details'); return; }
+  const req={id:Date.now(),playerIdx:idx,player:p.name,amount:amt,bank:{bank:bankName,accountName,accountNumber},timestamp:new Date().toISOString(),status:'pending'};
+  state.payoutRequests.push(req);
+  save();
   const msg=[
     `💸 *Payout Request — Challenge Arena*`,
     ``,
     `Player: ${p.name}`,
     `Balance: ₦${bal.toLocaleString()}`,
     `Requested: ₦${amt.toLocaleString()}`,
+    ``,
+    `Bank: ${bankName}`,
+    `Account Name: ${accountName}`,
+    `Account Number: ${accountNumber}`,
     ``,
     `Please process when convenient 🙏`
   ].join('\n');
@@ -1174,6 +1233,7 @@ function applyMigrations(){
   });
   if(!state.cycleCredited) state.cycleCredited={};
   if(!state.bankAccount) state.bankAccount={name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'};
+  if(!state.payoutRequests) state.payoutRequests=[];
   // Seed entryId from ENTRY_MAP for existing players
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
