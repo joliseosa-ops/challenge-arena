@@ -1269,7 +1269,9 @@ function applyMigrations(){
 (async()=>{
   const cloud=await loadFromCloud();
   if(cloud){
+    const localPins=state.players.map(p=>p.pin||'');
     state=cloud;
+    state.players.forEach((p,i)=>{ if(!p.pin&&localPins[i]) p.pin=localPins[i]; });
     applyMigrations();
     try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
     syncToCloud(state);
