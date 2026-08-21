@@ -561,6 +561,7 @@ function saveCycle(){
 }
 function closeModal(){ document.getElementById('cycle-overlay').classList.remove('open'); }
 document.getElementById('cycle-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('payout-req-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closePayoutRequest(); });
 
 function toInputDatetime(iso){
   if(!iso) return '';
@@ -727,6 +728,56 @@ async function fetchFPLLeague(){
   }
 }
 
+
+const ADMIN_WA='2348117666657';
+
+function openPayoutRequest(){
+  const sel=document.getElementById('pr-player');
+  sel.innerHTML='<option value="">— select your name —</option>';
+  state.players.forEach((p,i)=>{
+    const bal=Math.max(0,pubBal(p));
+    if(bal>0) sel.innerHTML+=`<option value="${i}">${p.name} — ₦${bal.toLocaleString()}</option>`;
+  });
+  document.getElementById('pr-amount').value='';
+  document.getElementById('pr-balance-row').style.display='none';
+  document.getElementById('payout-req-overlay').classList.add('open');
+}
+
+function onPayoutPlayerChange(){
+  const idx=parseInt(document.getElementById('pr-player').value);
+  const row=document.getElementById('pr-balance-row');
+  if(isNaN(idx)){ row.style.display='none'; return; }
+  const bal=Math.max(0,pubBal(state.players[idx]));
+  document.getElementById('pr-balance').textContent='₦'+bal.toLocaleString();
+  row.style.display='flex';
+  document.getElementById('pr-amount').max=bal;
+  document.getElementById('pr-amount').value=bal;
+}
+
+function sendPayoutRequest(){
+  const idx=parseInt(document.getElementById('pr-player').value);
+  if(isNaN(idx)){ alert('Please select your name'); return; }
+  const amt=parseFloat(document.getElementById('pr-amount').value);
+  if(!amt||amt<=0){ alert('Please enter an amount'); return; }
+  const p=state.players[idx];
+  const bal=Math.max(0,pubBal(p));
+  if(amt>bal){ alert(`Amount exceeds your balance of ₦${bal.toLocaleString()}`); return; }
+  const msg=[
+    `💸 *Payout Request — Challenge Arena*`,
+    ``,
+    `Player: ${p.name}`,
+    `Balance: ₦${bal.toLocaleString()}`,
+    `Requested: ₦${amt.toLocaleString()}`,
+    ``,
+    `Please process when convenient 🙏`
+  ].join('\n');
+  window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`,'_blank');
+  closePayoutRequest();
+}
+
+function closePayoutRequest(){
+  document.getElementById('payout-req-overlay').classList.remove('open');
+}
 
 function saveBankAccount(){
   const bank=document.getElementById('ba-bank')?.value.trim()||'';

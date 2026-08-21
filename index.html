@@ -79,6 +79,13 @@
       </div>
       <div class="card" id="countdown-card" style="margin-bottom:1rem;border-color:var(--accent);border-width:2px;display:none"></div>
       <div class="card" id="season-recap-card" style="margin-bottom:1rem;display:none"></div>
+      <div style="margin-bottom:1rem;padding:.75rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div>
+          <div style="font-size:13px;font-weight:600">Want your winnings?</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Request a payout and the admin will process it</div>
+        </div>
+        <button class="btn" onclick="openPayoutRequest()" style="flex-shrink:0;font-size:12px;padding:6px 14px">💸 Request Payout</button>
+      </div>
       <div class="card" style="margin-bottom:1rem;background:var(--surface2);border-color:var(--border)">
         <div style="margin:-1.25rem -1.25rem 1rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8 0%,#00c875 100%);border-radius:7px 7px 0 0;display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em">STANDINGS</span>
@@ -319,6 +326,36 @@
     <div style="display:flex;gap:8px">
       <button class="btn" onclick="submitPin()">Unlock</button>
       <button class="btn btn-ghost" onclick="closePinModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payout request modal -->
+<div class="overlay" id="payout-req-overlay">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">Request Payout</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="field" style="margin:0">
+        <label>Your name</label>
+        <select id="pr-player" onchange="onPayoutPlayerChange()" style="height:40px;font-size:14px">
+          <option value="">— select your name —</option>
+        </select>
+      </div>
+      <div id="pr-balance-row" style="display:none;padding:10px 12px;background:var(--surface2);border-radius:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Balance</span>
+        <span id="pr-balance" style="font-size:16px;font-weight:700;color:var(--green)">₦0</span>
+      </div>
+      <div class="field" style="margin:0">
+        <label>Amount to withdraw (₦)</label>
+        <input type="number" id="pr-amount" placeholder="Enter amount" min="1" style="height:40px;font-size:14px">
+      </div>
+      <div style="background:var(--accent-light);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.6">
+        This will open WhatsApp with a pre-filled message to the admin. Your payout will be processed manually.
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:1.25rem">
+      <button class="btn" onclick="sendPayoutRequest()" style="background:#25d366;flex:1">💸 Send via WhatsApp</button>
+      <button class="btn btn-ghost" onclick="closePayoutRequest()">Cancel</button>
     </div>
   </div>
 </div>
