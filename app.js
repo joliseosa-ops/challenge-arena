@@ -797,7 +797,7 @@ function openPayoutRequest(){
   sel.innerHTML='<option value="">— select your name —</option>';
   state.players.forEach((p,i)=>{
     const bal=Math.max(0,pubBal(p));
-    if(bal>0) sel.innerHTML+=`<option value="${i}">${p.name} — ₦${bal.toLocaleString()}</option>`;
+    sel.innerHTML+=`<option value="${i}">${p.name}${bal>0?' — ₦'+bal.toLocaleString():''}</option>`;
   });
   document.getElementById('pr-amount').value='';
   document.getElementById('pr-balance-row').style.display='none';
