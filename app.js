@@ -885,11 +885,9 @@ function renderFinanceTab(){
   }).join('');
 
   // --- Outstanding / who hasn't paid ---
-  const waIcon=`<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.559 4.13 1.535 5.863L.057 23.5l5.803-1.524A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.882a9.882 9.882 0 0 1-5.032-1.378l-.361-.214-3.741.981.998-3.648-.235-.374A9.86 9.86 0 0 1 2.118 12C2.118 6.978 6.978 2.118 12 2.118S21.882 6.978 21.882 12 17.022 21.882 12 21.882z"/></svg>`;
-
   const outstandingHtml=cycleDebtors.length===0
     ? `<div style="display:flex;align-items:center;gap:8px;padding:.75rem 1rem;background:var(--green-bg);border-radius:8px;color:var(--green);font-weight:600;font-size:13px">✓ All cycle payments received — no outstanding fees</div>`
-    : cycleDebtors.map(({idx,c,unpaid,cp})=>{
+    : cycleDebtors.map(({idx,c,unpaid})=>{
         const debtorInfo=unpaid.map(i=>{
           const p=state.players[i];
           const alreadyPaid=credited(idx,i);
@@ -898,29 +896,11 @@ function renderFinanceTab(){
           return {name:p?.name||'?',alreadyPaid,inBank,net};
         });
         const totalNet=debtorInfo.reduce((s,d)=>s+d.net,0);
-        const waLines=[
-          `💰 *Challenge Arena – Cycle ${idx+1} Payment Reminder*`,
-          `GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,
-          ``,
-          `Still outstanding:`,
-          ...debtorInfo.map(d=>{
-            const notes=[];
-            if(d.alreadyPaid>0) notes.push(`₦${d.alreadyPaid.toLocaleString()} already received`);
-            if(d.inBank>0) notes.push(`₦${d.inBank.toLocaleString()} from winnings`);
-            return `  • ${d.name} — ₦${d.net.toLocaleString()} to pay${notes.length?` (${notes.join(', ')})`:''}`;}),
-          ``,
-          `Total to collect: ₦${totalNet.toLocaleString()}`,
-          `Please settle asap 🙏`
-        ];
-        const waUrl='https://wa.me/?text='+encodeURIComponent(waLines.join('\n'));
         return `
         <div style="margin-bottom:.75rem;border:1px solid var(--red-bg);border-left:3px solid var(--red);border-radius:6px;padding:.75rem 1rem">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:8px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:700">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(totalNet)} to collect</span>
-              <a href="${waUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:#25d366;color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">${waIcon} Remind</a>
-            </div>
+            <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(totalNet)} to collect</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             ${debtorInfo.map(d=>{
@@ -933,8 +913,6 @@ function renderFinanceTab(){
           </div>
         </div>`;
       }).join('');
-
-  const waChaseBtn='';
 
   // --- Per-player summary ---
   const playerRows=[...state.players.map((p,i)=>({p,i}))]
@@ -1517,13 +1495,56 @@ function shareDebtReminder(cycleIdx){
 // ── Debt tracker ──────────────────────────────────────────────────────────────
 function renderDebtTracker(){
   const el=document.getElementById('debt-tracker'); if(!el) return;
+  const waIcon=`<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.559 4.13 1.535 5.863L.057 23.5l5.803-1.524A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.882a9.882 9.882 0 0 1-5.032-1.378l-.361-.214-3.741.981.998-3.648-.235-.374A9.86 9.86 0 0 1 2.118 12C2.118 6.978 6.978 2.118 12 2.118S21.882 6.978 21.882 12 17.022 21.882 12 21.882z"/></svg>`;
   const debtors=CYCLES.map((c,ci)=>{
     const cp=state.cyclePayments[ci]||{};
-    const unpaid=c.players.filter(i=>!cp[i]).map(i=>state.players[i]?.name||'?');
-    return unpaid.length?{cycle:ci+1,gw:`GW${c.gw[0]}–${c.gw[1]}`,fee:c.fee,unpaid}:null;
+    const unpaid=c.players.filter(i=>!isPaid(cp[i]));
+    return unpaid.length?{idx:ci,c,unpaid}:null;
   }).filter(Boolean);
   if(!debtors.length){ el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div><div style="font-size:13px;color:var(--green);font-weight:500">All cycle fees accounted for.</div></div>`; return; }
-  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${debtors.map(d=>`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span style="font-size:13px;font-weight:700">Cycle ${d.cycle} · ${d.gw}</span><span style="font-size:11px;font-family:'Poppins',system-ui,sans-serif;color:var(--muted);white-space:nowrap">₦${d.fee.toLocaleString()}/player</span></div><div style="font-size:12px;color:var(--red)">${d.unpaid.join(', ')}</div></div>`).join('')}</div>`;
+  const rows=debtors.map(({idx,c,unpaid})=>{
+    const debtorInfo=unpaid.map(i=>{
+      const p=state.players[i];
+      const alreadyPaid=credited(idx,i);
+      const inBank=Math.max(0,pubBal(p));
+      const net=Math.max(0,c.fee-alreadyPaid-inBank);
+      return {name:p?.name||'?',alreadyPaid,inBank,net};
+    });
+    const totalNet=debtorInfo.reduce((s,d)=>s+d.net,0);
+    const waLines=[
+      `💰 *Challenge Arena – Cycle ${idx+1} Payment Reminder*`,
+      `GW${c.gw[0]}–${c.gw[1]} · ₦${c.fee.toLocaleString()}/player`,
+      ``,
+      `Still outstanding:`,
+      ...debtorInfo.map(d=>{
+        const notes=[];
+        if(d.alreadyPaid>0) notes.push(`₦${d.alreadyPaid.toLocaleString()} already received`);
+        if(d.inBank>0) notes.push(`₦${d.inBank.toLocaleString()} from winnings`);
+        return `  • ${d.name} — ₦${d.net.toLocaleString()} to pay${notes.length?` (${notes.join(', ')})`:''}`;}),
+      ``,
+      `Total to collect: ₦${totalNet.toLocaleString()}`,
+      `Please settle asap 🙏`
+    ];
+    const waUrl=`https://wa.me/${ADMIN_WA}?text=`+encodeURIComponent(waLines.join('\n'));
+    return `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:700">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(totalNet)} to collect</span>
+          <a href="${waUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#25d366;color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">${waIcon} Remind</a>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${debtorInfo.map(d=>{
+          const notes=[];
+          if(d.alreadyPaid>0) notes.push(`₦${d.alreadyPaid.toLocaleString()} paid`);
+          if(d.inBank>0) notes.push(`₦${d.inBank.toLocaleString()} in bank`);
+          return `<span style="font-size:12px;font-weight:600;background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:20px">${d.name} · ${fmt(d.net)}${notes.length?`<span style="font-size:10px;opacity:.75"> (${notes.join(', ')})</span>`:''}</span>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="card"><div class="card-title">Outstanding fees</div>${rows}</div>`;
 }
 
 // ── Sync from FPL — auto-adds new players, updates names, marks cycle paid ────
