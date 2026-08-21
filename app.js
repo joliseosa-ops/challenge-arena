@@ -656,8 +656,14 @@ function renderAdminPlayers(){
       <div class="init">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="flex:1;font-size:.9rem;font-weight:500;min-width:70px">${p.name}</span>
       <input type="text" value="${p.teamName||''}" placeholder="Team name" onblur="setTeamName(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:110px;max-width:25vw;height:36px">
-      <input type="number" value="${p.entryId||''}" placeholder="Entry ID" onblur="setEntryId(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.entryId?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:90px;max-width:22vw;height:36px" title="FPL Challenge entry ID">
-      <input type="text" value="${p.pin||''}" placeholder="PIN" onblur="setPlayerPin(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.pin?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:64px;max-width:18vw;height:36px;font-family:monospace;letter-spacing:.08em" title="Payout request PIN for ${p.name}">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Entry ID</div>
+        <input type="number" value="${p.entryId||''}" placeholder="—" onblur="setEntryId(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.entryId?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:80px;max-width:22vw;height:32px">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">PIN</div>
+        <input type="text" value="${p.pin||''}" placeholder="—" onblur="setPlayerPin(${i},this.value)" style="font-size:.8rem;padding:4px 8px;background:var(--surface);border:1px solid ${p.pin?'var(--green)':'var(--border)'};border-radius:4px;color:var(--text);width:54px;max-width:18vw;height:32px;font-family:monospace;letter-spacing:.08em">
+      </div>
       <div style="text-align:right;line-height:1.3">
         <div class="mono" style="font-size:.75rem;color:var(--text);font-weight:600">₦${fullBal(p).toLocaleString()}</div>
         ${(p.carryOver||0)>0?`<div style="font-size:.65rem;color:var(--caution)">+₦${(p.carryOver||0).toLocaleString()} carry</div>`:''}
