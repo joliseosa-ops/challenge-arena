@@ -1216,6 +1216,7 @@ function showAdminSection(s){
   document.querySelector(`.admin-sub-btn[onclick="showAdminSection('${s}')"]`).classList.add('active');
   if(s==='payout'){ populateSelects(); renderPayoutLog(); }
   if(s==='cycles') renderPayments();
+  if(s==='gameweek'){ const {p1,p2,p3}=prizes(); const l1=document.getElementById('prize-label-1'); const l2=document.getElementById('prize-label-2'); const l3=document.getElementById('prize-label-3'); if(l1) l1.textContent=`1st place — ₦${p1.toLocaleString()}`; if(l2) l2.textContent=`2nd place — ₦${p2.toLocaleString()}`; if(l3) l3.textContent=`3rd place — ₦${p3.toLocaleString()}`; }
   if(s==='gameweek') populateSelects();
 }
 
