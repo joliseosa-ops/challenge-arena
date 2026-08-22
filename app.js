@@ -1,7 +1,7 @@
 const KEY='challenge_arena_v21';
 const WEEKLY_PRIZE_RATE=2000; // ₦2k per player per GW goes to weekly prizes
 // prizes() computes dynamically from actual player count — updates when players are added
-function prizes(){ const pot=state.players.length*WEEKLY_PRIZE_RATE; return {p1:Math.round(pot*.50),p2:Math.round(pot*.30),p3:Math.round(pot*.20)}; }
+function prizes(){ const pot=state.players.length*WEEKLY_PRIZE_RATE; return {p1:Math.round(pot*(26/44)),p2:Math.round(pot*(12/44)),p3:Math.round(pot*(6/44))}; }
 
 // 2026/27 season — 8 cycles, ₦3k/player/GW. players[] is populated dynamically by syncCyclePlayers()
 const CYCLES=[
