@@ -103,7 +103,7 @@ let activeCycleIdx=null;
 let currentSort='earnings';
 
 function populateSelects(){
-  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
+  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur=el.value;
     el.innerHTML='<option value="">—</option>';
@@ -200,7 +200,7 @@ async function fetchLatestGW(){
     const rest=ranking.filter(([,pts])=>pts<topPts);
 
     const fill=(prefix,arr)=>['a','b','c'].forEach((s,i)=>{ const el=document.getElementById(prefix+s); if(el) el.value=arr[i]??''; });
-    ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
 
     if(first.length>=3){
       fill('p1',first.slice(0,3));
@@ -238,9 +238,12 @@ function recordGW(){
   positions[1].forEach(i=>state.players[i].w1++);
   positions[2].forEach(i=>state.players[i].w2++);
   positions[3].forEach(i=>state.players[i].w3++);
+  const fourth=[...new Set(['p4a','p4b'].map(id=>{ const v=document.getElementById(id)?.value; return v!==''&&v!=null?parseInt(v):null; }).filter(v=>v!==null&&!isNaN(v)))];
+  fourth.forEach(i=>{ if(state.players[i]) state.players[i].w4=(state.players[i].w4||0)+1; });
+  positions[4]=fourth;
   state.gameweeks.push({gw:lastGW+1,awards,pos:positions,note,points:Object.keys(points).length?points:undefined});
   save();
-  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   state.players.forEach((_,i)=>{ const e=document.getElementById('pts-'+i); if(e) e.value=''; });
   document.getElementById('prize-preview').classList.add('hidden');
   renderStandings();
@@ -729,6 +732,7 @@ function confirmDeleteLastGW(){
   (last.pos[1]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w1=Math.max(0,state.players[i].w1-1); });
   (last.pos[2]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w2=Math.max(0,state.players[i].w2-1); });
   (last.pos[3]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w3=Math.max(0,state.players[i].w3-1); });
+  (last.pos[4]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w4=Math.max(0,(state.players[i].w4||0)-1); });
   state.gameweeks.pop();
   save(); renderStandings(); renderAdminPlayers(); renderHistory(); renderDeleteGWInfo();
   alert(`GW${last.gw} deleted. You can now re-enter it with the correct data.`);
@@ -1150,6 +1154,8 @@ function computeBadges(playerIdx){
     badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
   if(p.w2>=3&&state.players.every(q=>q.w2<=p.w2))
     badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
+  if((p.w4||0)>=3&&state.players.every(q=>(q.w4||0)<=(p.w4||0)))
+    badges.push({icon:'😤',label:'The Nearly',desc:`${p.w4} fourth-place finishes — so close, every time`});
   return badges;
 }
 
@@ -1169,6 +1175,7 @@ function renderAchievements(){
     {icon:'⚡',label:'Back-to-back',desc:'2 consecutive GWs on the podium'},
     {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
     {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes (minimum 3)'},
+    {icon:'😤',label:'The Nearly',desc:'Most 4th place finishes (minimum 3) — always just outside'},
   ];
   el.innerHTML=`
     <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
@@ -1258,7 +1265,7 @@ function applyMigrations(){
   if(!state.bankAccount) state.bankAccount={name:'Osahon Jude Osagie',number:'1494859631',bank:'Access Bank'};
   if(!state.payoutRequests) state.payoutRequests=[];
   const genPin=()=>String(Math.floor(1000+Math.random()*9000));
-  state.players.forEach(p=>{ if(!p.pin) p.pin=genPin(); });
+  state.players.forEach(p=>{ if(!p.pin) p.pin=genPin(); if(p.w4===undefined) p.w4=0; });
   // Seed entryId from ENTRY_MAP for existing players
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
