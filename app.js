@@ -177,23 +177,17 @@ async function fetchLatestGW(){
   btn.disabled=true; status.textContent=`Fetching GW${targetGW}…`;
 
   try{
-    const results=await Promise.all(
-      Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`/api/fpl-entry?entry=${entryId}`)
-          .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
-          .then(d=>{
-            if(entryId==='642') console.log('GW fetch sample:',JSON.stringify(d).slice(0,400));
-            const history=d.current||d.history||d.gameweeks||d.events||[];
-            const row=history.find(g=>(g.event||g.gameweek||g.round)===targetGW);
-            const pts=row?.points??row?.total??row?.score??null;
-            return pts!==null?{playerIdx,pts}:null;
-          })
-          .catch(()=>null)
-      )
-    );
+    const data=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
+    const rows=data.standings?.results||[];
+    if(!rows.length) throw new Error('no standings data');
 
     const scores={};
-    results.forEach(r=>{ if(r) scores[r.playerIdx]=r.pts; });
+    rows.forEach(r=>{
+      const playerIdx=state.players.findIndex(p=>Number(p.entryId)===Number(r.entry));
+      if(playerIdx===-1) return;
+      const pts=r.event_total||r.total||0;
+      if(pts>0) scores[playerIdx]=pts;
+    });
 
     if(!Object.keys(scores).length){
       status.textContent=`GW${targetGW} not available yet — enter manually`;
