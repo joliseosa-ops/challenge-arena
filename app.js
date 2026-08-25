@@ -230,7 +230,7 @@ async function fetchLatestGW(){
 function recordGW(){
   if(!getSlots('p1').length){ alert('Select at least 1st place'); return; }
   const {awards,note,positions}=calcPrizes();
-  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:30;
+  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
   // collect points
   const points={};
   state.players.forEach((_,i)=>{ const v=document.getElementById('pts-'+i)?.value; if(v!==''&&v!=null) points[i]=parseInt(v)||0; });
