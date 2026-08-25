@@ -179,7 +179,7 @@ async function fetchLatestGW(){
   try{
     const results=await Promise.all(
       Object.entries(ENTRY_MAP).map(([entryId,playerIdx])=>
-        fetch(`${PROXY}${FPL_BASE}/entry/${entryId}/history/`)
+        fetch(`/api/fpl-entry?entry=${entryId}`)
           .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
           .then(d=>{ const row=d.current?.find(r=>r.event===targetGW); return row?{playerIdx,pts:row.points}:null; })
           .catch(()=>null)
