@@ -148,9 +148,8 @@ function calcPrizes(){
   } else {
     add(s1,p1); lines.push(`1st: ${nm(s1[0])} → ₦${p1.toLocaleString()}`); notes.push(`${nm(s1[0])} 1st`);
     if(s2.length>=2){
-      const pool=s3.length?p2+p3:p2;
-      const sh=add(s2,pool);
-      lines.push(`Joint 2nd: ${s2.map(nm).join(' & ')} → ₦${sh.toLocaleString()} each`);
+      const sh=add(s2,p2+p3);
+      lines.push(`Joint 2nd: ${s2.map(nm).join(' & ')} → ₦${sh.toLocaleString()} each (2nd+3rd split)`);
       notes.push(`${s2.map(nm).join(' & ')} joint 2nd`);
     } else if(s2.length===1){
       add(s2,p2); lines.push(`2nd: ${nm(s2[0])} → ₦${p2.toLocaleString()}`); notes.push(`${nm(s2[0])} 2nd`);
