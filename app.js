@@ -1144,17 +1144,17 @@ function computeBadges(playerIdx){
   if(p.w1>=1&&state.players.every(q=>q.w1<=p.w1))
     badges.push({icon:'👑',label:'Champion',desc:`Most 1st place finishes (${p.w1})`});
   if(p.w1>=3) badges.push({icon:'🎯',label:'Hat-trick',desc:`${p.w1} gameweek wins`});
-  if(total>=7) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
+  if(total>=1) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
   let streak=0,max=0;
   state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
   const globalMaxStreak=state.players.reduce((gm,_,qi)=>{ let s=0,m=0; state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; }); return Math.max(gm,m); },0);
-  if(max>=2&&max===globalMaxStreak) badges.push({icon:'🔥',label:'On Fire',desc:`${max} consecutive podiums — longest streak`});
+  if(max>0&&max===globalMaxStreak) badges.push({icon:'🔥',label:'On Fire',desc:`${max} consecutive podiums — longest streak`});
   else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:`${max} consecutive podiums`});
-  if(state.gameweeks.length>5&&total/state.gameweeks.length>=0.25)
+  if(state.gameweeks.length>0&&total/state.gameweeks.length>=0.25)
     badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
-  if(p.w2>=3&&state.players.every(q=>q.w2<=p.w2))
+  if(p.w2>=1&&state.players.every(q=>q.w2<=p.w2))
     badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
-  if((p.w4||0)>=3&&state.players.every(q=>(q.w4||0)<=(p.w4||0)))
+  if((p.w4||0)>=1&&state.players.every(q=>(q.w4||0)<=(p.w4||0)))
     badges.push({icon:'😤',label:'Out of Podium Expert',desc:`${p.w4} fourth-place finishes — so close, every time`});
   return badges;
 }
@@ -1170,12 +1170,12 @@ function renderAchievements(){
     {icon:'👑',label:'Champion',desc:'Has the most 1st place GW wins'},
     {icon:'🎯',label:'Hat-trick',desc:'Won 3 or more gameweeks outright'},
     {icon:'💰',label:'Top Earner',desc:'Highest total accumulated prize money'},
-    {icon:'🏅',label:'Podium Regular',desc:'Finished in the top 3 at least 7 times'},
+    {icon:'🏅',label:'Podium Regular',desc:'Has at least one top-3 finish'},
     {icon:'🔥',label:'On Fire',desc:'Longest consecutive podium streak — exclusive to the top streaker'},
     {icon:'⚡',label:'Back-to-back',desc:'2+ consecutive GWs on the podium'},
     {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
-    {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes (minimum 3)'},
-    {icon:'😤',label:'Out of Podium Expert',desc:'Most 4th place finishes (minimum 3) — always just outside'},
+    {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes'},
+    {icon:'😤',label:'Out of Podium Expert',desc:'Most 4th place finishes — always just outside'},
   ];
   el.innerHTML=`
     <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#37003c,#6b21a8);border:none">
