@@ -1147,8 +1147,9 @@ function computeBadges(playerIdx){
   if(total>=7) badges.push({icon:'🏅',label:'Podium Regular',desc:`${total} podium finishes`});
   let streak=0,max=0;
   state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
-  if(max>=3) badges.push({icon:'🔥',label:'On Fire',desc:`${max} podiums in a row`});
-  else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:'2 consecutive podiums'});
+  const globalMaxStreak=state.players.reduce((gm,_,qi)=>{ let s=0,m=0; state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; }); return Math.max(gm,m); },0);
+  if(max>=2&&max===globalMaxStreak) badges.push({icon:'🔥',label:'On Fire',desc:`${max} consecutive podiums — longest streak`});
+  else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:`${max} consecutive podiums`});
   if(state.gameweeks.length>5&&total/state.gameweeks.length>=0.25)
     badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
   if(p.w2>=3&&state.players.every(q=>q.w2<=p.w2))
@@ -1170,8 +1171,8 @@ function renderAchievements(){
     {icon:'🎯',label:'Hat-trick',desc:'Won 3 or more gameweeks outright'},
     {icon:'💰',label:'Top Earner',desc:'Highest total accumulated prize money'},
     {icon:'🏅',label:'Podium Regular',desc:'Finished in the top 3 at least 7 times'},
-    {icon:'🔥',label:'On Fire',desc:'3+ consecutive GWs on the podium'},
-    {icon:'⚡',label:'Back-to-back',desc:'2 consecutive GWs on the podium'},
+    {icon:'🔥',label:'On Fire',desc:'Longest consecutive podium streak — exclusive to the top streaker'},
+    {icon:'⚡',label:'Back-to-back',desc:'2+ consecutive GWs on the podium'},
     {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
     {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes (minimum 3)'},
     {icon:'😤',label:'Out of Podium Expert',desc:'Most 4th place finishes (minimum 3) — always just outside'},
