@@ -1154,6 +1154,8 @@ function computeBadges(playerIdx){
     badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
   if(p.w2>=1&&state.players.every(q=>q.w2<=p.w2))
     badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
+  if(p.w3>=1&&state.players.every(q=>q.w3<=p.w3))
+    badges.push({icon:'🥉',label:'Bronze Specialist',desc:`${p.w3} third-place finishes`});
   if((p.w4||0)>=1&&state.players.every(q=>(q.w4||0)<=(p.w4||0)))
     badges.push({icon:'😤',label:'Out of Podium Expert',desc:`${p.w4} fourth-place finishes — so close, every time`});
   return badges;
@@ -1175,6 +1177,7 @@ function renderAchievements(){
     {icon:'⚡',label:'Back-to-back',desc:'2+ consecutive GWs on the podium'},
     {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
     {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes'},
+    {icon:'🥉',label:'Bronze Specialist',desc:'Most 3rd place finishes'},
     {icon:'😤',label:'Out of Podium Expert',desc:'Most 4th place finishes — always just outside'},
   ];
   el.innerHTML=`
