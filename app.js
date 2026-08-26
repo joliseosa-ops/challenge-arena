@@ -1150,8 +1150,8 @@ function computeBadges(playerIdx){
   const globalMaxStreak=state.players.reduce((gm,_,qi)=>{ let s=0,m=0; state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; }); return Math.max(gm,m); },0);
   if(max>0&&max===globalMaxStreak) badges.push({icon:'🔥',label:'On Fire',desc:`${max} consecutive podiums — longest streak`});
   else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:`${max} consecutive podiums`});
-  if(state.gameweeks.length>0&&total/state.gameweeks.length>=0.25)
-    badges.push({icon:'⭐',label:'Consistent',desc:'Podium in 25%+ of gameweeks'});
+  if(total>=1&&state.players.every(q=>(q.w1+q.w2+q.w3)<=total))
+    badges.push({icon:'⭐',label:'Consistent',desc:`${total} podium finishes — most in the league`});
   if(p.w2>=1&&state.players.every(q=>q.w2<=p.w2))
     badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
   if(p.w3>=1&&state.players.every(q=>q.w3<=p.w3))
@@ -1175,7 +1175,7 @@ function renderAchievements(){
     {icon:'🏅',label:'Podium Regular',desc:'Has at least one top-3 finish'},
     {icon:'🔥',label:'On Fire',desc:'Longest consecutive podium streak — exclusive to the top streaker'},
     {icon:'⚡',label:'Back-to-back',desc:'2+ consecutive GWs on the podium'},
-    {icon:'⭐',label:'Consistent',desc:'On the podium in 25%+ of all gameweeks'},
+    {icon:'⭐',label:'Consistent',desc:'Most total podium finishes in the league'},
     {icon:'🥈',label:'Silver Specialist',desc:'Most 2nd place finishes'},
     {icon:'🥉',label:'Bronze Specialist',desc:'Most 3rd place finishes'},
     {icon:'😤',label:'Out of Podium Expert',desc:'Most 4th place finishes — always just outside'},
