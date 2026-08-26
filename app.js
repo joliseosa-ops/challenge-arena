@@ -1339,6 +1339,14 @@ function applyMigrations(){
   Object.entries(ENTRY_MAP).forEach(([entryId,idx])=>{
     if(state.players[idx]&&!state.players[idx].entryId) state.players[idx].entryId=Number(entryId);
   });
+  // Recompute w1/w2/w3/w4 from recorded gameweeks to fix any stale carry-over from previous seasons
+  state.players.forEach(p=>{ p.w1=0; p.w2=0; p.w3=0; p.w4=0; });
+  state.gameweeks.forEach(g=>{
+    (g.pos?.[1]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w1++; });
+    (g.pos?.[2]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w2++; });
+    (g.pos?.[3]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w3++; });
+    (g.pos?.[4]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w4++; });
+  });
   syncCyclePlayers();
 }
 
