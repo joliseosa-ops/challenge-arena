@@ -954,37 +954,28 @@ function renderFinanceTab(){
   if(activeTab==='season'){
     // --- Season pot tab ---
 
-    // Current award leaders
-    // Consistent leader (most podiums)
+    // Achievement leaders (computed from in-app data)
     const sorted=[...state.players.map((p,i)=>({p,i}))].sort((a,b)=>(b.p.w1+b.p.w2+b.p.w3)-(a.p.w1+a.p.w2+a.p.w3));
     const consistentLeader=sorted[0];
     const consistentTotal=consistentLeader?(consistentLeader.p.w1+consistentLeader.p.w2+consistentLeader.p.w3):0;
-
-    // On Fire leader (longest streak)
-    const streaks=state.players.map((p,qi)=>{
-      let s=0,m=0;
-      state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; });
-      return {name:p.name,streak:m};
-    });
+    const streaks=state.players.map((p,qi)=>{ let s=0,m=0; state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; }); return {name:p.name,streak:m}; });
     const maxStreak=Math.max(...streaks.map(x=>x.streak),0);
     const onFireLeaders=streaks.filter(x=>x.streak>0&&x.streak===maxStreak);
-
-    // Out of Podium Expert leader (most w4)
     const maxW4=Math.max(...state.players.map(p=>p.w4||0),0);
     const oopLeaders=state.players.filter(p=>(p.w4||0)>0&&(p.w4||0)===maxW4);
 
-    const prizeRow=(pos,name,prize,sub='')=>`
+    const prizeRow=(pos,name,prize,sub='',loading=false)=>`
       <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:18px;width:28px;text-align:center;flex-shrink:0">${pos}</span>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">${prize}</div>
           ${sub?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${sub}</div>`:''}
         </div>
-        ${name?`<span style="font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:3px 9px;border-radius:20px">${name}</span>`:'<span style="font-size:11px;color:var(--dim);font-style:italic">TBD</span>'}
+        ${loading?`<span style="font-size:11px;color:var(--dim);font-style:italic">Loading…</span>`:name?`<span style="font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:3px 9px;border-radius:20px">${name}</span>`:'<span style="font-size:11px;color:var(--dim);font-style:italic">TBD</span>'}
       </div>`;
-
     const leaderName=arr=>arr.length?arr.map(x=>x.name).join(' & '):'';
 
+    // Render shell immediately with loading state for FPL-based rows
     el.innerHTML=tabBar+`
       <div class="card" style="margin-bottom:1rem">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
@@ -993,28 +984,32 @@ function renderFinanceTab(){
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:1rem">
+      <div class="card" style="margin-bottom:1rem" id="sp-midseason-card">
         <div style="margin:-1.25rem -1.25rem .875rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8,#a855f7);border-radius:7px 7px 0 0">
           <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">MID-SEASON AWARDS · GW19</div>
           <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">Top 3 by overall standings · ₦200,000 total</div>
         </div>
-        ${prizeRow('🥇','','₦100,000','1st overall')}
-        ${prizeRow('🥈','','₦60,000','2nd overall')}
-        ${prizeRow('🥉','','₦40,000','3rd overall')}
-        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Winners determined at GW19</div>
+        <div id="sp-midseason-rows">
+          ${prizeRow('🥇','','₦100,000','1st overall',true)}
+          ${prizeRow('🥈','','₦60,000','2nd overall',true)}
+          ${prizeRow('🥉','','₦40,000','3rd overall',true)}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Live FPL standings · updates when refreshed</div>
       </div>
 
-      <div class="card" style="margin-bottom:1rem">
+      <div class="card" style="margin-bottom:1rem" id="sp-endseason-card">
         <div style="margin:-1.25rem -1.25rem .875rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#b45309,#f59e0b);border-radius:7px 7px 0 0">
           <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">END OF SEASON AWARDS · GW38</div>
           <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">Top 5 by overall standings · ₦550,000</div>
         </div>
-        ${prizeRow('🥇','','₦200,000','1st overall')}
-        ${prizeRow('🥈','','₦140,000','2nd overall')}
-        ${prizeRow('🥉','','₦95,000','3rd overall')}
-        ${prizeRow('4️⃣','','₦65,000','4th overall')}
-        ${prizeRow('5️⃣','','₦50,000','5th overall')}
-        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Check FPL League tab for current standings</div>
+        <div id="sp-endseason-rows">
+          ${prizeRow('🥇','','₦200,000','1st overall',true)}
+          ${prizeRow('🥈','','₦140,000','2nd overall',true)}
+          ${prizeRow('🥉','','₦95,000','3rd overall',true)}
+          ${prizeRow('4️⃣','','₦65,000','4th overall',true)}
+          ${prizeRow('5️⃣','','₦50,000','5th overall',true)}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Live FPL standings · updates when refreshed</div>
       </div>
 
       <div class="card" style="margin-bottom:1rem">
@@ -1022,7 +1017,7 @@ function renderFinanceTab(){
           <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">ACHIEVEMENT AWARDS · GW38</div>
           <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">₦85,000 total</div>
         </div>
-        ${prizeRow('⭐',consistentTotal>0?consistentLeader.p.name:''  ,'₦40,000','Consistent — most podium finishes')}
+        ${prizeRow('⭐',consistentTotal>0?consistentLeader.p.name:'','₦40,000','Consistent — most podium finishes')}
         ${prizeRow('🔥',leaderName(onFireLeaders),'₦30,000','On Fire — longest podium streak')}
         ${prizeRow('😤',leaderName(oopLeaders.map(p=>({name:p.name}))),'₦15,000','Out of Podium Expert — most 4th places')}
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
@@ -1030,6 +1025,37 @@ function renderFinanceTab(){
           <div style="flex:1"><div style="font-size:13px;font-weight:700">₦1,000</div><div style="font-size:11px;color:var(--muted);margin-top:1px">Admin charges / support</div></div>
         </div>
       </div>`;
+
+    // Fetch live FPL standings and populate top rows
+    (async()=>{
+      try{
+        const data=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
+        const rows=(data.standings?.results||[]).sort((a,b)=>b.total-a.total);
+        // Map entry IDs to player names
+        const getName=r=>{ const p=state.players.find(p=>Number(p.entryId)===Number(r.entry)); return p?p.name:(r.player_name||r.entry_name||'?'); };
+        const ranked=rows.map((r,i)=>({pos:i+1,name:getName(r),pts:r.total}));
+        const midEl=document.getElementById('sp-midseason-rows');
+        const endEl=document.getElementById('sp-endseason-rows');
+        if(midEl) midEl.innerHTML=[
+          prizeRow('🥇',ranked[0]?.name||'','₦100,000',`1st · ${ranked[0]?.pts||0} pts`),
+          prizeRow('🥈',ranked[1]?.name||'','₦60,000',`2nd · ${ranked[1]?.pts||0} pts`),
+          prizeRow('🥉',ranked[2]?.name||'','₦40,000',`3rd · ${ranked[2]?.pts||0} pts`),
+        ].join('');
+        if(endEl) endEl.innerHTML=[
+          prizeRow('🥇',ranked[0]?.name||'','₦200,000',`1st · ${ranked[0]?.pts||0} pts`),
+          prizeRow('🥈',ranked[1]?.name||'','₦140,000',`2nd · ${ranked[1]?.pts||0} pts`),
+          prizeRow('🥉',ranked[2]?.name||'','₦95,000',`3rd · ${ranked[2]?.pts||0} pts`),
+          prizeRow('4️⃣',ranked[3]?.name||'','₦65,000',`4th · ${ranked[3]?.pts||0} pts`),
+          prizeRow('5️⃣',ranked[4]?.name||'','₦50,000',`5th · ${ranked[4]?.pts||0} pts`),
+        ].join('');
+      }catch(e){
+        const midEl=document.getElementById('sp-midseason-rows');
+        const endEl=document.getElementById('sp-endseason-rows');
+        const errMsg='<div style="font-size:12px;color:var(--muted);padding:.5rem 0">Could not load standings — check FPL League tab</div>';
+        if(midEl) midEl.innerHTML=errMsg;
+        if(endEl) endEl.innerHTML=errMsg;
+      }
+    })();
     return;
   }
 
