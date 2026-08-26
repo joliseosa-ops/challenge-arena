@@ -955,13 +955,8 @@ function renderFinanceTab(){
     // --- Season pot tab ---
 
     // Current award leaders
-    const sorted=[...state.players.map((p,i)=>({p,i}))].sort((a,b)=>(b.p.w1+b.p.w2+b.p.w3)-(a.p.w1+a.p.w2+a.p.w3));
-    const podiumLeaders=sorted.slice(0,5).map(({p},rank)=>{
-      const total=p.w1+p.w2+p.w3;
-      return {name:p.name,total,rank};
-    });
-
     // Consistent leader (most podiums)
+    const sorted=[...state.players.map((p,i)=>({p,i}))].sort((a,b)=>(b.p.w1+b.p.w2+b.p.w3)-(a.p.w1+a.p.w2+a.p.w3));
     const consistentLeader=sorted[0];
     const consistentTotal=consistentLeader?(consistentLeader.p.w1+consistentLeader.p.w2+consistentLeader.p.w3):0;
 
@@ -1014,11 +1009,12 @@ function renderFinanceTab(){
           <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">END OF SEASON AWARDS · GW38</div>
           <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">Top 5 by overall standings · ₦550,000</div>
         </div>
-        ${prizeRow('🥇',leaderName(podiumLeaders.slice(0,1).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦200,000','1st overall')}
-        ${prizeRow('🥈',leaderName(podiumLeaders.slice(1,2).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦140,000','2nd overall')}
-        ${prizeRow('🥉',leaderName(podiumLeaders.slice(2,3).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦95,000','3rd overall')}
-        ${prizeRow('4️⃣',leaderName(podiumLeaders.slice(3,4).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦65,000','4th overall')}
-        ${prizeRow('5️⃣',leaderName(podiumLeaders.slice(4,5).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦50,000','5th overall')}
+        ${prizeRow('🥇','','₦200,000','1st overall')}
+        ${prizeRow('🥈','','₦140,000','2nd overall')}
+        ${prizeRow('🥉','','₦95,000','3rd overall')}
+        ${prizeRow('4️⃣','','₦65,000','4th overall')}
+        ${prizeRow('5️⃣','','₦50,000','5th overall')}
+        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Check FPL League tab for current standings</div>
       </div>
 
       <div class="card" style="margin-bottom:1rem">
