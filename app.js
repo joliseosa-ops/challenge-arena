@@ -897,10 +897,13 @@ function toggleOutstanding(){
   if(ch) ch.style.transform=open?'':'rotate(180deg)';
 }
 
+function switchBankTab(t){ window._bankSubTab=t; renderFinanceTab(); }
+
 function renderFinanceTab(){
   const el=document.getElementById('finance-content'); if(!el) return;
   const fmt=n=>'₦'+Math.abs(n).toLocaleString();
   const isPaid=t=>t===true||t==='cash'||t==='winnings'||t==='settled'||(typeof t==='object'&&t?.type==='co-offset');
+  const activeTab=window._bankSubTab||'weekly';
 
   // --- Core figures ---
   let totalReceived=0;
@@ -915,8 +918,6 @@ function renderFinanceTab(){
   const weeklyRemaining=Math.max(0,weeklyReceived-gwAwarded);
   const totalWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
   const totalInBank=state.players.reduce((s,p)=>s+Math.max(0,pubBal(p)),0);
-
-  // --- Season pot projection ---
   const totalGWs=CYCLES.reduce((s,c)=>s+(c.gw[1]-c.gw[0]+1),0);
   const projectedSeasonPot=state.players.length*1000*totalGWs;
 
@@ -942,6 +943,101 @@ function renderFinanceTab(){
       <div style="flex:1;font-size:13px;font-weight:500">${label}</div>
       <div style="font-weight:700;color:${color};white-space:nowrap">${fmt(val)}</div>
     </div>`;
+
+  // --- Sub-tab toggle ---
+  const tabBar=`
+    <div style="display:flex;gap:6px;background:var(--surface2);padding:4px;border-radius:10px;margin-bottom:1rem">
+      <button onclick="switchBankTab('weekly')" style="flex:1;padding:8px 0;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all 150ms;background:${activeTab==='weekly'?'var(--accent)':'transparent'};color:${activeTab==='weekly'?'#fff':'var(--muted)'}">Weekly Pot</button>
+      <button onclick="switchBankTab('season')" style="flex:1;padding:8px 0;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all 150ms;background:${activeTab==='season'?'#f59e0b':'transparent'};color:${activeTab==='season'?'#fff':'var(--muted)'}">Season Pot</button>
+    </div>`;
+
+  if(activeTab==='season'){
+    // --- Season pot tab ---
+
+    // Current award leaders
+    const sorted=[...state.players.map((p,i)=>({p,i}))].sort((a,b)=>(b.p.w1+b.p.w2+b.p.w3)-(a.p.w1+a.p.w2+a.p.w3));
+    const podiumLeaders=sorted.slice(0,5).map(({p},rank)=>{
+      const total=p.w1+p.w2+p.w3;
+      return {name:p.name,total,rank};
+    });
+
+    // Consistent leader (most podiums)
+    const consistentLeader=sorted[0];
+    const consistentTotal=consistentLeader?(consistentLeader.p.w1+consistentLeader.p.w2+consistentLeader.p.w3):0;
+
+    // On Fire leader (longest streak)
+    const streaks=state.players.map((p,qi)=>{
+      let s=0,m=0;
+      state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; });
+      return {name:p.name,streak:m};
+    });
+    const maxStreak=Math.max(...streaks.map(x=>x.streak),0);
+    const onFireLeaders=streaks.filter(x=>x.streak>0&&x.streak===maxStreak);
+
+    // Out of Podium Expert leader (most w4)
+    const maxW4=Math.max(...state.players.map(p=>p.w4||0),0);
+    const oopLeaders=state.players.filter(p=>(p.w4||0)>0&&(p.w4||0)===maxW4);
+
+    const prizeRow=(pos,name,prize,sub='')=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px;width:28px;text-align:center;flex-shrink:0">${pos}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${prize}</div>
+          ${sub?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${sub}</div>`:''}
+        </div>
+        ${name?`<span style="font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:3px 9px;border-radius:20px">${name}</span>`:'<span style="font-size:11px;color:var(--dim);font-style:italic">TBD</span>'}
+      </div>`;
+
+    const leaderName=arr=>arr.length?arr.map(x=>x.name).join(' & '):'';
+
+    el.innerHTML=tabBar+`
+      <div class="card" style="margin-bottom:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+          ${tile('Accumulated so far',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
+          ${tile('Projected at GW38',projectedSeasonPot,'var(--heading)',`${state.players.length} × ₦1k × ${totalGWs} GWs`)}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div style="margin:-1.25rem -1.25rem .875rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#6b21a8,#a855f7);border-radius:7px 7px 0 0">
+          <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">MID-SEASON AWARDS · GW19</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">Top 3 by overall standings · ₦200,000 total</div>
+        </div>
+        ${prizeRow('🥇','','₦100,000','1st overall')}
+        ${prizeRow('🥈','','₦60,000','2nd overall')}
+        ${prizeRow('🥉','','₦40,000','3rd overall')}
+        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Winners determined at GW19</div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div style="margin:-1.25rem -1.25rem .875rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#b45309,#f59e0b);border-radius:7px 7px 0 0">
+          <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">END OF SEASON AWARDS · GW38</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">Top 5 by overall standings · ₦550,000</div>
+        </div>
+        ${prizeRow('🥇',leaderName(podiumLeaders.slice(0,1).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦200,000','1st overall')}
+        ${prizeRow('🥈',leaderName(podiumLeaders.slice(1,2).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦140,000','2nd overall')}
+        ${prizeRow('🥉',leaderName(podiumLeaders.slice(2,3).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦95,000','3rd overall')}
+        ${prizeRow('4️⃣',leaderName(podiumLeaders.slice(3,4).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦65,000','4th overall')}
+        ${prizeRow('5️⃣',leaderName(podiumLeaders.slice(4,5).filter(x=>x.total>0).map(x=>({name:x.name}))),'₦50,000','5th overall')}
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div style="margin:-1.25rem -1.25rem .875rem;padding:.6rem 1.25rem;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:7px 7px 0 0">
+          <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.04em">ACHIEVEMENT AWARDS · GW38</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">₦85,000 total</div>
+        </div>
+        ${prizeRow('⭐',consistentTotal>0?consistentLeader.p.name:''  ,'₦40,000','Consistent — most podium finishes')}
+        ${prizeRow('🔥',leaderName(onFireLeaders),'₦30,000','On Fire — longest podium streak')}
+        ${prizeRow('😤',leaderName(oopLeaders.map(p=>({name:p.name}))),'₦15,000','Out of Podium Expert — most 4th places')}
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+          <span style="font-size:18px;width:28px;text-align:center;flex-shrink:0">🛠</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">₦1,000</div><div style="font-size:11px;color:var(--muted);margin-top:1px">Admin charges / support</div></div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // --- Weekly pot tab ---
 
   // --- Cycle collection status ---
   const cycleStatusRows=CYCLES.map((c,idx)=>{
@@ -1024,7 +1120,7 @@ function renderFinanceTab(){
     </div>`;
   }).join('');
 
-  el.innerHTML=`
+  el.innerHTML=tabBar+`
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Money In</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
@@ -1101,32 +1197,6 @@ function renderFinanceTab(){
           <tbody>${playerRows||'<tr><td colspan="4" class="empty">No data yet</td></tr>'}</tbody>
         </table></div>
       </div>
-    </div>
-
-    <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">Season Pot</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem">
-        ${tile('Accumulated so far',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
-        ${tile('Projected at GW38',projectedSeasonPot,'var(--heading)',`${state.players.length} players × ₦1k × ${totalGWs} GWs`)}
-      </div>
-      ${seasonPot>0?`<div style="background:var(--surface2);border-radius:8px;padding:.875rem 1rem">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem">If distributed today (50 / 30 / 20 split)</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <div style="flex:1;min-width:80px;text-align:center;background:var(--surface);border:1px solid #fcd34d;border-radius:8px;padding:.75rem .5rem">
-            <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">🥇 1st</div>
-            <div style="font-size:18px;font-weight:700;color:#b45309">₦${Math.round(seasonPot*.5).toLocaleString()}</div>
-          </div>
-          <div style="flex:1;min-width:80px;text-align:center;background:var(--surface);border:1px solid #cbd5e1;border-radius:8px;padding:.75rem .5rem">
-            <div style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;margin-bottom:4px">🥈 2nd</div>
-            <div style="font-size:18px;font-weight:700;color:#4b5563">₦${Math.round(seasonPot*.3).toLocaleString()}</div>
-          </div>
-          <div style="flex:1;min-width:80px;text-align:center;background:var(--surface);border:1px solid #fed7aa;border-radius:8px;padding:.75rem .5rem">
-            <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">🥉 3rd</div>
-            <div style="font-size:18px;font-weight:700;color:#92400e">₦${Math.round(seasonPot*.2).toLocaleString()}</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;text-align:center">Distribution not finalised — for illustration only</div>
-      </div>`:''}
     </div>
 
     <div class="card">
