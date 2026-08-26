@@ -1148,16 +1148,16 @@ function computeBadges(playerIdx){
   let streak=0,max=0;
   state.gameweeks.forEach(g=>{ if((g.awards[playerIdx]||0)>0){streak++;max=Math.max(max,streak);}else streak=0; });
   const globalMaxStreak=state.players.reduce((gm,_,qi)=>{ let s=0,m=0; state.gameweeks.forEach(g=>{ if((g.awards[qi]||0)>0){s++;m=Math.max(m,s);}else s=0; }); return Math.max(gm,m); },0);
-  if(max>0&&max===globalMaxStreak) badges.push({icon:'🔥',label:'On Fire',desc:`${max} consecutive podiums — went on an absolute tear`});
+  if(max>0&&max===globalMaxStreak) badges.push({icon:'🔥',label:'On Fire',desc:`Longest podium streak (${max} GWs) — went on an absolute tear`});
   else if(max>=2) badges.push({icon:'⚡',label:'Back-to-back',desc:`${max} consecutive podiums`});
   if(total>=1&&state.players.every(q=>(q.w1+q.w2+q.w3)<=total))
-    badges.push({icon:'⭐',label:'Consistent',desc:`${total} podium finishes — a permanent fixture at the top`});
+    badges.push({icon:'⭐',label:'Consistent',desc:`Most podium finishes (${total}) — a permanent fixture at the top`});
   if(p.w2>=1&&state.players.every(q=>q.w2<=p.w2))
     badges.push({icon:'🥈',label:'Silver Specialist',desc:`${p.w2} second-place finishes`});
   if(p.w3>=1&&state.players.every(q=>q.w3<=p.w3))
     badges.push({icon:'🥉',label:'Bronze Specialist',desc:`${p.w3} third-place finishes`});
   if((p.w4||0)>=1&&state.players.every(q=>(q.w4||0)<=(p.w4||0)))
-    badges.push({icon:'😤',label:'Out of Podium Expert',desc:`${p.w4} fourth-place finishes — so close, every time`});
+    badges.push({icon:'😤',label:'Out of Podium Expert',desc:`Most 4th place finishes (${p.w4}) — always just outside`});
   return badges;
 }
 
