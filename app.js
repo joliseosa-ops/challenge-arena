@@ -782,7 +782,7 @@ async function fetchFPLLeague(){
         <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
         <td style="font-weight:500">${r.player_name}</td>
         <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
-        <td style="font-family:'Poppins',system-ui,sans-serif">${r.event_total}</td>
+        <td style="font-family:'Poppins',system-ui,sans-serif">${r.event_total||'—'}</td>
         <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${r.total}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
