@@ -780,16 +780,16 @@ async function fetchFPLLeague(){
     const histories=await Promise.all(rows.map(async r=>{
       try{
         const hist=await fetch(`/api/fpl-entry?entry=${r.entry}`).then(x=>x.ok?x.json():null);
-        return {entry:r.entry,current:hist?.current||[]};
-      }catch(_){ return {entry:r.entry,current:[]}; }
+        return {entry:r.entry,total:r.total,current:hist?.current||[]};
+      }catch(_){ return {entry:r.entry,total:r.total,current:[]}; }
     }));
-    // Determine the current event from the highest event number seen across all histories
-    let currentEvent=0;
-    histories.forEach(h=>h.current.forEach(e=>{ if(e.event>currentEvent) currentEvent=e.event; }));
+    // Match each player's current GW by finding the history entry where total_points === their standings total
+    // This avoids future GW placeholders (which have rank:null and total_points:0)
     const gwScoreMap={};
+    let currentEvent=0;
     histories.forEach(h=>{
-      const ev=h.current.find(e=>e.event===currentEvent);
-      if(ev!=null) gwScoreMap[h.entry]=ev.points;
+      const ev=h.current.find(e=>e.total_points===h.total&&e.rank!==null);
+      if(ev){ gwScoreMap[h.entry]=ev.points; if(ev.event>currentEvent) currentEvent=ev.event; }
     });
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW${currentEvent||''}</th><th>Total</th></tr></thead>
