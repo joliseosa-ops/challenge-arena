@@ -287,10 +287,11 @@ function renderStandings(){
     return b.accumulated-a.accumulated;
   });
 
-  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:1;
-  document.getElementById('m-gw').textContent=lastGW;
+  const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
+  const currentGW=state.gameweeks.length?Math.min(lastGW+1,38):1;
+  document.getElementById('m-gw').textContent=currentGW;
   const hb=document.getElementById('header-gw-badge');
-  if(hb) hb.textContent='GW '+lastGW;
+  if(hb) hb.textContent='GW '+currentGW;
   const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
   const mwp=document.getElementById('m-weeklypot'); if(mwp) mwp.textContent='₦'+(state.players.length*WEEKLY_PRIZE_RATE).toLocaleString();
   updateGWCountdown();
