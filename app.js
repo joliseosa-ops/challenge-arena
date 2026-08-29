@@ -776,15 +776,29 @@ async function fetchFPLLeague(){
       if(p&&p.teamName!==r.entry_name){ p.teamName=r.entry_name; changed=true; }
     });
     if(changed){ save(); renderStandings(); }
+    // For rows where event_total is 0 (live GW not yet settled), fetch actual score from entry history
+    const liveScores={};
+    const needsFetch=rows.filter(r=>!r.event_total);
+    if(needsFetch.length){
+      await Promise.all(needsFetch.map(async r=>{
+        try{
+          const hist=await fetch(`/api/fpl-entry?entry=${r.entry}`).then(x=>x.ok?x.json():null);
+          const current=hist?.current||[];
+          if(current.length) liveScores[r.entry]=current[current.length-1].points;
+        }catch(_){}
+      }));
+    }
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW</th><th>Total</th></tr></thead>
-      <tbody>${rows.map((r,i)=>`<tr>
+      <tbody>${rows.map((r,i)=>{
+        const gwPts=r.event_total||(liveScores[r.entry]??'—');
+        return `<tr>
         <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
         <td style="font-weight:500">${r.player_name}</td>
         <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
-        <td style="font-family:'Poppins',system-ui,sans-serif">${r.event_total||'—'}</td>
+        <td style="font-family:'Poppins',system-ui,sans-serif">${gwPts}</td>
         <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${r.total}</td>
-      </tr>`).join('')}</tbody>
+      </tr>`;}).join('')}</tbody>
     </table></div>`;
   }catch(e){
     el.innerHTML=`<div class="empty">Could not load — ${e}</div>`;
