@@ -288,7 +288,7 @@ function renderStandings(){
   });
 
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
-  const currentGW=state.gameweeks.length?Math.min(lastGW+1,38):1;
+  const currentGW=window._fplBootstrap?.current_event?.id||(state.gameweeks.length?Math.min(lastGW+1,38):1);
   document.getElementById('m-gw').textContent=currentGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+currentGW;
@@ -632,8 +632,17 @@ function setNextGWDate(val){
 }
 
 function gwCountdownText(){
-  const d=state.nextGWDate||GW1_DEADLINE;
-  if(!d) return '—';
+  // Use bootstrap deadline if available, fall back to admin-set date or GW1 hardcoded
+  const boot=window._fplBootstrap;
+  let d=state.nextGWDate;
+  if(boot){
+    const cur=boot.current_event;
+    const nxt=boot.next_event;
+    // Show current GW deadline if still in the future, otherwise next GW deadline
+    if(cur&&new Date(cur.deadline_time)>new Date()) d=cur.deadline_time;
+    else if(nxt) d=nxt.deadline_time;
+  }
+  if(!d) d=GW1_DEADLINE;
   const ms=new Date(d)-new Date();
   if(ms<=0) return 'LIVE';
   const days=Math.floor(ms/86400000);
@@ -1319,7 +1328,7 @@ function renderAchievements(){
 function showTab(t){
   if(t==='admin'&&!isAdmin){ requireAdmin(t); return; }
   if(t==='finance'){ renderFinanceTab(); }
-  if(t==='fpl'){ fetchFPLLeague(); }
+  if(t==='fpl'){ fetchFPLBootstrap().then(()=>fetchFPLLeague()); }
   if(t==='achievements'){ renderAchievements(); }
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -1368,6 +1377,8 @@ function closePinModal(){
 populateSelects();
 renderStandings();
 initThemeToggle();
+// Fetch live GW state from FPL on startup, then start background polling
+fetchFPLBootstrap().then(startFPLPoll);
 
 function applyMigrations(){
   state.players.forEach(p=>{ if(p.carryOver===undefined) p.carryOver=0; });
@@ -1846,6 +1857,30 @@ function importState(input){
     input.value='';
   };
   reader.readAsText(file);
+}
+
+// ── FPL Bootstrap: live GW state ─────────────────────────────────────────────
+window._fplBootstrap=null;
+window._fplPollTimer=null;
+
+async function fetchFPLBootstrap(){
+  try{
+    const data=await fetch('/api/fpl-bootstrap').then(r=>r.ok?r.json():null);
+    if(!data||!data.current_event) return;
+    window._fplBootstrap=data;
+    renderStandings(); // refresh GW badge and countdown with live data
+  }catch(_){}
+}
+
+function startFPLPoll(){
+  // Poll every 5 min when GW is live (not finished); once settled, slow to 15 min
+  if(window._fplPollTimer) clearInterval(window._fplPollTimer);
+  const interval=window._fplBootstrap?.current_event?.finished?900000:300000;
+  window._fplPollTimer=setInterval(async()=>{
+    await fetchFPLBootstrap();
+    // If FPL tab is active, also refresh the table
+    if(document.getElementById('sec-fpl')?.classList.contains('active')) fetchFPLLeague();
+  },interval);
 }
 
 // ── GW countdown ticker ───────────────────────────────────────────────────────
