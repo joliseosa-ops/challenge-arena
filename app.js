@@ -180,11 +180,25 @@ async function fetchLatestGW(){
     const rows=data.standings?.results||[];
     if(!rows.length) throw new Error('no standings data');
 
+    // Fetch entry history for all players to get accurate GW scores
+    // (event_total is often 0 during live/settling GWs — match by total_points instead)
+    const histories=await Promise.all(rows.map(async r=>{
+      try{
+        const hist=await fetch(`/api/fpl-entry?entry=${r.entry}`).then(x=>x.ok?x.json():null);
+        return {entry:r.entry,total:r.total,current:hist?.current||[]};
+      }catch(_){ return {entry:r.entry,total:r.total,current:[]}; }
+    }));
+    const gwScoreByEntry={};
+    histories.forEach(h=>{
+      const ev=h.current.find(e=>e.total_points===h.total&&e.rank!==null);
+      if(ev) gwScoreByEntry[h.entry]=ev.points;
+    });
+
     const scores={};
     rows.forEach(r=>{
       const playerIdx=state.players.findIndex(p=>Number(p.entryId)===Number(r.entry));
       if(playerIdx===-1) return;
-      const pts=r.event_total||r.total||0;
+      const pts=gwScoreByEntry[r.entry]??r.event_total??0;
       if(pts>0) scores[playerIdx]=pts;
     });
 
