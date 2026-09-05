@@ -649,10 +649,10 @@ function setNextGWDate(val){
 
 function gwCountdownText(){
   const boot=window._fplBootstrap;
-  // Admin-set date always wins; fall back to FPL bootstrap
-  let d=state.nextGWDate||null;
+  // FPL bootstrap is the authority; admin-set date only used if bootstrap unavailable
+  let d=null;
   let gwLabel='Next GW Deadline';
-  if(!d&&boot){
+  if(boot){
     const cur=boot.current_event;
     const nxt=boot.next_event;
     if(cur&&new Date(cur.deadline_time)>new Date()){
@@ -666,7 +666,7 @@ function gwCountdownText(){
   // Update the metric label dynamically
   const lbl=document.querySelector('#m-nextgw')?.closest('.metric')?.querySelector('.metric-label');
   if(lbl) lbl.textContent=gwLabel;
-  if(!d) d=GW1_DEADLINE;
+  if(!d) d=state.nextGWDate||GW1_DEADLINE;
   const ms=new Date(d)-new Date();
   if(ms<=0) return 'Deadline passed';
   const days=Math.floor(ms/86400000);
