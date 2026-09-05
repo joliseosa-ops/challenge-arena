@@ -813,10 +813,15 @@ async function fetchFPLLeague(){
     const gwScoreMap={};
     let currentEvent=targetEventId;
     histories.forEach(h=>{
-      const played=h.current.filter(e=>e.rank!==null);
-      const ev=targetEventId?played.find(e=>e.event===targetEventId):played[played.length-1];
-      if(ev){ gwScoreMap[h.entry]=ev.points; if(ev.event>currentEvent) currentEvent=ev.event; }
-      // If current GW not found, entry stays absent → shows '—' (GW not yet processed for this player)
+      const all=h.current||[];
+      // Primary: find the exact current GW event directly (no rank filter — we know the ID)
+      let ev=targetEventId?all.find(e=>e.event===targetEventId):null;
+      // Fallback: most recent event that FPL has actually processed (rank not null)
+      if(!ev){
+        const processed=all.filter(e=>e.rank!=null);
+        ev=processed[processed.length-1]||null;
+      }
+      if(ev!=null){ gwScoreMap[h.entry]=ev.points??0; if(ev.event>currentEvent) currentEvent=ev.event; }
     });
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW${currentEvent||''}</th><th>Total</th></tr></thead>
