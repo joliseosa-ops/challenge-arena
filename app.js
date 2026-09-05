@@ -1169,14 +1169,19 @@ function renderFinanceTab(){
   // --- Per-player summary ---
   const playerRows=[...state.players.map((p,i)=>({p,i}))]
     .sort((a,b)=>b.p.accumulated-a.p.accumulated)
-    .map(({p})=>{
+    .map(({p,i})=>{
       const earned=p.accumulated;
-      const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0));
+      // Cycle fee offsets (winnings type) — not a real cash withdrawal
+      let cycleOffset=0;
+      CYCLES.forEach((c,idx)=>{ const t=state.cyclePayments[idx]?.[i]; if(t==='winnings') cycleOffset+=c.fee; });
+      // Actual cash withdrawals = paidOut minus carryOver minus cycle offsets
+      const actualWithdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-cycleOffset);
       const inBank=pubBal(p);
+      const feeNote=cycleOffset>0?`<div style="font-size:10px;color:var(--muted);margin-top:1px">+${fmt(cycleOffset)} fee offset</div>`:'';
       return `<tr>
         <td style="font-weight:600">${p.name}</td>
         <td style="font-weight:700;color:var(--green)">${earned>0?fmt(earned):'—'}</td>
-        <td style="color:var(--blue)">${withdrawn>0?fmt(withdrawn):'—'}</td>
+        <td style="color:var(--blue)">${actualWithdrawn>0?fmt(actualWithdrawn):'—'}${feeNote}</td>
         <td style="font-weight:700;color:${inBank>0?'var(--heading)':inBank<0?'var(--red)':'var(--dim)'}">${inBank!==0?fmt(inBank):'—'}</td>
       </tr>`;
     }).join('');
