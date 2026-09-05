@@ -1431,6 +1431,23 @@ function applyMigrations(){
     (g.pos?.[4]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w4++; });
   });
   syncCyclePlayers();
+  // Reverse auto-deductions made by syncFromFPL for cycle fees not manually confirmed
+  // (syncFromFPL used to auto-mark winnings; this undoes any such entry where cycle is still unpaid)
+  CYCLES.forEach((c,idx)=>{
+    const cp=state.cyclePayments[idx]||{};
+    state.players.forEach((p,i)=>{
+      if(cp[i]==='winnings'){
+        // Check if a matching auto-payout exists in the log; if so, reverse it
+        const label=`Cycle ${idx+1} fee`;
+        const autoIdx=state.payouts.findLastIndex(x=>x.player===p.name&&x.gw===label&&x.amount===c.fee);
+        if(autoIdx!==-1){
+          p.paidOut=Math.max(0,p.paidOut-c.fee);
+          state.payouts.splice(autoIdx,1);
+          cp[i]=undefined; // reset to unpaid
+        }
+      }
+    });
+  });
 }
 
 // Load from cloud and re-render if newer data is available
@@ -1832,18 +1849,7 @@ async function syncFromFPL(){
         updated++;
       }
       syncCyclePlayers(); // expand cycle.players to include new player
-      // Being in the league = confirmed paid for current cycle
-      const cp=state.cyclePayments[curCycleIdx];
-      const p=state.players[playerIdx];
-      const alreadyCash=cp[playerIdx]==='cash'||cp[playerIdx]===true;
-      const bal=p.accumulated+(p.carryOver||0)-p.paidOut;
-      if(!cp[playerIdx]){
-        if(bal>=cycle.fee){ cp[playerIdx]='winnings'; p.paidOut+=cycle.fee; state.payouts.push({player:p.name,amount:cycle.fee,gw:label}); }
-        else { cp[playerIdx]='cash'; }
-      } else if(alreadyCash){
-        const freshBal=p.accumulated+(p.carryOver||0)-p.paidOut;
-        if(freshBal>=cycle.fee){ cp[playerIdx]='winnings'; p.paidOut+=cycle.fee; state.payouts.push({player:p.name,amount:cycle.fee,gw:label}); }
-      }
+      // Sync only updates names/teams — cycle fee recording is a separate admin action
     });
     syncCyclePlayers();
     save();
