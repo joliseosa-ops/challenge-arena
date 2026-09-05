@@ -192,8 +192,7 @@ async function fetchLatestGW(){
     const gwScoreByEntry={};
     histories.forEach(h=>{
       const played=h.current.filter(e=>e.rank!==null);
-      let ev=targetEventId?played.find(e=>e.event===targetEventId):null;
-      if(!ev&&played.length) ev=played[played.length-1];
+      const ev=targetEventId?played.find(e=>e.event===targetEventId):played[played.length-1];
       if(ev) gwScoreByEntry[h.entry]=ev.points;
     });
 
@@ -815,10 +814,9 @@ async function fetchFPLLeague(){
     let currentEvent=targetEventId;
     histories.forEach(h=>{
       const played=h.current.filter(e=>e.rank!==null);
-      let ev=targetEventId?played.find(e=>e.event===targetEventId):null;
-      // Fall back to most recent played event if current GW not in history yet
-      if(!ev&&played.length) ev=played[played.length-1];
+      const ev=targetEventId?played.find(e=>e.event===targetEventId):played[played.length-1];
       if(ev){ gwScoreMap[h.entry]=ev.points; if(ev.event>currentEvent) currentEvent=ev.event; }
+      // If current GW not found, entry stays absent → shows '—' (GW not yet processed for this player)
     });
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW${currentEvent||''}</th><th>Total</th></tr></thead>
