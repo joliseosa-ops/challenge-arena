@@ -1197,6 +1197,7 @@ function renderFinanceTab(){
   // --- GW history ---
   const gwRows=[...state.gameweeks].reverse().map(g=>{
     const winners=Object.entries(g.awards).filter(([,a])=>a>0)
+      .sort((a,b)=>b[1]-a[1])
       .map(([i,a])=>`${state.players[parseInt(i)]?.name||'?'} ₦${a.toLocaleString()}`).join(' · ');
     const total=Object.values(g.awards).reduce((s,a)=>s+a,0);
     return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap">
