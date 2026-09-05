@@ -188,9 +188,12 @@ async function fetchLatestGW(){
         return {entry:r.entry,total:r.total,current:hist?.current||[]};
       }catch(_){ return {entry:r.entry,total:r.total,current:[]}; }
     }));
+    const targetEventId=window._fplBootstrap?.current_event?.id||0;
     const gwScoreByEntry={};
     histories.forEach(h=>{
-      const ev=h.current.find(e=>e.total_points===h.total&&e.rank!==null);
+      const played=h.current.filter(e=>e.rank!==null);
+      let ev=targetEventId?played.find(e=>e.event===targetEventId):null;
+      if(!ev&&played.length) ev=played[played.length-1];
       if(ev) gwScoreByEntry[h.entry]=ev.points;
     });
 
@@ -806,12 +809,15 @@ async function fetchFPLLeague(){
         return {entry:r.entry,total:r.total,current:hist?.current||[]};
       }catch(_){ return {entry:r.entry,total:r.total,current:[]}; }
     }));
-    // Match each player's current GW by finding the history entry where total_points === their standings total
-    // This avoids future GW placeholders (which have rank:null and total_points:0)
+    // Use bootstrap current event ID for direct event lookup (most reliable)
+    const targetEventId=window._fplBootstrap?.current_event?.id||0;
     const gwScoreMap={};
-    let currentEvent=0;
+    let currentEvent=targetEventId;
     histories.forEach(h=>{
-      const ev=h.current.find(e=>e.total_points===h.total&&e.rank!==null);
+      const played=h.current.filter(e=>e.rank!==null);
+      let ev=targetEventId?played.find(e=>e.event===targetEventId):null;
+      // Fall back to most recent played event if current GW not in history yet
+      if(!ev&&played.length) ev=played[played.length-1];
       if(ev){ gwScoreMap[h.entry]=ev.points; if(ev.event>currentEvent) currentEvent=ev.event; }
     });
     el.innerHTML=`<div class="tbl-wrap"><table>
