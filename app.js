@@ -649,9 +649,10 @@ function setNextGWDate(val){
 
 function gwCountdownText(){
   const boot=window._fplBootstrap;
-  let d=state.nextGWDate;
+  // Admin-set date always wins; fall back to FPL bootstrap
+  let d=state.nextGWDate||null;
   let gwLabel='Next GW Deadline';
-  if(boot){
+  if(!d&&boot){
     const cur=boot.current_event;
     const nxt=boot.next_event;
     if(cur&&new Date(cur.deadline_time)>new Date()){
