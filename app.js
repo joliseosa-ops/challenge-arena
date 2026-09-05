@@ -648,19 +648,26 @@ function setNextGWDate(val){
 }
 
 function gwCountdownText(){
-  // Use bootstrap deadline if available, fall back to admin-set date or GW1 hardcoded
   const boot=window._fplBootstrap;
   let d=state.nextGWDate;
+  let gwLabel='Next GW Deadline';
   if(boot){
     const cur=boot.current_event;
     const nxt=boot.next_event;
-    // Show current GW deadline if still in the future, otherwise next GW deadline
-    if(cur&&new Date(cur.deadline_time)>new Date()) d=cur.deadline_time;
-    else if(nxt) d=nxt.deadline_time;
+    if(cur&&new Date(cur.deadline_time)>new Date()){
+      d=cur.deadline_time;
+      gwLabel=`GW${cur.id} Transfer Deadline`;
+    } else if(nxt){
+      d=nxt.deadline_time;
+      gwLabel=`GW${nxt.id} Transfer Deadline`;
+    }
   }
+  // Update the metric label dynamically
+  const lbl=document.querySelector('#m-nextgw')?.closest('.metric')?.querySelector('.metric-label');
+  if(lbl) lbl.textContent=gwLabel;
   if(!d) d=GW1_DEADLINE;
   const ms=new Date(d)-new Date();
-  if(ms<=0) return 'LIVE';
+  if(ms<=0) return 'Deadline passed';
   const days=Math.floor(ms/86400000);
   const hrs=Math.floor((ms%86400000)/3600000);
   const mins=Math.floor((ms%3600000)/60000);
