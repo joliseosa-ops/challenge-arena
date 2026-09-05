@@ -1185,11 +1185,10 @@ function renderFinanceTab(){
       // Actual cash withdrawals = paidOut minus carryOver minus cycle offsets
       const actualWithdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-cycleOffset);
       const inBank=pubBal(p);
-      const feeNote=cycleOffset>0?`<div style="font-size:10px;color:var(--muted);margin-top:1px">+${fmt(cycleOffset)} fee offset</div>`:'';
       return `<tr>
         <td style="font-weight:600">${p.name}</td>
         <td style="font-weight:700;color:var(--green)">${earned>0?fmt(earned):'—'}</td>
-        <td style="color:var(--blue)">${actualWithdrawn>0?fmt(actualWithdrawn):'—'}${feeNote}</td>
+        <td style="color:var(--blue)">${actualWithdrawn>0?fmt(actualWithdrawn):'—'}</td>
         <td style="font-weight:700;color:${inBank>0?'var(--heading)':inBank<0?'var(--red)':'var(--dim)'}">${inBank!==0?fmt(inBank):'—'}</td>
       </tr>`;
     }).join('');
@@ -1441,19 +1440,18 @@ function applyMigrations(){
   });
   syncCyclePlayers();
   // Reverse auto-deductions made by syncFromFPL for cycle fees not manually confirmed
-  // (syncFromFPL used to auto-mark winnings; this undoes any such entry where cycle is still unpaid)
   CYCLES.forEach((c,idx)=>{
     const cp=state.cyclePayments[idx]||{};
     state.players.forEach((p,i)=>{
       if(cp[i]==='winnings'){
-        // Check if a matching auto-payout exists in the log; if so, reverse it
         const label=`Cycle ${idx+1} fee`;
         const autoIdx=state.payouts.findLastIndex(x=>x.player===p.name&&x.gw===label&&x.amount===c.fee);
         if(autoIdx!==-1){
           p.paidOut=Math.max(0,p.paidOut-c.fee);
           state.payouts.splice(autoIdx,1);
-          cp[i]=undefined; // reset to unpaid
         }
+        // Always reset cycle status to unpaid — admin must mark manually
+        cp[i]=undefined;
       }
     });
   });
