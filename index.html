@@ -128,9 +128,13 @@
   <!-- FPL LEAGUE -->
   <div id="sec-fpl" class="section">
     <div class="card">
-      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
-        FPL Challenge League
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
+        <span class="card-title" style="margin-bottom:0">FPL Challenge League</span>
         <button id="fpl-league-refresh" class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:28px" onclick="fetchFPLLeague()">↻ Refresh</button>
+      </div>
+      <div style="display:flex;gap:6px;background:var(--surface2);padding:4px;border-radius:10px;margin-bottom:1rem">
+        <button onclick="switchFPLTab('gw')" id="fpl-tab-gw" style="flex:1;padding:8px 0;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all 150ms;background:var(--accent);color:#fff">Gameweek</button>
+        <button onclick="switchFPLTab('season')" id="fpl-tab-season" style="flex:1;padding:8px 0;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all 150ms;background:transparent;color:var(--muted)">Season</button>
       </div>
       <div id="fpl-league-body"><div class="empty">Loading…</div></div>
     </div>

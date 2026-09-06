@@ -822,27 +822,17 @@ async function fetchFPLLeague(){
     let currentEvent=targetEventId;
     histories.forEach(h=>{
       const all=h.current||[];
-      // Primary: find the exact current GW event directly (no rank filter — we know the ID)
       let ev=targetEventId?all.find(e=>e.event===targetEventId):null;
-      // Fallback: most recent event that FPL has actually processed (rank not null)
       if(!ev){
         const processed=all.filter(e=>e.rank!=null);
         ev=processed[processed.length-1]||null;
       }
       if(ev!=null){ gwScoreMap[h.entry]=ev.points??0; if(ev.event>currentEvent) currentEvent=ev.event; }
     });
-    el.innerHTML=`<div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW${currentEvent||''}</th><th>Total</th></tr></thead>
-      <tbody>${rows.map((r,i)=>{
-        const gwPts=gwScoreMap[r.entry]??'—';
-        return `<tr>
-        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
-        <td style="font-weight:500">${r.player_name}</td>
-        <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
-        <td style="font-family:'Poppins',system-ui,sans-serif">${gwPts}</td>
-        <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${r.total}</td>
-      </tr>`;}).join('')}</tbody>
-    </table></div>`;
+    window._fplCachedRows=rows;
+    window._fplCachedGWMap=gwScoreMap;
+    window._fplCachedCurrentEvent=currentEvent;
+    renderFPLTable();
   }catch(e){
     el.innerHTML=`<div class="empty">Could not load — ${e}</div>`;
   }finally{
@@ -1903,6 +1893,56 @@ function importState(input){
 // ── FPL Bootstrap: live GW state ─────────────────────────────────────────────
 window._fplBootstrap=null;
 window._fplPollTimer=null;
+window._fplSubTab='gw';
+window._fplCachedRows=null;
+window._fplCachedGWMap={};
+window._fplCachedCurrentEvent=0;
+
+function switchFPLTab(t){
+  window._fplSubTab=t;
+  const gwBtn=document.getElementById('fpl-tab-gw');
+  const seBtn=document.getElementById('fpl-tab-season');
+  if(gwBtn&&seBtn){
+    gwBtn.style.background=t==='gw'?'var(--accent)':'transparent';
+    gwBtn.style.color=t==='gw'?'#fff':'var(--muted)';
+    seBtn.style.background=t==='season'?'var(--accent)':'transparent';
+    seBtn.style.color=t==='season'?'#fff':'var(--muted)';
+  }
+  renderFPLTable();
+}
+
+function renderFPLTable(){
+  const el=document.getElementById('fpl-league-body');
+  if(!el||!window._fplCachedRows) return;
+  const rows=window._fplCachedRows;
+  const gwMap=window._fplCachedGWMap;
+  const currentEvent=window._fplCachedCurrentEvent;
+  const tab=window._fplSubTab||'gw';
+  if(tab==='gw'){
+    const sorted=[...rows].sort((a,b)=>(gwMap[b.entry]??-1)-(gwMap[a.entry]??-1));
+    el.innerHTML=`<div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW${currentEvent||''}</th></tr></thead>
+      <tbody>${sorted.map((r,i)=>{
+        const gwPts=gwMap[r.entry]??'—';
+        return `<tr>
+        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
+        <td style="font-weight:500">${r.player_name}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
+        <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${gwPts}</td>
+      </tr>`;}).join('')}</tbody>
+    </table></div>`;
+  }else{
+    el.innerHTML=`<div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Total</th></tr></thead>
+      <tbody>${rows.map((r,i)=>`<tr>
+        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
+        <td style="font-weight:500">${r.player_name}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
+        <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${r.total}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+}
 
 async function fetchFPLBootstrap(){
   try{
