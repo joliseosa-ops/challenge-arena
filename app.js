@@ -479,6 +479,7 @@ function renderPayments(){
   const curCP=state.cyclePayments[curCycle]||{};
   const curPaid=curData.players.filter(i=>curCP[i]).length;
   document.getElementById('m-cycle').textContent=curCycle+1;
+  document.getElementById('m-cycle-fee').textContent='₦'+curData.fee.toLocaleString();
   document.getElementById('m-cycle-paid').textContent=curPaid+'/'+curData.players.length;
   renderDebtTracker();
   renderCycleOwingTable(curCycle);
@@ -1429,22 +1430,6 @@ function applyMigrations(){
     (g.pos?.[4]||[]).forEach(i=>{ if(state.players[i]) state.players[i].w4++; });
   });
   syncCyclePlayers();
-  // Reverse auto-deductions made by syncFromFPL for cycle fees not manually confirmed
-  CYCLES.forEach((c,idx)=>{
-    const cp=state.cyclePayments[idx]||{};
-    state.players.forEach((p,i)=>{
-      if(cp[i]==='winnings'){
-        const label=`Cycle ${idx+1} fee`;
-        const autoIdx=state.payouts.findLastIndex(x=>x.player===p.name&&x.gw===label&&x.amount===c.fee);
-        if(autoIdx!==-1){
-          p.paidOut=Math.max(0,p.paidOut-c.fee);
-          state.payouts.splice(autoIdx,1);
-        }
-        // Always reset cycle status to unpaid — admin must mark manually
-        cp[i]=undefined;
-      }
-    });
-  });
 }
 
 // Load from cloud and re-render if newer data is available
