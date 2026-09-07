@@ -103,7 +103,7 @@ let activeCycleIdx=null;
 let currentSort='earnings';
 
 function populateSelects(){
-  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
+  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b','p4c','p4d','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur=el.value;
     el.innerHTML='<option value="">—</option>';
@@ -215,7 +215,7 @@ async function fetchLatestGW(){
     const rest=ranking.filter(([,pts])=>pts<topPts);
 
     const fill=(prefix,arr)=>['a','b','c'].forEach((s,i)=>{ const el=document.getElementById(prefix+s); if(el) el.value=arr[i]??''; });
-    ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b','p4c','p4d'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
 
     if(first.length>=3){
       fill('p1',first.slice(0,3));
@@ -253,12 +253,12 @@ function recordGW(){
   positions[1].forEach(i=>state.players[i].w1++);
   positions[2].forEach(i=>state.players[i].w2++);
   positions[3].forEach(i=>state.players[i].w3++);
-  const fourth=[...new Set(['p4a','p4b'].map(id=>{ const v=document.getElementById(id)?.value; return v!==''&&v!=null?parseInt(v):null; }).filter(v=>v!==null&&!isNaN(v)))];
+  const fourth=[...new Set(['p4a','p4b','p4c','p4d'].map(id=>{ const v=document.getElementById(id)?.value; return v!==''&&v!=null?parseInt(v):null; }).filter(v=>v!==null&&!isNaN(v)))];
   fourth.forEach(i=>{ if(state.players[i]) state.players[i].w4=(state.players[i].w4||0)+1; });
   positions[4]=fourth;
   state.gameweeks.push({gw:lastGW+1,awards,pos:positions,note,points:Object.keys(points).length?points:undefined});
   save();
-  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b','p4c','p4d'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   state.players.forEach((_,i)=>{ const e=document.getElementById('pts-'+i); if(e) e.value=''; });
   document.getElementById('prize-preview').classList.add('hidden');
   renderStandings();
