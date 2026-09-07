@@ -1911,6 +1911,19 @@ function switchFPLTab(t){
   renderFPLTable();
 }
 
+function tiedRanks(arr,scoreFn){
+  // Returns array of rank numbers with ties sharing the same rank (1,2,2,4…)
+  const ranks=[];
+  let rank=1;
+  for(let i=0;i<arr.length;i++){
+    if(i>0&&scoreFn(arr[i])!==scoreFn(arr[i-1])) rank=i+1;
+    ranks.push(rank);
+  }
+  return ranks;
+}
+
+function rankClass(rank){ return rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n'; }
+
 function renderFPLTable(){
   const el=document.getElementById('fpl-league-body');
   if(!el||!window._fplCachedRows) return;
@@ -1920,26 +1933,31 @@ function renderFPLTable(){
   const tab=window._fplSubTab||'gw';
   if(tab==='gw'){
     const sorted=[...rows].sort((a,b)=>(gwMap[b.entry]??-1)-(gwMap[a.entry]??-1));
+    const ranks=tiedRanks(sorted,r=>gwMap[r.entry]??-1);
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>GW${currentEvent||''}</th></tr></thead>
       <tbody>${sorted.map((r,i)=>{
         const gwPts=gwMap[r.entry]??'—';
+        const rank=ranks[i];
         return `<tr>
-        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
+        <td><span class="${rankClass(rank)}">${rank}</span></td>
         <td style="font-weight:500">${r.player_name}</td>
         <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
         <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${gwPts}</td>
       </tr>`;}).join('')}</tbody>
     </table></div>`;
   }else{
+    const ranks=tiedRanks(rows,r=>r.total);
     el.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Total</th></tr></thead>
-      <tbody>${rows.map((r,i)=>`<tr>
-        <td><span class="${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${i+1}</span></td>
+      <tbody>${rows.map((r,i)=>{
+        const rank=ranks[i];
+        return `<tr>
+        <td><span class="${rankClass(rank)}">${rank}</span></td>
         <td style="font-weight:500">${r.player_name}</td>
         <td style="font-size:12px;color:var(--muted)">${r.entry_name}</td>
         <td style="font-family:'Poppins',system-ui,sans-serif;font-weight:600">${r.total}</td>
-      </tr>`).join('')}</tbody>
+      </tr>`;}).join('')}</tbody>
     </table></div>`;
   }
 }
