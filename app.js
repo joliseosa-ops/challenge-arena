@@ -17,7 +17,8 @@ const CYCLES=[
 function syncCyclePlayers(){ const all=state.players.map((_,i)=>i); CYCLES.forEach(c=>c.players=all); }
 
 // 2026/27 roster
-// idx: 0=Osahon, 1=Syb, 2=William, 3=Hensalos, 4=Emeka, 5=Esther, 6=Christopher
+// INIT_PLAYERS order (used only when state.players is empty). Hensalos was never added in live state.
+// Live state.players indices: 0=Osahon, 1=Syb, 2=William, 3=Emeka, 4=Esther, 5=Christopher (Hensalos absent)
 const INIT_PLAYERS=['Osahon','Syb','William','Hensalos','Emeka','Esther','Christopher'];
 
 const TEAM_NAMES=[
@@ -32,12 +33,13 @@ const TEAM_NAMES=[
 
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
+// ENTRY_MAP uses LIVE state.players indices (no Hensalos → Esther=4, Christopher=5)
 const ENTRY_MAP={
    642:0, // Osahon
   4893:2, // William
-  6255:5, // Esther
-  9764:6, // Christopher
-  // add Syb, Hensalos, Emeka once they join the FPL Challenge league
+  6255:4, // Esther  (live index 4, not 5)
+  9764:5, // Christopher  (live index 5, not 6)
+  // add Syb, Emeka once they join the FPL Challenge league
 };
 
 // Carry-over from 2025/26 — raw outstanding balances (no carry-over for Esther/Christopher)
@@ -1658,7 +1660,7 @@ function renderH2H(){
     <thead><tr><th style="font-size:11px;color:var(--muted);padding:6px 4px;text-align:left;font-weight:500"></th>${ps.map(p=>`<th style="font-size:13px;font-weight:700;text-align:center;padding:6px 4px">${p.name}</th>`).join('')}</tr></thead>
     <tbody>
       ${row('Accumulated',i=>ps[i].accumulated,v=>'₦'+v.toLocaleString())}
-      ${row('Balance',i=>ps[i].accumulated-ps[i].paidOut,v=>'₦'+v.toLocaleString())}
+      ${row('Balance',i=>pubBal(ps[i]),v=>'₦'+v.toLocaleString())}
       ${row('Podiums',i=>ps[i].w1+ps[i].w2+ps[i].w3)}
       ${row('1st places',i=>ps[i].w1)}
       ${row('2nd places',i=>ps[i].w2)}
@@ -1673,7 +1675,13 @@ function openProfile(idx){
   const p=state.players[idx];
   const history=state.gameweeks.filter(g=>(g.awards[idx]||0)>0).map(g=>({gw:g.gw,amount:g.awards[idx]})).reverse();
   const bal=pubBal(p);
-  const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0));
+  let _cycleOff=0;
+  Object.entries(state.cyclePayments||{}).forEach(([ci,cp])=>{
+    const t=cp[idx];
+    if(t==='winnings') _cycleOff+=CYCLES[Number(ci)]?.fee||0;
+    else if(t&&typeof t==='object'&&t.type==='co-offset') _cycleOff+=t.own||0;
+  });
+  const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-_cycleOff);
   const initials=p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('profile-avatar').textContent=initials;
   document.getElementById('profile-name').textContent=p.name;
@@ -1780,7 +1788,7 @@ function renderDebtTracker(){
       `Total to collect: ₦${totalNet.toLocaleString()}`,
       `Please settle asap 🙏`
     ];
-    const waUrl=`https://wa.me/${ADMIN_WA}?text=`+encodeURIComponent(waLines.join('\n'));
+    const waUrl=`https://wa.me/?text=`+encodeURIComponent(waLines.join('\n'));
     return `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">
         <span style="font-size:13px;font-weight:700">Cycle ${idx+1} · GW${c.gw[0]}–${c.gw[1]}</span>
@@ -1811,7 +1819,7 @@ async function syncFromFPL(){
     const data=await fetch(`/api/fpl-league?league=${FPL_LEAGUE_ID}`).then(r=>r.ok?r.json():Promise.reject(r.status));
     const rows=data.standings?.results||[];
     const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0;
-    const curCycleIdx=Math.max(0,Math.min(Math.floor(lastGW/5),CYCLES.length-1));
+    const curCycleIdx=Math.max(0,Math.min(Math.floor((Math.max(1,lastGW)-1)/5),CYCLES.length-1));
     if(!state.cyclePayments[curCycleIdx]) state.cyclePayments[curCycleIdx]={};
     const cycle=CYCLES[curCycleIdx];
     const label=`Cycle ${curCycleIdx+1} fee`;
@@ -1838,7 +1846,8 @@ async function syncFromFPL(){
     renderAdminPlayers(); populateSelects(); renderStandings(); renderPayments();
     const msg=[];
     if(added) msg.push(`${added} new player${added>1?'s':''} added`);
-    msg.push(`${updated} updated — cycle ${curCycleIdx+1} marked paid`);
+    if(updated) msg.push(`${updated} updated`);
+    if(!msg.length) msg.push('No changes');
     status.textContent=msg.join(', ');
   } catch(err){
     status.textContent=`Failed: ${err}`;
@@ -1972,9 +1981,9 @@ setInterval(()=>{ updateGWCountdown(); renderCountdown(); }, 1000);
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV(){
-  const sorted=[...state.players].map((p,i)=>({...p,i})).sort((a,b)=>(b.accumulated-b.paidOut)-(a.accumulated-a.paidOut));
-  const header=['Rank','Player','Team','1st','2nd','3rd','Podiums','Money in bank','Total earnings','Paid Out'];
-  const rows=sorted.map((p,rank)=>[rank+1,p.name,p.teamName||'',p.w1,p.w2,p.w3,p.w1+p.w2+p.w3,p.accumulated-p.paidOut,p.accumulated,p.paidOut]);
+  const sorted=[...state.players].map((p,i)=>({...p,i})).sort((a,b)=>pubBal(b)-pubBal(a));
+  const header=['Rank','Player','Team','1st','2nd','3rd','Podiums','Balance','Total earnings','Paid Out'];
+  const rows=sorted.map((p,rank)=>[rank+1,p.name,p.teamName||'',p.w1,p.w2,p.w3,p.w1+p.w2+p.w3,pubBal(p),p.accumulated,p.paidOut]);
   const csv=[header,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
