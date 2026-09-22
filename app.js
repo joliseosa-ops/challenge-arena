@@ -67,10 +67,15 @@ async function syncToCloud(s){
 async function loadFromCloud(){
   try{
     const {data,error}=await _sbc.from('arena_state').select('data').eq('id',1).single();
-    if(error||!data||!data.data||!data.data.players) return null;
-    if(!data.data._key || data.data._key!==KEY) return null; // stale version — rebuild
+    if(error){
+      // PGRST116 = no rows found (genuinely empty cloud) → signal with false so caller can seed
+      // Any other error = network/server issue → signal with undefined so caller does NOT overwrite
+      return error.code==='PGRST116'?false:undefined;
+    }
+    if(!data||!data.data||!data.data.players) return false;
+    if(!data.data._key || data.data._key!==KEY) return false; // stale version — rebuild
     return data.data;
-  }catch(e){ return null; }
+  }catch(e){ return undefined; } // network failure — do not overwrite cloud
 }
 
 function load(){
@@ -1445,9 +1450,10 @@ function applyMigrations(){
     try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
     syncToCloud(state);
     populateSelects(); renderStandings();
-  } else {
-    syncToCloud(state); // seed cloud on first run
+  } else if(cloud===false){
+    syncToCloud(state); // cloud is genuinely empty — seed it on first run
   }
+  // cloud===undefined means network error — keep local state, do NOT overwrite cloud
 })();
 
 // ── Season summary ────────────────────────────────────────────────────────────
