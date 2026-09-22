@@ -61,8 +61,24 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const _sbc=window.supabase.createClient(SB_URL,SB_KEY);
 
 async function syncToCloud(s){
-  try{ await _sbc.from('arena_state').upsert({id:1,data:{...s,_key:KEY},updated_at:new Date().toISOString()}); }
-  catch(e){ console.warn('Cloud sync failed',e); }
+  try{
+    // Before saving, fetch current cloud payoutRequests so we never silently discard a
+    // request submitted by another device after this one last loaded from cloud.
+    let toSave={...s,_key:KEY};
+    try{
+      const {data:cd}=await _sbc.from('arena_state').select('data').eq('id',1).single();
+      if(cd?.data?.payoutRequests?.length){
+        const localIds=new Set((s.payoutRequests||[]).map(r=>r.id));
+        const extra=cd.data.payoutRequests.filter(r=>!localIds.has(r.id));
+        if(extra.length){
+          const merged=[...(s.payoutRequests||[]),...extra];
+          toSave={...toSave,payoutRequests:merged};
+          state.payoutRequests=merged; // keep in-memory state in sync
+        }
+      }
+    }catch(_){} // merge is best-effort; don't block the save if this read fails
+    await _sbc.from('arena_state').upsert({id:1,data:toSave,updated_at:new Date().toISOString()});
+  }catch(e){ console.warn('Cloud sync failed',e); }
 }
 async function loadFromCloud(){
   try{
