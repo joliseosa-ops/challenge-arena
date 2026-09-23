@@ -77,12 +77,14 @@ const SB_URL='https://pbcurdniutfmecwzuzpl.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBiY3VyZG5pdXRmbWVjd3p1enBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTE5NjMsImV4cCI6MjA5NTIyNzk2M30.55K_3wL_eEiDD9jBo3tyCstjujfEcFqWUAJed8s1HWI';
 const _sbc=window.supabase.createClient(SB_URL,SB_KEY);
 
-async function syncToCloud(s){
+async function syncToCloud(s,_attempt=0){
   try{
     let toSave={...s,_key:KEY};
+    let mergeOk=false;
     try{
       const {data:cd}=await _sbc.from('arena_state').select('data').eq('id',1).single();
       if(cd?.data){
+        mergeOk=true;
         // Merge payoutRequests — never drop requests added by other devices
         if(cd.data.payoutRequests?.length){
           const localIds=new Set((s.payoutRequests||[]).map(r=>r.id));
@@ -105,8 +107,23 @@ async function syncToCloud(s){
           });
           if(changed){ toSave={...toSave,cyclePayments:merged}; state.cyclePayments=merged; }
         }
+        // Merge payouts log — never drop entries recorded on another device
+        if(cd.data.payouts?.length){
+          const localSig=new Set((s.payouts||[]).map(p=>p.player+'|'+p.gw+'|'+p.amount));
+          const extra=(cd.data.payouts||[]).filter(p=>!localSig.has(p.player+'|'+p.gw+'|'+p.amount));
+          if(extra.length){
+            const merged=[...(s.payouts||[]),...extra];
+            toSave={...toSave,payouts:merged};
+            state.payouts=merged;
+          }
+        }
       }
-    }catch(_){} // merge is best-effort; never block the actual save
+    }catch(_){}
+    // If the read-before-write failed, retry up to 3 times instead of risking a stale overwrite
+    if(!mergeOk){
+      if(_attempt<3){ setTimeout(()=>syncToCloud(state,_attempt+1),2500); return; }
+      console.warn('syncToCloud: cloud read failed after retries, save skipped'); return;
+    }
     await _sbc.from('arena_state').upsert({id:1,data:toSave,updated_at:new Date().toISOString()});
   }catch(e){ console.warn('Cloud sync failed',e); }
 }
