@@ -502,26 +502,36 @@ function renderCycleOwingTable(cycleIdx,el){
       :'—';
     return {name:p.name,fee:c.fee,offset,cashOwed,breakdown,isPaid};
   }).sort((a,b)=>b.cashOwed-a.cashOwed);
+  const paidCount=rows.filter(r=>r.isPaid).length;
   const anyOwed=rows.some(r=>r.cashOwed>0);
-  el.innerHTML=`<div class="card">
-    <div class="card-title">Cycle ${cycleIdx+1} — Payment status</div>
-    ${!anyOwed?'<div style="font-size:13px;color:var(--green);font-weight:500;margin-bottom:.75rem">All players settled for this cycle.</div>':''}
-    <div class="tbl-wrap"><table>
-      <thead><tr>
-        <th>Player</th>
-        <th>Fee</th>
-        <th class="hide-mobile">Breakdown</th>
-        <th>Cash owed</th>
-        <th>Status</th>
-      </tr></thead>
-      <tbody>${rows.map(r=>`<tr>
-        <td style="font-weight:500">${r.name}</td>
-        <td class="mono">₦${r.fee.toLocaleString()}</td>
-        <td class="hide-mobile" style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
-        <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
-        <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
-      </tr>`).join('')}</tbody>
-    </table></div>
+  const uid=`cycle-drop-${cycleIdx}`;
+  el.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
+    <button onclick="(function(b,d){d.hidden=!d.hidden;b.querySelector('.drop-arrow').style.transform=d.hidden?'':'rotate(180deg)'})(this,document.getElementById('${uid}'))"
+      style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;background:none;border:none;cursor:pointer;text-align:left">
+      <span style="font-weight:700;font-size:.875rem;color:var(--heading)">Cycle ${cycleIdx+1} — Payment status
+        <span style="margin-left:.5rem;font-size:.75rem;font-weight:500;color:${anyOwed?'var(--red)':'var(--green)'}">${paidCount}/${rows.length} paid</span>
+      </span>
+      <span class="drop-arrow" style="font-size:12px;color:var(--dim);transition:transform .2s">▼</span>
+    </button>
+    <div id="${uid}" style="padding:0 1rem 1rem">
+      ${!anyOwed?'<div style="font-size:13px;color:var(--green);font-weight:500;margin-bottom:.75rem">All players settled for this cycle.</div>':''}
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Player</th>
+          <th>Fee</th>
+          <th class="hide-mobile">Breakdown</th>
+          <th>Cash owed</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td style="font-weight:500">${r.name}</td>
+          <td class="mono">₦${r.fee.toLocaleString()}</td>
+          <td class="hide-mobile" style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
+          <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
+          <td><span style="font-size:11px;font-weight:700;color:${r.isPaid?'var(--green)':'var(--red)'}">${r.isPaid?'Paid':'Unpaid'}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>
   </div>`;
 }
 
@@ -536,12 +546,22 @@ function renderPayments(){
   document.getElementById('m-cycle-fee').textContent='₦'+curData.fee.toLocaleString();
   document.getElementById('m-cycle-paid').textContent=curPaid+'/'+curData.players.length;
   renderDebtTracker();
-  // Render status tables for all cycles that have any payment data, newest first
+  // Render collapsible status tables for all cycles with data, Cycle 1 first
   const el=document.getElementById('cycle-owing-table');
   if(el){
-    const activeCycles=CYCLES.map((_,i)=>i).filter(i=>Object.keys(state.cyclePayments[i]||{}).length>0).reverse();
+    const activeCycles=CYCLES.map((_,i)=>i).filter(i=>Object.keys(state.cyclePayments[i]||{}).length>0);
     if(!activeCycles.length){ renderCycleOwingTable(curCycle); }
-    else{ el.innerHTML=''; activeCycles.forEach(i=>{ const tmp=document.createElement('div'); el.appendChild(tmp); renderCycleOwingTable(i,tmp); }); }
+    else{
+      el.innerHTML='';
+      activeCycles.forEach(i=>{
+        const tmp=document.createElement('div'); tmp.style.marginBottom='.75rem'; el.appendChild(tmp);
+        renderCycleOwingTable(i,tmp);
+        const body=tmp.querySelector(`[id="cycle-drop-${i}"]`);
+        const arrow=tmp.querySelector('.drop-arrow');
+        if(i!==curCycle&&body){ body.hidden=true; } // collapse non-current; arrow default ▼ = expand
+        if(i===curCycle&&arrow){ arrow.style.transform='rotate(180deg)'; } // current is open; arrow ▲ = collapse
+      });
+    }
   }
   document.getElementById('cycle-grid').innerHTML=CYCLES.map((c,i)=>{
     const cp=state.cyclePayments[i]||{};
