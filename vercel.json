@@ -1,0 +1,16 @@
+{
+  "headers": [
+    {
+      "source": "/(index\\.html|app\\.js|styles\\.css|sw\\.js)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}
