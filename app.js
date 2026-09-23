@@ -1226,8 +1226,9 @@ function renderFinanceTab(){
       // Cycle fee offsets (winnings type) — not a real cash withdrawal
       let cycleOffset=0;
       CYCLES.forEach((c,ci)=>{ const t=state.cyclePayments[ci]?.[i]; if(t==='winnings') cycleOffset+=c.fee; else if(t&&typeof t==='object'&&t.type==='co-offset') cycleOffset+=t.own||0; });
-      // Actual bank payouts = paidOut minus carryOver minus cycle fee deductions
-      const actualWithdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-cycleOffset);
+      // Cycle fees that actually went through paidOut (logged as "Cycle X fee" payouts)
+      const cycleInPaidOut=(state.payouts||[]).filter(po=>po.player===p.name&&typeof po.gw==='string'&&po.gw.startsWith('Cycle')).reduce((s,po)=>s+(po.amount||0),0);
+      const actualWithdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-cycleInPaidOut);
       const inBank=pubBal(p);
       return `<tr>
         <td style="font-weight:600">${p.name}</td>
@@ -1733,7 +1734,8 @@ function openProfile(idx){
     if(t==='winnings') _cycleOff+=CYCLES[Number(ci)]?.fee||0;
     else if(t&&typeof t==='object'&&t.type==='co-offset') _cycleOff+=t.own||0;
   });
-  const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-_cycleOff);
+  const _cycleInPaidOut=(state.payouts||[]).filter(po=>po.player===p.name&&typeof po.gw==='string'&&po.gw.startsWith('Cycle')).reduce((s,po)=>s+(po.amount||0),0);
+  const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-_cycleInPaidOut);
   const initials=p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('profile-avatar').textContent=initials;
   document.getElementById('profile-name').textContent=p.name;
