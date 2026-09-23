@@ -33,13 +33,30 @@ const TEAM_NAMES=[
 
 const FPL_BASE='https://fplchallenge.premierleague.com/api';
 const PROXY='https://corsproxy.io/?';
-// ENTRY_MAP uses LIVE state.players indices (no Hensalos → Esther=4, Christopher=5)
+// ENTRY_MAP: FPL Challenge entry ID → live state.players index (no Hensalos → Esther=4, Christopher=5)
 const ENTRY_MAP={
-   642:0, // Osahon
-  4893:2, // William
-  6255:4, // Esther  (live index 4, not 5)
-  9764:5, // Christopher  (live index 5, not 6)
-  // add Syb, Emeka once they join the FPL Challenge league
+    642:0,  // Osagie Osahon
+   4893:2,  // William Okoye
+   6255:4,  // Esther E
+   9764:5,  // Christopher Oris
+  43145:3,  // Emeka Emordi
+  44716:8,  // Eluigwe Dubem
+  45777:11, // eghosa Osagie
+  45974:9,  // Rex Tony
+  53703:10, // Joseph Isiwele
+    875:6,  // John Ugbo
+  19384:7,  // Marvelous Kuda
+  149759:12,// Emmanuel Chikaodiri
+  160018:13,// Odafe Okandeji
+  170204:1, // Syb Elmer
+  181978:14,// Austine Anetor
+  191776:19,// King James
+  195853:15,// Andrew Osagie
+  196359:16,// Adebayo Adedeji
+  211306:17,// Esmond Enoghase
+  243963:18,// Yusuf A
+  245708:20,// Adetunji Adeleke
+  262612:21,// Ikenna Dennis
 };
 
 // Carry-over from 2025/26 — raw outstanding balances (no carry-over for Esther/Christopher)
