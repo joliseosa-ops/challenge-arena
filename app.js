@@ -477,8 +477,8 @@ function reversePayout(idx){
   save(); renderPayoutLog(); updatePayoutInfo(); renderStandings();
 }
 
-function renderCycleOwingTable(cycleIdx){
-  const el=document.getElementById('cycle-owing-table'); if(!el) return;
+function renderCycleOwingTable(cycleIdx,el){
+  if(!el) el=document.getElementById('cycle-owing-table'); if(!el) return;
   const c=CYCLES[cycleIdx];
   const cp=state.cyclePayments[cycleIdx]||{};
   const label=`Cycle ${cycleIdx+1} fee`;
@@ -527,7 +527,8 @@ function renderCycleOwingTable(cycleIdx){
 
 function renderPayments(){
   const lastGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:1;
-  const curCycle=Math.min(Math.floor((lastGW-1)/5),CYCLES.length-1);
+  // Advance to next cycle once last GW of the current cycle is recorded
+  const curCycle=Math.min(Math.floor(lastGW/5),CYCLES.length-1);
   const curData=CYCLES[curCycle];
   const curCP=state.cyclePayments[curCycle]||{};
   const curPaid=curData.players.filter(i=>curCP[i]).length;
@@ -535,7 +536,13 @@ function renderPayments(){
   document.getElementById('m-cycle-fee').textContent='₦'+curData.fee.toLocaleString();
   document.getElementById('m-cycle-paid').textContent=curPaid+'/'+curData.players.length;
   renderDebtTracker();
-  renderCycleOwingTable(curCycle);
+  // Render status tables for all cycles that have any payment data, newest first
+  const el=document.getElementById('cycle-owing-table');
+  if(el){
+    const activeCycles=CYCLES.map((_,i)=>i).filter(i=>Object.keys(state.cyclePayments[i]||{}).length>0).reverse();
+    if(!activeCycles.length){ renderCycleOwingTable(curCycle); }
+    else{ el.innerHTML=''; activeCycles.forEach(i=>{ const tmp=document.createElement('div'); el.appendChild(tmp); renderCycleOwingTable(i,tmp); }); }
+  }
   document.getElementById('cycle-grid').innerHTML=CYCLES.map((c,i)=>{
     const cp=state.cyclePayments[i]||{};
     const paid=c.players.filter(j=>cp[j]).length;
