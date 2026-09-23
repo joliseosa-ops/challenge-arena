@@ -1195,13 +1195,14 @@ function renderFinanceTab(){
       const earned=p.accumulated;
       // Cycle fee offsets (winnings type) — not a real cash withdrawal
       let cycleOffset=0;
-      CYCLES.forEach((c,idx)=>{ const t=state.cyclePayments[idx]?.[i]; if(t==='winnings') cycleOffset+=c.fee; });
-      // Actual cash withdrawals = paidOut minus carryOver minus cycle offsets
+      CYCLES.forEach((c,ci)=>{ const t=state.cyclePayments[ci]?.[i]; if(t==='winnings') cycleOffset+=c.fee; else if(t&&typeof t==='object'&&t.type==='co-offset') cycleOffset+=t.own||0; });
+      // Actual bank payouts = paidOut minus carryOver minus cycle fee deductions
       const actualWithdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-cycleOffset);
       const inBank=pubBal(p);
       return `<tr>
         <td style="font-weight:600">${p.name}</td>
         <td style="font-weight:700;color:var(--green)">${earned>0?fmt(earned):'—'}</td>
+        <td style="color:#f59e0b">${cycleOffset>0?fmt(cycleOffset):'—'}</td>
         <td style="color:var(--blue)">${actualWithdrawn>0?fmt(actualWithdrawn):'—'}</td>
         <td style="font-weight:700;color:${inBank>0?'var(--heading)':inBank<0?'var(--red)':'var(--dim)'}">${inBank!==0?fmt(inBank):'—'}</td>
       </tr>`;
@@ -1292,8 +1293,8 @@ function renderFinanceTab(){
       </div>
       <div id="earnings-content" style="display:none;margin-top:.875rem">
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Player</th><th>GW Earned</th><th>Withdrawn</th><th>In Account</th></tr></thead>
-          <tbody>${playerRows||'<tr><td colspan="4" class="empty">No data yet</td></tr>'}</tbody>
+          <thead><tr><th>Player</th><th>GW Earned</th><th>Cycle Fees</th><th>Bank Payouts</th><th>Balance</th></tr></thead>
+          <tbody>${playerRows||'<tr><td colspan="5" class="empty">No data yet</td></tr>'}</tbody>
         </table></div>
       </div>
     </div>
@@ -1709,9 +1710,10 @@ function openProfile(idx){
   document.getElementById('profile-name').textContent=p.name;
   document.getElementById('profile-team').textContent=p.teamName||'';
   document.getElementById('profile-content').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.25rem">
       <div style="background:#f3e8ff;border-top:3px solid var(--accent);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">GW Earnings</div><div style="font-family:'Poppins',system-ui,sans-serif;font-size:13px;font-weight:700;color:var(--accent)">₦${p.accumulated.toLocaleString()}</div></div>
-      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Withdrawn</div><div style="font-family:'Poppins',system-ui,sans-serif;font-size:13px;font-weight:700;color:var(--muted)">₦${withdrawn.toLocaleString()}</div></div>
+      <div style="background:#fffbeb;border-top:3px solid #f59e0b;border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:#d97706;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Cycle Fees</div><div style="font-family:'Poppins',system-ui,sans-serif;font-size:13px;font-weight:700;color:#d97706">${_cycleOff>0?'₦'+_cycleOff.toLocaleString():'—'}</div></div>
+      <div style="background:#f5f5f5;border-top:3px solid var(--dim);border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Bank Payouts</div><div style="font-family:'Poppins',system-ui,sans-serif;font-size:13px;font-weight:700;color:var(--muted)">${withdrawn>0?'₦'+withdrawn.toLocaleString():'—'}</div></div>
       <div style="background:${bal>0?'#dcfce7':'#f5f5f5'};border-top:3px solid ${bal>0?'var(--green)':'var(--dim)'};border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:10px;font-weight:700;color:${bal>0?'var(--green)':'var(--muted)'};margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Balance</div><div style="font-family:'Poppins',system-ui,sans-serif;font-size:13px;font-weight:700;color:${bal>0?'var(--green)':'var(--dim)'}">₦${bal.toLocaleString()}</div></div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:1.25rem">
