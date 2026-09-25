@@ -508,13 +508,13 @@ function renderCycleOwingTable(cycleIdx,el){
     const isSettled=type==='settled';
     const isCo=typeof type==='object'&&type?.type==='co-offset';
     const offset=isWin?c.fee:(isPartial||isSettled)?(state.payouts.findLast(x=>x.player===p.name&&x.gw===label)?.amount||0):isCo?type.own:0;
-    const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
     const benefactorName=isCo?state.players[type.by]?.name:'';
     const isPaid=isCash||isWin||isCo||isSettled;
-    // for unpaid players, show live balance (this season + residual carry-over from last season)
+    // effective balance = this-season winnings + residual carry-over from last season
     const liveBal=Math.max(0,pubBal(p))+Math.max(0,(p.carryOver||0)-(p.paidOut||0));
     const fromBal=Math.min(liveBal,c.fee);
     const cashNeeded=c.fee-fromBal;
+    const cashOwed=isPaid?0:cashNeeded;
     const unpaidBreakdown=fromBal>=c.fee
       ?`₦${c.fee.toLocaleString()} balance covers fee`
       :fromBal>0
