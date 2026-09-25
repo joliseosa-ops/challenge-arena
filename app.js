@@ -511,8 +511,8 @@ function renderCycleOwingTable(cycleIdx,el){
     const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
     const benefactorName=isCo?state.players[type.by]?.name:'';
     const isPaid=isCash||isWin||isCo||isSettled;
-    // for unpaid players, show live balance so everyone can see their shortfall
-    const liveBal=Math.max(0,pubBal(p));
+    // for unpaid players, show live balance (this season + residual carry-over from last season)
+    const liveBal=Math.max(0,pubBal(p))+Math.max(0,(p.carryOver||0)-(p.paidOut||0));
     const fromBal=Math.min(liveBal,c.fee);
     const cashNeeded=c.fee-fromBal;
     const unpaidBreakdown=fromBal>=c.fee
