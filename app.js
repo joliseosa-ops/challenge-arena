@@ -511,12 +511,20 @@ function renderCycleOwingTable(cycleIdx,el){
     const cashOwed=isCash||isWin||isCo||isSettled?0:c.fee-offset;
     const benefactorName=isCo?state.players[type.by]?.name:'';
     const isPaid=isCash||isWin||isCo||isSettled;
+    // for unpaid players, show live balance so everyone can see their shortfall
+    const liveBal=Math.max(0,pubBal(p));
+    const fromBal=Math.min(liveBal,c.fee);
+    const cashNeeded=c.fee-fromBal;
+    const unpaidBreakdown=fromBal>=c.fee
+      ?`₦${c.fee.toLocaleString()} balance covers fee`
+      :fromBal>0
+        ?`₦${fromBal.toLocaleString()} balance · ₦${cashNeeded.toLocaleString()} cash needed`
+        :`No balance · ₦${c.fee.toLocaleString()} cash`;
     const breakdown=isWin?`₦${c.fee.toLocaleString()} from winnings`
       :isCash?`₦${c.fee.toLocaleString()} cash`
       :isSettled?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} cash`
       :isCo?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} covered by ${benefactorName}`
-      :isPartial?`₦${offset.toLocaleString()} from winnings · ₦${cashOwed.toLocaleString()} cash pending`
-      :'—';
+      :unpaidBreakdown;
     return {name:p.name,fee:c.fee,offset,cashOwed,breakdown,isPaid};
   }).sort((a,b)=>b.cashOwed-a.cashOwed);
   const paidCount=rows.filter(r=>r.isPaid).length;
