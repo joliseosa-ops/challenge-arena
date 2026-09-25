@@ -525,7 +525,7 @@ function renderCycleOwingTable(cycleIdx,el){
       :isSettled?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} cash`
       :isCo?`₦${offset.toLocaleString()} from winnings + ₦${(c.fee-offset).toLocaleString()} covered by ${benefactorName}`
       :unpaidBreakdown;
-    return {name:p.name,fee:c.fee,offset,cashOwed,breakdown,isPaid};
+    return {name:p.name,team:p.teamName||'',fee:c.fee,offset,cashOwed,breakdown,isPaid};
   }).sort((a,b)=>b.cashOwed-a.cashOwed);
   const paidCount=rows.filter(r=>r.isPaid).length;
   const anyOwed=rows.some(r=>r.cashOwed>0);
@@ -549,7 +549,7 @@ function renderCycleOwingTable(cycleIdx,el){
           <th>Status</th>
         </tr></thead>
         <tbody>${rows.map(r=>`<tr>
-          <td style="font-weight:500">${r.name}</td>
+          <td><span style="font-weight:500">${r.name}</span>${r.team?`<br><span style="font-size:11px;color:var(--muted)">${r.team}</span>`:''}</td>
           <td class="mono">₦${r.fee.toLocaleString()}</td>
           <td class="hide-mobile" style="font-size:13px;color:var(--muted)">${r.breakdown}</td>
           <td class="mono" style="color:${r.cashOwed>0?'var(--red)':'var(--dim)'};font-weight:${r.cashOwed>0?700:400}">${r.cashOwed?'₦'+r.cashOwed.toLocaleString():'—'}</td>
