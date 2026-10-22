@@ -1,7 +1,20 @@
 const KEY='challenge_arena_v21';
 const WEEKLY_PRIZE_RATE=2000; // ₦2k per player per GW goes to weekly prizes
-// prizes() computes dynamically from actual player count — updates when players are added
-function prizes(){ const pot=state.players.length*WEEKLY_PRIZE_RATE; return {p1:Math.round(pot*(26/44)),p2:Math.round(pot*(12/44)),p3:Math.round(pot*(6/44))}; }
+
+// Returns active player count for a given GW, accounting for mid-season departures
+function activePlayers(gw){
+  const changes=state.playerChanges||[];
+  const departed=changes.filter(c=>!c.active&&gw>=c.fromGW).length;
+  return state.players.length-departed;
+}
+
+// Prize amounts agreed per player count — explicitly defined so rounding is never an issue
+const PRIZE_TABLE={44000:{p1:26000,p2:12000,p3:6000},42000:{p1:25000,p2:12000,p3:5000}};
+function prizes(gw){
+  const nextGW=gw||(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw+1:1);
+  const pot=activePlayers(nextGW)*WEEKLY_PRIZE_RATE;
+  return PRIZE_TABLE[pot]||{p1:Math.round(pot*(26/44)),p2:Math.round(pot*(12/44)),p3:Math.round(pot*(6/44))};
+}
 
 // 2026/27 season — 8 cycles, ₦3k/player/GW. players[] is populated dynamically by syncCyclePlayers()
 const CYCLES=[
@@ -14,7 +27,14 @@ const CYCLES=[
   {gw:[31,35], fee:15000},
   {gw:[36,38], fee:9000},
 ];
-function syncCyclePlayers(){ const all=state.players.map((_,i)=>i); CYCLES.forEach(c=>c.players=all); }
+function syncCyclePlayers(){
+  const all=state.players.map((_,i)=>i);
+  const changes=state.playerChanges||[];
+  CYCLES.forEach(c=>{
+    const departed=changes.filter(ch=>!ch.active&&c.gw[0]>=ch.fromGW).map(ch=>ch.idx);
+    c.players=departed.length?all.filter(i=>!departed.includes(i)):all;
+  });
+}
 
 // 2026/27 roster
 // INIT_PLAYERS order (used only when state.players is empty). Hensalos was never added in live state.
@@ -378,8 +398,8 @@ function renderStandings(){
   document.getElementById('m-gw').textContent=currentGW;
   const hb=document.getElementById('header-gw-badge');
   if(hb) hb.textContent='GW '+currentGW;
-  const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=state.players.length;
-  const mwp=document.getElementById('m-weeklypot'); if(mwp) mwp.textContent='₦'+(state.players.length*WEEKLY_PRIZE_RATE).toLocaleString();
+  const mpl=document.getElementById('m-players'); if(mpl) mpl.textContent=activePlayers(currentGW);
+  const mwp=document.getElementById('m-weeklypot'); if(mwp) mwp.textContent='₦'+(activePlayers(currentGW)*WEEKLY_PRIZE_RATE).toLocaleString();
   updateGWCountdown();
   const rC=r=>r===0?'rank-1':r===1?'rank-2':r===2?'rank-3':'rank-n';
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
@@ -1067,13 +1087,14 @@ function renderFinanceTab(){
   });
   const seasonPot=seasonPotTotal();
   const weeklyReceived=seasonPot*2;
-  const weeklyPotPerGW=state.players.length*WEEKLY_PRIZE_RATE;
+  const nextGW=state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw+1:1;
+  const weeklyPotPerGW=activePlayers(nextGW)*WEEKLY_PRIZE_RATE;
   const gwAwarded=state.players.reduce((s,p)=>s+p.accumulated,0);
   const weeklyRemaining=Math.max(0,weeklyReceived-gwAwarded);
   const totalWithdrawn=state.players.reduce((s,p)=>s+Math.max(0,p.paidOut-(p.carryOver||0)),0);
   const totalInBank=state.players.reduce((s,p)=>s+Math.max(0,pubBal(p)),0);
   const totalGWs=CYCLES.reduce((s,c)=>s+(c.gw[1]-c.gw[0]+1),0);
-  const projectedSeasonPot=state.players.length*1000*totalGWs;
+  const projectedSeasonPot=CYCLES.reduce((s,c)=>s+activePlayers(c.gw[0])*1000*(c.gw[1]-c.gw[0]+1),0);
 
   // --- Outstanding per cycle ---
   const cycleDebtors=CYCLES.map((c,idx)=>{
@@ -1134,7 +1155,7 @@ function renderFinanceTab(){
       <div class="card" style="margin-bottom:1rem">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
           ${tile('Accumulated so far',seasonPot,'#f59e0b',`after ${state.gameweeks.length} GW${state.gameweeks.length!==1?'s':''}`)}
-          ${tile('Projected at GW38',projectedSeasonPot,'var(--heading)',`${state.players.length} × ₦1k × ${totalGWs} GWs`)}
+          ${tile('Projected at GW38',projectedSeasonPot,'var(--heading)',`${activePlayers(nextGW)} active × ₦1k/GW`)}
         </div>
       </div>
 
@@ -1307,7 +1328,7 @@ function renderFinanceTab(){
     <div class="card" style="margin-bottom:1rem">
       <div class="card-title">Money In</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
-        ${tile('Weekly Pot / GW',weeklyPotPerGW,'var(--accent)',`₦${WEEKLY_PRIZE_RATE.toLocaleString()} × ${state.players.length} players`)}
+        ${tile('Weekly Pot / GW',weeklyPotPerGW,'var(--accent)',`₦${WEEKLY_PRIZE_RATE.toLocaleString()} × ${activePlayers(nextGW)} players`)}
         ${tile('Weekly Total',weeklyReceived,'var(--accent)','all weekly fees received')}
         ${tile('Season Pot',seasonPot,'#f59e0b','accumulated so far')}
         ${tile('Grand Total',totalReceived,'var(--heading)','weekly + season combined')}
