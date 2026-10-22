@@ -193,11 +193,13 @@ let activeCycleIdx=null;
 let currentSort='earnings';
 
 function populateSelects(){
+  const nextGW=(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0)+1;
+  const departed=new Set((state.playerChanges||[]).filter(c=>!c.active&&nextGW>=c.fromGW).map(c=>c.idx));
   ['p1a','p1b','p1c','p2a','p2b','p2c','p3a','p3b','p3c','p4a','p4b','p4c','p4d','po-player','h2h-a','h2h-b','h2h-c'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur=el.value;
     el.innerHTML='<option value="">—</option>';
-    state.players.forEach((p,i)=>el.innerHTML+=`<option value="${i}">${p.name}</option>`);
+    state.players.forEach((p,i)=>{ if(!departed.has(i)) el.innerHTML+=`<option value="${i}">${p.name}</option>`; });
     el.value=cur;
   });
   renderPointsGrid();
@@ -205,13 +207,15 @@ function populateSelects(){
 
 function renderPointsGrid(){
   const grid=document.getElementById('gw-points-grid'); if(!grid) return;
-  grid.innerHTML=state.players.map((p,i)=>`
+  const nextGW=(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0)+1;
+  const departed=new Set((state.playerChanges||[]).filter(c=>!c.active&&nextGW>=c.fromGW).map(c=>c.idx));
+  grid.innerHTML=state.players.map((p,i)=>departed.has(i)?'':(`
     <div style="display:flex;align-items:center;gap:6px">
       <div class="init" style="flex-shrink:0">${p.name.slice(0,2).toUpperCase()}</div>
       <span style="font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</span>
       <input type="number" id="pts-${i}" min="0" max="200" placeholder="—"
         style="width:clamp(44px,15vw,60px);height:30px;font-size:13px;padding:4px 6px;text-align:center;flex-shrink:0">
-    </div>`).join('');
+    </div>`)).join('');
 }
 
 function getSlots(pre){ return ['a','b','c'].map(s=>document.getElementById(pre+s)?.value).filter(v=>v!==''); }
@@ -262,7 +266,8 @@ function updatePreview(){
 async function fetchLatestGW(){
   const btn=document.getElementById('fetch-gw-btn');
   const status=document.getElementById('fetch-gw-status');
-  const targetGW=(state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0)+1;
+  const override=parseInt(document.getElementById('fetch-gw-override')?.value)||0;
+  const targetGW=override||((state.gameweeks.length?state.gameweeks[state.gameweeks.length-1].gw:0)+1);
   btn.disabled=true; status.textContent=`Fetching GW${targetGW}…`;
 
   try{
@@ -278,7 +283,7 @@ async function fetchLatestGW(){
         return {entry:r.entry,total:r.total,current:hist?.current||[]};
       }catch(_){ return {entry:r.entry,total:r.total,current:[]}; }
     }));
-    const targetEventId=window._fplBootstrap?.current_event?.id||0;
+    const targetEventId=override||window._fplBootstrap?.current_event?.id||0;
     const gwScoreByEntry={};
     histories.forEach(h=>{
       const played=h.current.filter(e=>e.rank!==null);
