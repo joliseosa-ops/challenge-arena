@@ -392,7 +392,11 @@ const credited=(idx,i)=>(state.cycleCredited[idx]?.[i])||0;
 
 
 function renderStandings(){
-  const sorted=state.players.map((p,i)=>({...p,i})).sort((a,b)=>{
+  const departedSet=new Set((state.playerChanges||[]).filter(c=>!c.active).map(c=>c.idx));
+  // precompute cycleInPaidOut per player for the withdrawn column
+  const cycleInPaidOutMap={};
+  (state.payouts||[]).forEach(po=>{ if(typeof po.gw==='string'&&po.gw.startsWith('Cycle')) cycleInPaidOutMap[po.player]=(cycleInPaidOutMap[po.player]||0)+(po.amount||0); });
+  const sorted=state.players.map((p,i)=>({...p,i})).filter(p=>!departedSet.has(p.i)).sort((a,b)=>{
     if(currentSort==='bank') return pubBal(b)-pubBal(a);
     if(currentSort==='podiums') return b.w1-a.w1||b.w2-a.w2||b.w3-a.w3;
     return b.accumulated-a.accumulated;
@@ -410,7 +414,7 @@ function renderStandings(){
   const rL=r=>r===0?'#1':r===1?'#2':r===2?'#3':`#${r+1}`;
   document.getElementById('standings-body').innerHTML=sorted.map((p,rank)=>{
     const bal=pubBal(p);
-    const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0));
+    const withdrawn=Math.max(0,p.paidOut-(p.carryOver||0)-(cycleInPaidOutMap[p.name]||0));
     const podiumCls=rank===0?'podium-1':rank===1?'podium-2':rank===2?'podium-3':'';
     return `<tr onclick="openProfile(${p.i})" style="cursor:pointer"${podiumCls?' class="'+podiumCls+'"':''} >
       <td><span class="${rC(rank)}">${rL(rank)}</span></td>
